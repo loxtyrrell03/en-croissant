@@ -102,7 +102,7 @@ import {
     isStructuralEffectFromTacticalCapture,
 } from "./decisionLineRoutes";
 
-export const DECISION_ASSESSMENT_VERSION = 49;
+export const DECISION_ASSESSMENT_VERSION = 50;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";

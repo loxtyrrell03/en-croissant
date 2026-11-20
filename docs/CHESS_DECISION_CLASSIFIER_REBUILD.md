@@ -4297,3 +4297,19 @@ appears, while a previously detected en passant result becomes unclear.
 Broader reply matching and deeper searches do not recover either axis
 reliably from this set.
 [Trials, exact lines and verification](../benchmarks/decision-evidence/reply-concordance/README.md)
+
+
+## Delayed recaptures and material attribution
+
+A generic mistaken-move explanation now checks whether the same
+collecting piece is lost again after the first quoted capture. It
+considers the full legal local exchange on that square through the
+recorded window. A different gain elsewhere cannot fund that claim.
+
+The Sants case moves from mixed to positional on standard-budget
+frames, matching the deeper replay. In 622 fixed requests that is the
+only changed product report. The Polish rook tactic remains supported
+at both budgets. A blanket later material window misses that tactic
+and still accepts the Sants claim. All 1,050 valid archive reports
+agree, and the worker uses no extra searches.
+[Results, engine frames and controls](../benchmarks/decision-evidence/capture-retention/README.md)

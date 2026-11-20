@@ -1,7 +1,12 @@
 import { castlingSide } from "chessops/chess";
 import { makeFen } from "chessops/fen";
 import { makeSquare } from "chessops/util";
-import { replayTacticalLine, type TacticalReplayStep } from "./causalTactics";
+import {
+    MIN_TACTICAL_CAPTURE_GAIN,
+    replayTacticalLine,
+    tacticalExchangeGain,
+    type TacticalReplayStep,
+} from "./causalTactics";
 import { measureDecisionLine, type DecisionEngineLine } from "./decisionEvidence";
 import { compareSameBoardRoutes } from "./decisionLineRoutes";
 import { followPieceIdentities, initialPieceIdentities } from "./decisionPieceIdentity";
@@ -119,6 +124,25 @@ function comparablePayoff(branches: TacticalReplayStep[][], closure: number) {
     return null;
 }
 
+/** A later capture of the original collector can settle an earlier
+ * exchange, even after intervening moves. Separate gains elsewhere in the
+ * line do not prove the advertised capture won material on its own. */
+function recoversClaimedCapture(steps: TacticalReplayStep[], index: number) {
+    const take = steps[index];
+    const square = take.move.to;
+    const side = take.before.turn;
+    for (const later of steps.slice(index + 1, 13)) {
+        if (later.move.from === square) return false;
+        if (later.before.turn === side || !later.capture || later.move.to !== square) continue;
+        const returned = tacticalExchangeGain(later.before, later.move);
+        return (
+            returned >= MIN_TACTICAL_CAPTURE_GAIN &&
+            take.capture - returned < MIN_TACTICAL_CAPTURE_GAIN
+        );
+    }
+    return false;
+}
+
 function consequenceAt(line: TacticalReplayStep[], index: number) {
     const square = line[index].move.to;
     let last = index;
@@ -210,6 +234,7 @@ export function compareAllowedDecisionRoutes(
             if (index % 2 === 0 || !step.capture) continue;
             const closures = worse.map((line) => consequenceAt(line, index));
             if (closures.some((time) => time === null)) continue;
+            if (worse.some((line) => recoversClaimedCapture(line, index))) continue;
             const outcome = comparablePayoff(steps, Math.max(...closures.map((time) => time!)));
             if (!outcome) continue;
             const breach = findPreventedRoute(worse[1], choice, index);

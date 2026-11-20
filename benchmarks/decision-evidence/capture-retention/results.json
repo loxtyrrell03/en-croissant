@@ -1,0 +1,284 @@
+{
+  "baseline": "d7634bb9",
+  "candidate": "Decision Evidence v50",
+  "replays": {
+    "late": {
+      "requests": 622,
+      "changed": {
+        "archive:mistake-world-amateur-42546b576bc60d23-41": {
+          "before": "unclear",
+          "after": "tactical",
+          "previousTacticalReasons": [
+            "No relevant tactical mechanism has been established."
+          ],
+          "tacticalReasons": [
+            "After Bc6, both searches show Bxc6 winning material. After Qb7, the original target is on d7. The same move no longer takes it on c6.",
+            "The played continuation gives up at least 1 more material points over the compared moves."
+          ],
+          "positionalEvidenceChanged": false
+        },
+        "archive:mistake-misamis-occidental-2026-55e342aa733f1c3f-64": {
+          "before": "tactical",
+          "after": "tactical",
+          "previousTacticalReasons": [
+            "After Rxf4, both searches show Qxf4 winning material. After Rd4, the original target is on d4. The same move no longer takes it on f4.",
+            "The played continuation gives up at least 1.7 more material points over the compared moves."
+          ],
+          "tacticalReasons": [
+            "After Rxf4, both searches show Qxf4 winning material. After Rd4, the original target is on d4. The same move no longer takes it on f4.",
+            "The played continuation gives up at least 1 more material points over the compared moves."
+          ],
+          "positionalEvidenceChanged": false
+        },
+        "public-transfer:0632388e322ad983": {
+          "before": "tactical",
+          "after": "unclear",
+          "previousTacticalReasons": [
+            "After Rxg3, both searches show Rxg3 winning material. After dxe5, the original target is on h3. The same move no longer takes it on g3.",
+            "The played continuation gives up at least 2.8 more material points over the compared moves."
+          ],
+          "tacticalReasons": [
+            "No relevant tactical mechanism has been established."
+          ],
+          "positionalEvidenceChanged": false
+        },
+        "public-transfer:0236ba884d37e15b": {
+          "before": "mixed",
+          "after": "mixed",
+          "previousTacticalReasons": [
+            "After e5, both searches show dxe5 winning material. After Qf8, the original target is on e6. The same move no longer takes it on e5.",
+            "The played continuation gives up at least 1 more material points over the compared moves."
+          ],
+          "tacticalReasons": [
+            "After e5, both searches show dxe5 winning material. After Qf8, the original target is on e6. The same move no longer takes it on e5.",
+            "The played continuation gives up at least 2 more material points over the compared moves."
+          ],
+          "positionalEvidenceChanged": false
+        },
+        "prospective:public-0322eb271560f2cc": {
+          "before": "tactical",
+          "after": "tactical",
+          "previousTacticalReasons": [
+            "After Qf7, both searches show Rxf7 winning material. After Qd7, the original target is on d7. The same move no longer takes it on f7.",
+            "The played continuation gives up at least 1 more material points over the compared moves."
+          ],
+          "tacticalReasons": [
+            "After Qf7, both searches show Rxf7 winning material. After Qd7, the original target is on d7. The same move no longer takes it on f7.",
+            "The played continuation gives up at least 1 more material points over the compared moves."
+          ],
+          "positionalEvidenceChanged": false
+        },
+        "public-transfer:0632388e322ad983:deeper": {
+          "before": "tactical",
+          "after": "unclear",
+          "previousTacticalReasons": [
+            "After Rxg3, both searches show Rxg3 winning material. After dxe5, the original target is on h3. The same move no longer takes it on g3.",
+            "The played continuation gives up at least 2.8 more material points over the compared moves."
+          ],
+          "tacticalReasons": [
+            "No relevant tactical mechanism has been established."
+          ],
+          "positionalEvidenceChanged": false
+        }
+      },
+      "medianWorkerMs": {
+        "before": 148.57,
+        "after": 147.52
+      }
+    },
+    "tracked": {
+      "requests": 622,
+      "changed": {
+        "public-transfer:0236ba884d37e15b": {
+          "before": "mixed",
+          "after": "positional",
+          "previousTacticalReasons": [
+            "After e5, both searches show dxe5 winning material. After Qf8, the original target is on e6. The same move no longer takes it on e5.",
+            "The played continuation gives up at least 1 more material points over the compared moves."
+          ],
+          "tacticalReasons": [
+            "No relevant tactical mechanism has been established."
+          ],
+          "positionalEvidenceChanged": false
+        }
+      },
+      "medianWorkerMs": {
+        "before": 148.57,
+        "after": 150.41
+      }
+    },
+    "product": {
+      "requests": 622,
+      "changed": {
+        "public-transfer:0236ba884d37e15b": {
+          "before": "mixed",
+          "after": "positional",
+          "previousTacticalReasons": [
+            "After e5, both searches show dxe5 winning material. After Qf8, the original target is on e6. The same move no longer takes it on e5.",
+            "The played continuation gives up at least 1 more material points over the compared moves."
+          ],
+          "tacticalReasons": [
+            "No relevant tactical mechanism has been established."
+          ],
+          "positionalEvidenceChanged": false
+        }
+      },
+      "medianWorkerMs": {
+        "before": 148.57,
+        "after": 145.06
+      }
+    }
+  },
+  "archiveWorker": {
+    "requests": 1051,
+    "changed": {},
+    "medianWorkerMs": {
+      "before": 64.79,
+      "after": 65.5
+    }
+  },
+  "archiveRouteExperiment": {
+    "late": {
+      "requests": 889,
+      "changeCounts": {
+        "edited": 16,
+        "added": 4,
+        "removed": 3
+      },
+      "changedReasons": {
+        "mistake-maia-u2000-35db654e8edb60ef-41": [
+          "After Bxd4, both searches show Qxd4 winning material. After Nf6, the original target is on g7. The same move no longer takes it on d4.",
+          "After Bxd4, both searches show Qxd4 winning material. After Nf6, the original target is on g7. The same move no longer takes it on d4."
+        ],
+        "mistake-maia-u2000-23a087934b624ffb-37": [
+          null,
+          "After Bb7, both searches show Nxd6 winning material. Rxf7 takes the knight that would play Nxd6."
+        ],
+        "mistake-reykjavik-u2000-6673024e6fd0490a-44": [
+          "After Na3, both searches show Qxb4 winning material. Bxd4 takes the knight that would play Nf3+.",
+          "After Na3, both searches show Qxe4 winning material. Bxd4 takes the knight that would play Nf3+."
+        ],
+        "mistake-olympiad-open-i-e60ad32ec2b5f47f-54": [
+          "After Bxe4, both searches show Qxe4 winning material. After Rhe1, the original target is on d5. The same move no longer takes it on e4.",
+          null
+        ],
+        "mistake-world-amateur-42546b576bc60d23-41": [
+          null,
+          "After Bc6, both searches show Bxc6 winning material. After Qb7, the original target is on d7. The same move no longer takes it on c6."
+        ],
+        "annotated-pawn-lebanese-open-2026-0263629130fd2e79-51": [
+          "After Nf4, both searches show Nxh5 winning material. Qxd2+ gives check first, so Nxh5 is unavailable.",
+          "After Nf4, both searches show Nxh5 winning material. Qxd2+ gives check first, so Nxh5 is unavailable."
+        ],
+        "short-exchange-pardubice-open-2026-086c843842195dc9-56": [
+          "After Ra1, both searches show Bxf1 winning material. After Bd3, Bxf1 is unavailable in the same continuation.",
+          "After Ra1, both searches show Bxf1 winning material. After Bd3, Bxf1 is unavailable in the same continuation."
+        ],
+        "mistake-misamis-occidental-2026-55e342aa733f1c3f-64": [
+          "After Rxf4, both searches show Qxf4 winning material. After Rd4, the original target is on d4. The same move no longer takes it on f4.",
+          "After Rxf4, both searches show Qxf4 winning material. After Rd4, the original target is on d4. The same move no longer takes it on f4."
+        ],
+        "classical-transfer-a6ea0c99b6a1c3e5": [
+          "After Ra8, both searches show Nxa2 winning material. After Nc1, the original target is on c1. The same move no longer takes it on a2.",
+          "After Ra8, both searches show Nxa2 winning material. After Nc1, the original target is on c1. The same move no longer takes it on a2."
+        ],
+        "classical-transfer-5a1f6f3487944b81": [
+          null,
+          "After f4+, both searches show gxf4+ winning material. After Kf3, the original target is on f2. The same move no longer takes it on f4."
+        ],
+        "classical-transfer-7a8e02d0c053a18b": [
+          "After Qc3+, both searches show Kxh6 winning material. After Nf5+, the original target is on f5. The same move no longer takes it on h6.",
+          null
+        ],
+        "classical-transfer-cba37eeb85159d9e": [
+          "After Nxa6, both searches show Bxa6 winning material. After Nc4, the original target is on c5. The same move no longer takes it on a6.",
+          "After Nxa6, both searches show Bxa6 winning material. After Nc4, the original target is on c5. The same move no longer takes it on a6."
+        ],
+        "classical-transfer-e0c5967bdba64ffe": [
+          "After Rg5, both searches show Qxg5 winning material. After Qxe2, the original target is on g3. The same move no longer takes it on g5.",
+          "After Rg5, both searches show Qxg5 winning material. After Qxe2, the original target is on g3. The same move no longer takes it on g5."
+        ],
+        "classical-8d458ed19e376e90": [
+          null,
+          "After Nxd4, both searches show Nxd4 winning material. After Bf4, the original target is on f3. The same move no longer takes it on d4."
+        ],
+        "reply-budget-0ed5c56be19181c4": [
+          "After Rh7, both searches show Nxe7 winning material. After Bxg5, the original target is on g5. The same move no longer takes it on e7.",
+          "After Rh7, both searches show Nxe7 winning material. After Bxg5, the original target is on g5. The same move no longer takes it on e7."
+        ],
+        "deeper-loss-19820941f1610a83": [
+          "After Bxe4, both searches show dxe4 winning material. Rxd5 takes the pawn that would play dxe4.",
+          "After Bxe4, both searches show dxe4 winning material. Rxd5 takes the pawn that would play dxe4."
+        ],
+        "deeper-loss-04979d10849b2511": [
+          "After Rxd6, both searches show exd6 winning material. After g5, the original target is on d8. The same move no longer takes it on d6.",
+          null
+        ],
+        "deeper-loss-055578239590d709": [
+          "After d5, both searches show exd5 winning material. After Nb1, the original target is on d4. The same move no longer takes it on d5.",
+          "After d5, both searches show exd5 winning material. After Nb1, the original target is on d4. The same move no longer takes it on d5."
+        ],
+        "blocked-defence-0009ceec958470be": [
+          "After Rb8, both searches show Nxc5+ winning material. After Bb6, the original target is on b6. The same move no longer takes it on c5.",
+          "After Rb8, both searches show Nxc5+ winning material. After Bb6, the original target is on b6. The same move no longer takes it on c5."
+        ],
+        "1wMuo": [
+          "After O-O-O, both searches show fxe4 winning material. Qxd8 takes the queen that would play Qxd6.",
+          "After O-O-O, both searches show fxe4 winning material. Qxd8 takes the queen that would play Qxd6."
+        ],
+        "0lX8X": [
+          "After Rg3, both searches show Bxc4 winning material. After Bd5, the original target is on d5. The same move no longer takes it on c4.",
+          "After Rg3, both searches show Bxc4 winning material. After Bd5, the original target is on d5. The same move no longer takes it on c4."
+        ],
+        "1Wfp6": [
+          "After h3, both searches show Nxf2 winning material. Rxd8+ takes the rook that would play Rxd1.",
+          "After h3, both searches show Nxf2 winning material. Rxd8+ takes the rook that would play Rxd1."
+        ],
+        "0J4v0": [
+          "After Bh3, both searches show Nxd4 winning material. Rxa8 takes the rook that would play Rxa1.",
+          "After Bh3, both searches show Nxd4 winning material. Rxa8 takes the rook that would play Rxa1."
+        ]
+      }
+    },
+    "tracked": {
+      "requests": 889,
+      "changeCounts": {
+        "removed": 1,
+        "edited": 1
+      },
+      "changedReasons": {
+        "annotated-pawn-lebanese-open-2026-0263629130fd2e79-51": [
+          "After Nf4, both searches show Nxh5 winning material. Qxd2+ gives check first, so Nxh5 is unavailable.",
+          null
+        ],
+        "1wMuo": [
+          "After O-O-O, both searches show fxe4 winning material. Qxd8 takes the queen that would play Qxd6.",
+          "After O-O-O, both searches show Nxh4 winning material. Qxd8 takes the queen that would play Qxd6."
+        ]
+      }
+    },
+    "product": {
+      "requests": 889,
+      "changeCounts": {
+        "removed": 1,
+        "edited": 1
+      },
+      "changedReasons": {
+        "annotated-pawn-lebanese-open-2026-0263629130fd2e79-51": [
+          "After Nf4, both searches show Nxh5 winning material. Qxd2+ gives check first, so Nxh5 is unavailable.",
+          null
+        ],
+        "1wMuo": [
+          "After O-O-O, both searches show fxe4 winning material. Qxd8 takes the queen that would play Qxd6.",
+          "After O-O-O, both searches show Nxh4 winning material. Qxd8 takes the queen that would play Qxd6."
+        ]
+      }
+    }
+  },
+  "inputSha256": {
+    "worker": "7af950a56a1778824834bdd00eb9f4d7a1f943049d08d4f938514a8c29277e13",
+    "comparisons": "8b1a441dc4666f722bca3e415f0827085f8e40cbd7f19ccf4d6d9d8990b8015f",
+    "archive": "22a2859e07d65322d5ca421dbac08899bad5dff549085b1aab5e9302aef84e13",
+    "deeperControls": "c6d22d371de912a4a64041cc4d5951474d09ec1950303778bd6640ad554c0b4f"
+  }
+}
