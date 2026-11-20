@@ -21,6 +21,7 @@ import {
   gatherExtraPositionChoice,
   gatherPassedAdvance,
   gatherPreparedCheckpoint,
+  gatherSiblingRefutation,
   type DecisionSearchTarget,
 } from "./decisionSearch";
 import { classifyDecisionInWorker } from "./decisionReportWorker";
@@ -404,6 +405,10 @@ function DecisionReport({
             ? [
                 { label: "Better line", san: lineSan(report.fen, contrast.betterLineUci) },
                 { label: "Refuted choice", san: lineSan(report.fen, contrast.playedLineUci) },
+                ...(contrast.controlLineUci?.length ? [{
+                  label: "Same capture after the better move",
+                  san: lineSan(report.fen, contrast.controlLineUci),
+                }] : []),
               ]
             : []),
           ...recoveryLines(report.fen, report.position.tacticalRecovery, "alternative"),
@@ -660,6 +665,17 @@ export function DecisionEvidencePanel({
               engineName: engine.name,
               history: target.history,
             },
+            owned.signal,
+          ).catch(() => report);
+        }
+      }
+      if (active() && report.position.tactical.support !== "supported" && Date.now() < deadline) {
+        const siblingRefutation = await gatherSiblingRefutation(
+          engine, target, input, owned.signal, deadline, progress,
+        );
+        if (active() && siblingRefutation) {
+          report = await classifyDecisionInWorker(
+            { input: { ...input, siblingRefutation }, engineName: engine.name, history: target.history },
             owned.signal,
           ).catch(() => report);
         }

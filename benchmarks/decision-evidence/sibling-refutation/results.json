@@ -1,0 +1,251 @@
+{
+  "baselineRevision": "8e38f00f",
+  "stockfishSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+  "archive": {
+    "arms": {
+      "similar": {
+        "nominated": 1,
+        "corroborated": 1
+      },
+      "causal": {
+        "nominated": 18,
+        "corroborated": 10
+      },
+      "ranked": {
+        "nominated": 22,
+        "corroborated": 13
+      }
+    },
+    "inputHashes": {
+      "base-input.json": "8651fedefdf3a57b99142e478e2c87643252160ae3e1feea1416a854b270a271",
+      "full-product.json": "bbad1f275e4c211db29c31ad11b6aeb65459be7ca70554414fd4c79dac6ac04c",
+      "archive-product.json": "e4a58bd9df2a69c277baa2f9f3b1b431df629ca76369e350b27d9a38b105fe62"
+    },
+    "worker": {
+      "inputCount": 1785,
+      "validCount": 1679,
+      "transitions": {
+        "unclear → tactical": 9
+      },
+      "reviewedTacticalLabels": {
+        "before:True:False": 95,
+        "after:True:False": 93,
+        "before:True:True": 40,
+        "after:True:True": 42,
+        "before:False:False": 54,
+        "after:False:False": 54
+      },
+      "changed": [
+        {
+          "id": "tournament-world-junior-97b2d59bddb33684-99",
+          "site": null,
+          "event": "world-junior",
+          "labelKind": null,
+          "before": "unclear",
+          "after": "tactical",
+          "reason": "g5 allows gxf4 and both searches retain a material loss. Rf5 keeps the original rook on f5 where no immediate capture passes the exchange check.",
+          "refuted": "50...g5 51. gxf4 gxf4 52. Qe1 Qg5 53. Qg1",
+          "better": "50...Rf5 51. Kg2 Ke8 52. f4 Kd8 53. h4",
+          "controlled": null
+        },
+        {
+          "id": "tournament-skakligaen-9753c232aa71b07e-27",
+          "site": null,
+          "event": "skakligaen",
+          "labelKind": null,
+          "before": "unclear",
+          "after": "tactical",
+          "reason": "Qxb1 allows Qxb1 and both searches retain a material loss. Qa2 keeps the original queen on a2 where no immediate capture passes the exchange check.",
+          "refuted": "14...Qxb1 15. Qxb1 Bd7 16. Bc1 b5",
+          "better": "14...Qa2 15. Ra1 Qb2 16. Nh4 Bd7",
+          "controlled": null
+        },
+        {
+          "id": "tournament-bundesliga-61253c0b9c434b5d-45",
+          "site": null,
+          "event": "bundesliga",
+          "labelKind": null,
+          "before": "unclear",
+          "after": "tactical",
+          "reason": "Rcf7 allows gxf5 and both searches retain a material loss. Bh7 keeps the original bishop on h7 where no immediate capture passes the exchange check.",
+          "refuted": "23...Rcf7 24. gxf5 Rxf5 25. Rxf5 Rxf5 26. Ke2 Rxh5 27. b4 Rf5 28. Nb3",
+          "better": "23...Bh7 24. Rxf8+ Kxf8 25. f4 g6 26. hxg6 Bxg6 27. Kf2 h5 28. g5",
+          "controlled": null
+        },
+        {
+          "id": "recapture-brazil-women-cef0c3d6bf877661-30",
+          "site": null,
+          "event": null,
+          "labelKind": null,
+          "before": "unclear",
+          "after": "tactical",
+          "reason": "d4 allows gxh2+ and both searches retain a material loss. hxg3 removes the piece that would play gxh2+.",
+          "refuted": "16. d4 gxh2+ 17. Kh1 Bh3 18. Bxh3 Rxh3 19. Rd3 Kf8 20. d5",
+          "better": "16. hxg3 e5 17. Rfe1 Kf8 18. Qc2 Bh3 19. Be4 g6 20. Qd2",
+          "controlled": null
+        },
+        {
+          "id": "recapture-world-seniors-50-2026-event-2ca709dece8dc7ad-24",
+          "site": null,
+          "event": null,
+          "labelKind": null,
+          "before": "unclear",
+          "after": "tactical",
+          "reason": "Nd5 allows gxh2+ and both searches retain a material loss. hxg3 removes the piece that would play gxh2+.",
+          "refuted": "13. Nd5 gxh2+ 14. Kh1 Nh5 15. Qd2 Qd7 16. Rac1 Be5",
+          "better": "13. hxg3 Nd7 14. Bd4 Bxd4 15. Qxd4 Rh7 16. Rac1 a5",
+          "controlled": null
+        },
+        {
+          "id": "tournament-bavarian-open-2026-2d3455df8e10cc42-55",
+          "site": null,
+          "event": null,
+          "labelKind": "position-character",
+          "before": "unclear",
+          "after": "tactical",
+          "reason": "Qc8 allows Nxb5 and both searches retain a material loss. Nxd4 removes the piece that would play Nxb5.",
+          "refuted": "28...Qc8 29. Nxb5 Rd7 30. Nd4 Kh8 31. Nf5 h5 32. Kh1 Rc7 33. e4 h4",
+          "better": "28...Nxd4 29. exd4 Rce7 30. Rxe7 Rxe7 31. Re1 Rxe1+ 32. Qxe1 Kf7 33. Qd1 h5",
+          "controlled": null
+        },
+        {
+          "id": "tournament-aruba-open-2026-4fd80c91c8027bff-32",
+          "site": null,
+          "event": null,
+          "labelKind": "position-character",
+          "before": "unclear",
+          "after": "tactical",
+          "reason": "Ne2 allows Qxe4 and both searches retain a material loss. Qxe3 removes the piece that would play Qxe4.",
+          "refuted": "17. Ne2 Qxe4 18. O-O-O Qxg2 19. Qc3 O-O 20. Nd4",
+          "better": "17. Qxe3 Nxe3 18. Kf2 Ng4+ 19. Kf3 f5 20. Nf2",
+          "controlled": null
+        },
+        {
+          "id": "exchange-00e629dbb512509e",
+          "site": "https://lichess.org/broadcast/46th-fide-chess-olympiad-samarkand-2026-open-matches-1-12/round/oQds2Dcv",
+          "event": "46th-fide-chess-olympiad-samarkand-2026",
+          "labelKind": null,
+          "before": "unclear",
+          "after": "tactical",
+          "reason": "Rd5 allows axb7 and both searches retain a material loss. bxa6 removes the piece that would play axb7.",
+          "refuted": "30...Rd5 31. axb7 Rb5 32. Rxc6 Rxb7 33. Rc8 Rd7 34. Kg2",
+          "better": "30...bxa6 31. Nd4 c5 32. Rxc5 Bf6 33. Nb3 Be7 34. Rc7",
+          "controlled": null
+        },
+        {
+          "id": "exchange-003e5c6d715ead1c",
+          "site": "https://lichess.org/broadcast/german-bundesliga-202627-schachbundesliga/round-2/Bs7teQ5B/Tf6tb3Xr",
+          "event": "german-bundesliga-202627-schachbundesliga",
+          "labelKind": null,
+          "before": "unclear",
+          "after": "tactical",
+          "reason": "Qxf6 allows Rxf6 and both searches retain a material loss. Qg3 keeps the original queen on g3 where no immediate capture passes the exchange check.",
+          "refuted": "26. Qxf6 Rxf6 27. g4 hxg4 28. h5 e5 29. Nf5",
+          "better": "26. Qg3 Be5 27. Qg5 a5 28. Rhd1 Ba6 29. Nf3",
+          "controlled": null
+        }
+      ]
+    },
+    "engineProbeCost": {
+      "queries": 18,
+      "medianElapsedMs": 1400.7
+    },
+    "strongerUnrestricted": {
+      "exactRepeat": 3,
+      "sameThreatDifferentDefence": 0,
+      "samePreferredDifferentContinuation": 0
+    },
+    "strongerSameThreeChoices": {
+      "exactRepeat": 6,
+      "sameThreatDifferentDefence": 1,
+      "samePreferredDifferentContinuation": 0
+    }
+  },
+  "fresh": {
+    "arms": {
+      "similar": {
+        "nominated": 0,
+        "corroborated": 0
+      },
+      "causal": {
+        "nominated": 4,
+        "corroborated": 2
+      },
+      "ranked": {
+        "nominated": 6,
+        "corroborated": 2
+      }
+    },
+    "inputHashes": {
+      "fresh-replies.json": "a94f4812998e7f60257c1704ab4938767c701ed9700755e36a748107843a5299",
+      "fresh-8e38f00f-report.json": "fa8a73f6595cdbd1ff8eda613e4c6ea7a5fe2802b2624f2d71041c6158e14ece",
+      "fresh-index-report.json": "b66fe6e0d6327cc508c6f932d455f591fac4bf0620dc44c3e04f89c5081faf20"
+    },
+    "worker": {
+      "inputCount": 224,
+      "validCount": 222,
+      "transitions": {
+        "unclear → tactical": 2
+      },
+      "reviewedTacticalLabels": {},
+      "changed": [
+        {
+          "id": "sibling-033a91874bc3773b",
+          "site": "https://lichess.org/broadcast/itt-im-arequipa-leon-del-sur/round-6/OyhNXhCb/pNvjHjWO",
+          "event": "itt-im-arequipa-leon-del-sur",
+          "labelKind": null,
+          "before": "unclear",
+          "after": "tactical",
+          "reason": "Bxd8 allows Bxc2 and both searches retain a material loss. Qc1 keeps the original queen on c1 where no immediate capture passes the exchange check.",
+          "refuted": "22. Bxd8 Bxc2 23. Bxf6 gxf6 24. Rc1 Bd3 25. Kg2 Kg7 26. Rd1 Kh6 27. b4 Re2",
+          "better": "22. Qc1 Rd3 23. Ba5 Bf3 24. Qc2 h5 25. Re1 Rxe1+ 26. Bxe1 Rd1 27. Kf1 g6",
+          "controlled": null
+        },
+        {
+          "id": "sibling-00520b63293200f5",
+          "site": "https://lichess.org/broadcast/2nd-belt-and-road-china-international-chess-open-bengbu-anhui-2026-group-a/round-4/iA7Yri6A/pCi07dl4",
+          "event": "2nd-belt-and-road-china-international-chess-open-bengbu-anhui-2026",
+          "labelKind": null,
+          "before": "unclear",
+          "after": "tactical",
+          "reason": "Qc8 allows Qxc5+ and both searches retain a material loss. Be3 keeps the original bishop on e3 where no immediate capture passes the exchange check.",
+          "refuted": "46. Qc8 Qxc5+ 47. Qxc5 Nxc5 48. Rxe6 Nxe6 49. a4 Kf5 50. b4",
+          "better": "46. Be3 Qa5 47. Ra1 Nc3 48. Bf2 Ne2+ 49. Kh1 Qd2 50. Qb8",
+          "controlled": null
+        }
+      ]
+    },
+    "engineProbeCost": {
+      "queries": 4,
+      "medianElapsedMs": 1546.3
+    },
+    "strongerUnrestricted": {
+      "exactRepeat": 0,
+      "sameThreatDifferentDefence": 0,
+      "samePreferredDifferentContinuation": 1
+    },
+    "strongerSameThreeChoices": {
+      "exactRepeat": 1,
+      "sameThreatDifferentDefence": 0,
+      "samePreferredDifferentContinuation": 0
+    },
+    "excludedAfterArchiveOverlapCheck": [
+      "sibling-0002ee3a83e4384c",
+      "sibling-002bbf3695d42212",
+      "sibling-003d4fc0316882c9",
+      "sibling-0044fa286fe4becf",
+      "sibling-00621e038bbd0a2a",
+      "sibling-00752a4d52c5b311",
+      "sibling-01159b339eefcf47",
+      "sibling-012a07e5cc83c1c9",
+      "sibling-020d20079f9703b1",
+      "sibling-04622902100d7885",
+      "sibling-0539f3a97bfb2bcf",
+      "sibling-07d286efb4a4f777",
+      "sibling-0d1f699bacb39afa",
+      "sibling-0e9c300d3ea83742",
+      "sibling-10db1eb5d402324b",
+      "sibling-18b0fabae6b21e6a"
+    ]
+  }
+}

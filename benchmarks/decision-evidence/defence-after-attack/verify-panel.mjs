@@ -45,6 +45,7 @@ function fixturePlugin() {
           return ${JSON.stringify(board.input)};
         }
         export async function gatherExtraPositionChoice() { return null; }
+        export async function gatherSiblingRefutation() { return undefined; }
         export async function gatherCheckingDefence(_engine, _target, request, signal, deadline) {
           signal.throwIfAborted();
           const expected = ${JSON.stringify(board.expectedBoards)};

@@ -42,6 +42,10 @@ import {
     nominateSharedReply,
     type DecisionSharedReplyProbe,
 } from "@/utils/tacticalMotifs/decisionSharedReply";
+import {
+    nominateSiblingRefutation,
+    type SiblingRefutationFrames,
+} from "@/utils/tacticalMotifs/decisionSiblingRefutation";
 
 export type DecisionSearchTarget = {
     fen: string;
@@ -335,6 +339,50 @@ async function searchPosition(
             })
             .catch((error) => finish([], error));
     });
+}
+
+export async function gatherSiblingRefutation(
+    engine: LocalEngine,
+    target: DecisionSearchTarget,
+    input: DecisionAssessmentInput,
+    signal: AbortSignal,
+    deadline: number,
+    progress: (phase: string) => void,
+): Promise<SiblingRefutationFrames | undefined> {
+    signal.throwIfAborted();
+    if (Date.now() >= deadline) return;
+    const choice = nominateSiblingRefutation(target.fen, input.candidates);
+    if (!choice) return;
+    progress("Checking the tactical reply to a candidate…");
+    const stopAt = Math.min(deadline, Date.now() + 3_600);
+    const query = (fen: string, root: string, restricted?: string[]) =>
+        searchDecisionCheckpoint(
+            engine, { fen, prefix: [root] }, signal, stopAt, target.history,
+            restricted, 1_400_000, restricted ? 1 : 3,
+        );
+    try {
+        const alternatives = [
+            input.positionReply,
+            ...(input.replyProbes ?? []),
+        ].find((probe) => probe?.moveUci === choice.weakStep.uci)?.lines ?? [];
+        const reply = alternatives[0] ??
+            (await query(choice.replyFen, choice.weakStep.uci))[0];
+        if (
+            !reply || reply.depth < 16 || reply.cp === null || reply.mate != null ||
+            reply.pvUci[0] !== choice.replyUci || Math.abs(reply.cp + choice.weak.cp!) > 90
+        ) return;
+        if (!choice.controlFen) return { reply };
+        const matching = input.replyProbes?.find(({ moveUci }) => moveUci === choice.safeStep.uci);
+        const cached = matching?.lines.find((line) =>
+            line.depth >= 16 && line.pvUci[0] === choice.replyUci,
+        );
+        const control = cached ??
+            (await query(choice.controlFen, choice.safeStep.uci, [choice.replyUci]))[0];
+        return control ? { reply, control } : undefined;
+    } catch {
+        signal.throwIfAborted();
+        return;
+    }
 }
 
 export async function gatherExtraPositionChoice(

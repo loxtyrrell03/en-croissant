@@ -47,6 +47,7 @@ function fixturePlugin() {
           })};
         }
         export async function gatherExtraPositionChoice() { return null; }
+        export async function gatherSiblingRefutation() { return undefined; }
         export async function gatherCheckingDefence() { return null; }
         export async function gatherPassedAdvance() { return []; }
         export async function gatherPreparedCheckpoint() { return []; }

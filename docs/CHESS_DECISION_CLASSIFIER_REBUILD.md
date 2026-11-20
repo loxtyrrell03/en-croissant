@@ -4467,3 +4467,16 @@ consequences. Four previously had no tactical diagnosis. The normal
 engine path sends no online requests. Installed verification remains
 open.
 [Exact board records, comparison and browser replay](../benchmarks/decision-evidence/exact-endgame-decisions/README.md)
+
+## An exposed piece among several competitive choices
+
+The position report can explain a ranked tactical trap even when the
+first two choices are competitive. A third choice has to fail to a legal
+capture in both the root and a separate reply search. The stronger
+choice must change that exact attack or provide a concrete recapture
+after a similar move. This adds nine tactical position explanations
+in the archive and two across 224 audited public games. The known
+position-character score rises from 40 to 42 of 135 without changing
+the 54 reviewed negatives. Move and played-mistake verdicts are unchanged.
+The deeper replays show sensitivity to which choices are compared.
+[Matched comparisons and engine costs](../benchmarks/decision-evidence/sibling-refutation/README.md)

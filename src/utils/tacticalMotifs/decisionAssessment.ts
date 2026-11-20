@@ -109,7 +109,13 @@ import { confirmPasserFlight, nominatePasserFlight, type PasserFlightProbe } fro
 
 import { findSettledExchangePlan } from "./decisionSettledExchange";
 
-export const DECISION_ASSESSMENT_VERSION = 54;
+import {
+    confirmSiblingRefutation,
+    nominateSiblingRefutation,
+    type SiblingRefutationFrames,
+} from "./decisionSiblingRefutation";
+
+export const DECISION_ASSESSMENT_VERSION = 55;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -153,6 +159,7 @@ export type DecisionAssessmentInput = {
     positionReply?: DecisionReplyProbe;
     preparedCheckpoint?: DecisionEngineLine[];
     extraPositionChoice?: ExtraPositionChoice;
+    siblingRefutation?: SiblingRefutationFrames;
     sharedReply?: DecisionSharedReplyProbe;
     passerFlight?: PasserFlightProbe;
     checkingDefence?: CheckingDefenceProbe;
@@ -937,6 +944,20 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                     reasons: [recovery.explanation],
                 };
             }
+        }
+    }
+    if (!rejectedChoices && position.tactical.support !== "supported" && input.siblingRefutation) {
+        const request = nominateSiblingRefutation(input.fen, input.candidates);
+        const proof = request && confirmSiblingRefutation(
+            input.fen, request, input.siblingRefutation, input.history,
+        );
+        if (proof) {
+            position.tacticalContrast = proof;
+            position.tactical = {
+                support: "supported",
+                basis: "engine-supported",
+                reasons: [proof.explanation],
+            };
         }
     }
     position.category = category(position.tactical, position.positional);
