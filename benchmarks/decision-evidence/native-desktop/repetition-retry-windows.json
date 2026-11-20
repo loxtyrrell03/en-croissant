@@ -1,0 +1,30 @@
+{
+  "revision": "8de750330c3fe5024694d9d1dbf42b6da2e48d06",
+  "scenarios": {
+    "Chile Passed Pawn": {
+      "passed": true,
+      "seconds": 7.645,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "position": "Position character\n\nMIXED\n\n3 candidate moves examined\n\nTactical · Engine supported. Bf2 gives this piece access to e3. In the analysed continuation, Bxe3 uses capturingDefender at ply 3.\n\nTactical · Engine supported. Bf2 is met by Bg5, taking the defender from e3. Rxb6 then captures the target it could previously recapture on.\n\nPositional · Strategic interpretation. Both lines remove the opposing passed pawn on b6 through different exchanges.\n\nBf2 gives this piece access to e3. In the analysed continuation, Bxe3 uses capturingDefender at ply 3. Bf2 Rh5 Bxe3 Kxe3 Rxb6\n\nBf2 is met by Bg5, taking the defender from e3. Rxb6 then captures the target it could previously recapture on. Bf2 Bg5 Rxb6\n\nAfter Bf2 Rh5. Bf2 Rh5 Bxe3 Kxe3 Rxb6 Rxh4 Kf7\n\nAfter Bf2 Bg5. Bf2 Bg5 Rxb6 Rxb6 Bxb6\n\nThe position assessment covers the candidate moves and replies examined in this search.\n\nHide evidence",
+      "move": "What the move achieves\n\nMIXED\n\nTactical · Engine supported. Bf2 gives this piece access to e3. In the analysed continuation, Bxe3 uses capturingDefender at ply 3.\n\nTactical · Engine supported. Bf2 is met by Bg5, taking the defender from e3. Rxb6 then captures the target it could previously recapture on.\n\nPositional · Strategic interpretation. Both lines remove the opposing passed pawn on b6 through different exchanges.\n\nBf2 gives this piece access to e3. In the analysed continuation, Bxe3 uses capturingDefender at ply 3. Bf2 Rh5 Bxe3 Kxe3 Rxb6\n\nBf2 is met by Bg5, taking the defender from e3. Rxb6 then captures the target it could previously recapture on. Bf2 Bg5 Rxb6\n\nAfter Bf2 Rh5. Bf2 Rh5 Bxe3 Kxe3 Rxb6 Rxh4 Kf7\n\nAfter Bf2 Bg5. Bf2 Bg5 Rxb6 Rxb6 Bxb6\n\nThe shown reply is the engine's choice at the recorded depth. Other defences may change the mechanism or outcome.\n\nThis is the material change in the displayed tactical episode after settling replies. Later play and other defences can alter it.\n\nHide evidence"
+    },
+    "Pawn Capture Can Wait": {
+      "passed": true,
+      "seconds": 7.864,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "move": "What the move achieves\n\nUNCLEAR\n\nThe search did not establish a specific cause.\n\nAfter h3 Qd8. h3 Qd8 Qxa3\n\nThe pawn on a3 can also be taken later. With h3, the engine keeps a large advantage and still plays Qxa3 in the shown line.\n\nHide evidence"
+    },
+    "Repetition Search Recovery": {
+      "passed": true,
+      "seconds": 21.897,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "position": "Position character\n\nUNCLEAR\n\n3 candidate moves examined\n\nThe search did not establish a specific cause.\n\nShow evidence"
+    }
+  }
+}

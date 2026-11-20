@@ -1,0 +1,1858 @@
+{
+  "revision": "8de750330c3fe5024694d9d1dbf42b6da2e48d06",
+  "sampleSha256": "6f3387a90934bdec162afcc03f951ad535c42578ef3abb9c22558f43b45d5f85",
+  "referenceSha256": "99b604c119719672c9837f0edd23c9d72ddf4d83761f1e90d9643f0b976683da",
+  "cases": 72,
+  "missing": [],
+  "seconds": {
+    "median": 11.21,
+    "maximum": 26.1
+  },
+  "workers": {
+    "2": 20,
+    "1": 52
+  },
+  "results": {
+    "position": {
+      "available": {
+        "original": 72,
+        "native": 72,
+        "fixed": 72
+      },
+      "measurements": {
+        "original": {
+          "tactical": {
+            "tp": 6,
+            "fp": 0,
+            "fn": 23,
+            "tn": 1,
+            "unknownReference": 42,
+            "precision": {
+              "value": 1.0,
+              "numerator": 6,
+              "denominator": 6,
+              "interval95": [
+                0.6096657120978346,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.20689655172413793,
+              "numerator": 6,
+              "denominator": 29,
+              "interval95": [
+                0.09846070197841039,
+                0.38390090403867905
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 1,
+              "denominator": 1,
+              "interval95": [
+                0.20654931437723745,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.23333333333333334,
+              "numerator": 7,
+              "denominator": 30,
+              "interval95": [
+                0.11792388144489496,
+                0.40928326158122164
+              ]
+            },
+            "eventBootstrap": {
+              "recall95": [
+                0.038461538461538464,
+                0.36363636363636365
+              ],
+              "precision95": [
+                1.0,
+                1.0
+              ],
+              "recallDraws": 2000,
+              "precisionDraws": 1974
+            }
+          },
+          "positional": null,
+          "mixed": null
+        },
+        "native": {
+          "tactical": {
+            "tp": 11,
+            "fp": 0,
+            "fn": 18,
+            "tn": 1,
+            "unknownReference": 42,
+            "precision": {
+              "value": 1.0,
+              "numerator": 11,
+              "denominator": 11,
+              "interval95": [
+                0.7411670330319684,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.3793103448275862,
+              "numerator": 11,
+              "denominator": 29,
+              "interval95": [
+                0.2268802210080984,
+                0.5599745579401147
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 1,
+              "denominator": 1,
+              "interval95": [
+                0.20654931437723745,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.4,
+              "numerator": 12,
+              "denominator": 30,
+              "interval95": [
+                0.24590628116801852,
+                0.5767963974667752
+              ]
+            },
+            "eventBootstrap": {
+              "recall95": [
+                0.23333333333333334,
+                0.5151515151515151
+              ],
+              "precision95": [
+                1.0,
+                1.0
+              ],
+              "recallDraws": 2000,
+              "precisionDraws": 2000
+            }
+          },
+          "positional": {
+            "tp": 11,
+            "fp": 0,
+            "fn": 48,
+            "tn": 1,
+            "unknownReference": 12,
+            "precision": {
+              "value": 1.0,
+              "numerator": 11,
+              "denominator": 11,
+              "interval95": [
+                0.7411670330319684,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.1864406779661017,
+              "numerator": 11,
+              "denominator": 59,
+              "interval95": [
+                0.1074272194200533,
+                0.3037895044696276
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 1,
+              "denominator": 1,
+              "interval95": [
+                0.20654931437723745,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.2,
+              "numerator": 12,
+              "denominator": 60,
+              "interval95": [
+                0.11828505322897494,
+                0.317818058056279
+              ]
+            },
+            "eventBootstrap": {
+              "recall95": [
+                0.11290322580645161,
+                0.2692307692307692
+              ],
+              "precision95": [
+                1.0,
+                1.0
+              ],
+              "recallDraws": 2000,
+              "precisionDraws": 2000
+            }
+          },
+          "mixed": {
+            "tp": 3,
+            "fp": 0,
+            "fn": 14,
+            "tn": 2,
+            "unknownReference": 53,
+            "precision": {
+              "value": 1.0,
+              "numerator": 3,
+              "denominator": 3,
+              "interval95": [
+                0.4385029682449546,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.17647058823529413,
+              "numerator": 3,
+              "denominator": 17,
+              "interval95": [
+                0.06191126637620997,
+                0.41029458568834126
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 2,
+              "denominator": 2,
+              "interval95": [
+                0.34238022750665303,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.2631578947368421,
+              "numerator": 5,
+              "denominator": 19,
+              "interval95": [
+                0.11806412346782508,
+                0.487915508978151
+              ]
+            },
+            "eventBootstrap": {
+              "recall95": [
+                0.0,
+                0.4166666666666667
+              ],
+              "precision95": [
+                1.0,
+                1.0
+              ],
+              "recallDraws": 2000,
+              "precisionDraws": 1921
+            }
+          }
+        },
+        "fixed": {
+          "tactical": {
+            "tp": 9,
+            "fp": 0,
+            "fn": 20,
+            "tn": 1,
+            "unknownReference": 42,
+            "precision": {
+              "value": 1.0,
+              "numerator": 9,
+              "denominator": 9,
+              "interval95": [
+                0.7008549515804559,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.3103448275862069,
+              "numerator": 9,
+              "denominator": 29,
+              "interval95": [
+                0.17275616744483216,
+                0.4923013423309317
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 1,
+              "denominator": 1,
+              "interval95": [
+                0.20654931437723745,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.3333333333333333,
+              "numerator": 10,
+              "denominator": 30,
+              "interval95": [
+                0.19230498083676134,
+                0.5121994835545616
+              ]
+            },
+            "eventBootstrap": {
+              "recall95": [
+                0.16,
+                0.4411764705882353
+              ],
+              "precision95": [
+                1.0,
+                1.0
+              ],
+              "recallDraws": 2000,
+              "precisionDraws": 1999
+            }
+          },
+          "positional": {
+            "tp": 14,
+            "fp": 0,
+            "fn": 45,
+            "tn": 1,
+            "unknownReference": 12,
+            "precision": {
+              "value": 1.0,
+              "numerator": 14,
+              "denominator": 14,
+              "interval95": [
+                0.7846891972623643,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.23728813559322035,
+              "numerator": 14,
+              "denominator": 59,
+              "interval95": [
+                0.14694618592462405,
+                0.3597489070640275
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 1,
+              "denominator": 1,
+              "interval95": [
+                0.20654931437723745,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.25,
+              "numerator": 15,
+              "denominator": 60,
+              "interval95": [
+                0.15776522530056675,
+                0.37232070077047824
+              ]
+            },
+            "eventBootstrap": {
+              "recall95": [
+                0.16666666666666666,
+                0.3090909090909091
+              ],
+              "precision95": [
+                1.0,
+                1.0
+              ],
+              "recallDraws": 2000,
+              "precisionDraws": 2000
+            }
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 17,
+            "tn": 2,
+            "unknownReference": 53,
+            "precision": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "recall": {
+              "value": 0.0,
+              "numerator": 0,
+              "denominator": 17,
+              "interval95": [
+                0.0,
+                0.1843181350088518
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 2,
+              "denominator": 2,
+              "interval95": [
+                0.34238022750665303,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.10526315789473684,
+              "numerator": 2,
+              "denominator": 19,
+              "interval95": [
+                0.02935856029887013,
+                0.31394082711109006
+              ]
+            },
+            "eventBootstrap": {
+              "recall95": [
+                0.0,
+                0.0
+              ],
+              "precision95": null,
+              "recallDraws": 2000,
+              "precisionDraws": 0
+            }
+          }
+        }
+      },
+      "changed": [
+        {
+          "id": "0184c9f0beec78b03a65",
+          "reference": {
+            "tactical": true,
+            "positional": true
+          },
+          "fixed": "positional",
+          "native": "unclear"
+        },
+        {
+          "id": "01e91a721ff039a86c7c",
+          "reference": {
+            "tactical": null,
+            "positional": true
+          },
+          "fixed": "unclear",
+          "native": "tactical"
+        },
+        {
+          "id": "00348c948d65bebf83b7",
+          "reference": {
+            "tactical": null,
+            "positional": true
+          },
+          "fixed": "unclear",
+          "native": "positional"
+        },
+        {
+          "id": "00871509f83a8e13ff9f",
+          "reference": {
+            "tactical": null,
+            "positional": true
+          },
+          "fixed": "unclear",
+          "native": "tactical"
+        },
+        {
+          "id": "001d004a45def1b67e6c",
+          "reference": {
+            "tactical": true,
+            "positional": true
+          },
+          "fixed": "positional",
+          "native": "unclear"
+        },
+        {
+          "id": "0079cb89e05dd81b9640",
+          "reference": {
+            "tactical": null,
+            "positional": true
+          },
+          "fixed": "positional",
+          "native": "unclear"
+        },
+        {
+          "id": "00aa62121c2fecb25a1d",
+          "reference": {
+            "tactical": true,
+            "positional": true
+          },
+          "fixed": "positional",
+          "native": "mixed"
+        },
+        {
+          "id": "002719621d794bcb0c4a",
+          "reference": {
+            "tactical": null,
+            "positional": true
+          },
+          "fixed": "positional",
+          "native": "unclear"
+        },
+        {
+          "id": "00acd47041b0a54528ce",
+          "reference": {
+            "tactical": true,
+            "positional": true
+          },
+          "fixed": "positional",
+          "native": "mixed"
+        },
+        {
+          "id": "0007cc2e0b47a78a9190",
+          "reference": {
+            "tactical": null,
+            "positional": true
+          },
+          "fixed": "unclear",
+          "native": "positional"
+        },
+        {
+          "id": "00119961bc2c688880e1",
+          "reference": {
+            "tactical": null,
+            "positional": true
+          },
+          "fixed": "positional",
+          "native": "unclear"
+        },
+        {
+          "id": "00204d00b16bab587de1",
+          "reference": {
+            "tactical": true,
+            "positional": null
+          },
+          "fixed": "positional",
+          "native": "unclear"
+        },
+        {
+          "id": "0dc9a0af698ebf750c12",
+          "reference": {
+            "tactical": true,
+            "positional": true
+          },
+          "fixed": "positional",
+          "native": "mixed"
+        },
+        {
+          "id": "002c996c0db9f61d5b55",
+          "reference": {
+            "tactical": true,
+            "positional": null
+          },
+          "fixed": "tactical",
+          "native": "unclear"
+        }
+      ]
+    },
+    "move": {
+      "available": {
+        "original": 72,
+        "native": 72,
+        "fixed": 72
+      },
+      "measurements": {
+        "original": {
+          "tactical": {
+            "tp": 6,
+            "fp": 0,
+            "fn": 13,
+            "tn": 4,
+            "unknownReference": 49,
+            "precision": {
+              "value": 1.0,
+              "numerator": 6,
+              "denominator": 6,
+              "interval95": [
+                0.6096657120978346,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.3157894736842105,
+              "numerator": 6,
+              "denominator": 19,
+              "interval95": [
+                0.1536437908779228,
+                0.5398959232467253
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 4,
+              "denominator": 4,
+              "interval95": [
+                0.5101091635454027,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.43478260869565216,
+              "numerator": 10,
+              "denominator": 23,
+              "interval95": [
+                0.25634635325674215,
+                0.6318862491498354
+              ]
+            },
+            "eventBootstrap": {
+              "recall95": [
+                0.0625,
+                0.5454545454545454
+              ],
+              "precision95": [
+                1.0,
+                1.0
+              ],
+              "recallDraws": 2000,
+              "precisionDraws": 1974
+            }
+          },
+          "positional": null,
+          "mixed": null
+        },
+        "native": {
+          "tactical": {
+            "tp": 9,
+            "fp": 0,
+            "fn": 10,
+            "tn": 4,
+            "unknownReference": 49,
+            "precision": {
+              "value": 1.0,
+              "numerator": 9,
+              "denominator": 9,
+              "interval95": [
+                0.7008549515804559,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.47368421052631576,
+              "numerator": 9,
+              "denominator": 19,
+              "interval95": [
+                0.2732980516117956,
+                0.6829219075488682
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 4,
+              "denominator": 4,
+              "interval95": [
+                0.5101091635454027,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.5652173913043478,
+              "numerator": 13,
+              "denominator": 23,
+              "interval95": [
+                0.3681137508501646,
+                0.743653646743258
+              ]
+            },
+            "eventBootstrap": {
+              "recall95": [
+                0.2727272727272727,
+                0.6363636363636364
+              ],
+              "precision95": [
+                1.0,
+                1.0
+              ],
+              "recallDraws": 2000,
+              "precisionDraws": 2000
+            }
+          },
+          "positional": {
+            "tp": 6,
+            "fp": 0,
+            "fn": 48,
+            "tn": 3,
+            "unknownReference": 15,
+            "precision": {
+              "value": 1.0,
+              "numerator": 6,
+              "denominator": 6,
+              "interval95": [
+                0.6096657120978346,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.1111111111111111,
+              "numerator": 6,
+              "denominator": 54,
+              "interval95": [
+                0.051930224969995484,
+                0.2219470102118128
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 3,
+              "denominator": 3,
+              "interval95": [
+                0.4385029682449546,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.15789473684210525,
+              "numerator": 9,
+              "denominator": 57,
+              "interval95": [
+                0.0853579597035527,
+                0.2736317694063802
+              ]
+            },
+            "eventBootstrap": {
+              "recall95": [
+                0.0196078431372549,
+                0.22033898305084745
+              ],
+              "precision95": [
+                1.0,
+                1.0
+              ],
+              "recallDraws": 2000,
+              "precisionDraws": 1978
+            }
+          },
+          "mixed": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 5,
+            "tn": 7,
+            "unknownReference": 58,
+            "precision": {
+              "value": 1.0,
+              "numerator": 2,
+              "denominator": 2,
+              "interval95": [
+                0.34238022750665303,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.2857142857142857,
+              "numerator": 2,
+              "denominator": 7,
+              "interval95": [
+                0.08221892400405678,
+                0.6410655481673808
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 7,
+              "denominator": 7,
+              "interval95": [
+                0.6456695649333126,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.6428571428571429,
+              "numerator": 9,
+              "denominator": 14,
+              "interval95": [
+                0.38764423103907397,
+                0.8365526824644587
+              ]
+            },
+            "eventBootstrap": {
+              "recall95": [
+                0.0,
+                0.75
+              ],
+              "precision95": [
+                1.0,
+                1.0
+              ],
+              "recallDraws": 2000,
+              "precisionDraws": 1755
+            }
+          }
+        },
+        "fixed": {
+          "tactical": {
+            "tp": 8,
+            "fp": 0,
+            "fn": 11,
+            "tn": 4,
+            "unknownReference": 49,
+            "precision": {
+              "value": 1.0,
+              "numerator": 8,
+              "denominator": 8,
+              "interval95": [
+                0.6755924351161198,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.42105263157894735,
+              "numerator": 8,
+              "denominator": 19,
+              "interval95": [
+                0.23141891282454238,
+                0.6372409646574496
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 4,
+              "denominator": 4,
+              "interval95": [
+                0.5101091635454027,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.5217391304347826,
+              "numerator": 12,
+              "denominator": 23,
+              "interval95": [
+                0.32962737336427406,
+                0.7076284258335335
+              ]
+            },
+            "eventBootstrap": {
+              "recall95": [
+                0.21052631578947367,
+                0.6111111111111112
+              ],
+              "precision95": [
+                1.0,
+                1.0
+              ],
+              "recallDraws": 2000,
+              "precisionDraws": 1998
+            }
+          },
+          "positional": {
+            "tp": 8,
+            "fp": 0,
+            "fn": 46,
+            "tn": 3,
+            "unknownReference": 15,
+            "precision": {
+              "value": 1.0,
+              "numerator": 8,
+              "denominator": 8,
+              "interval95": [
+                0.6755924351161198,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.14814814814814814,
+              "numerator": 8,
+              "denominator": 54,
+              "interval95": [
+                0.07703063137605341,
+                0.26600115283605885
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 3,
+              "denominator": 3,
+              "interval95": [
+                0.4385029682449546,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.19298245614035087,
+              "numerator": 11,
+              "denominator": 57,
+              "interval95": [
+                0.11132746980050533,
+                0.3134069024776395
+              ]
+            },
+            "eventBootstrap": {
+              "recall95": [
+                0.03636363636363636,
+                0.2982456140350877
+              ],
+              "precision95": [
+                1.0,
+                1.0
+              ],
+              "recallDraws": 2000,
+              "precisionDraws": 1993
+            }
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 7,
+            "tn": 7,
+            "unknownReference": 58,
+            "precision": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "recall": {
+              "value": 0.0,
+              "numerator": 0,
+              "denominator": 7,
+              "interval95": [
+                5.551115123125783e-17,
+                0.35433043506668743
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 7,
+              "denominator": 7,
+              "interval95": [
+                0.6456695649333126,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.5,
+              "numerator": 7,
+              "denominator": 14,
+              "interval95": [
+                0.26799202452413634,
+                0.7320079754758637
+              ]
+            },
+            "eventBootstrap": {
+              "recall95": [
+                0.0,
+                0.0
+              ],
+              "precision95": null,
+              "recallDraws": 2000,
+              "precisionDraws": 0
+            }
+          }
+        }
+      },
+      "changed": [
+        {
+          "id": "0184c9f0beec78b03a65",
+          "reference": {
+            "tactical": null,
+            "positional": true
+          },
+          "fixed": "positional",
+          "native": "unclear"
+        },
+        {
+          "id": "01e91a721ff039a86c7c",
+          "reference": {
+            "tactical": null,
+            "positional": true
+          },
+          "fixed": "unclear",
+          "native": "tactical"
+        },
+        {
+          "id": "0010093bac6adb755f95",
+          "reference": {
+            "tactical": null,
+            "positional": true
+          },
+          "fixed": "positional",
+          "native": "unclear"
+        },
+        {
+          "id": "001a6009922115f686d6",
+          "reference": {
+            "tactical": null,
+            "positional": true
+          },
+          "fixed": "positional",
+          "native": "unclear"
+        },
+        {
+          "id": "00348c948d65bebf83b7",
+          "reference": {
+            "tactical": null,
+            "positional": true
+          },
+          "fixed": "unclear",
+          "native": "tactical"
+        },
+        {
+          "id": "00aa62121c2fecb25a1d",
+          "reference": {
+            "tactical": true,
+            "positional": true
+          },
+          "fixed": "positional",
+          "native": "mixed"
+        },
+        {
+          "id": "0007cc2e0b47a78a9190",
+          "reference": {
+            "tactical": false,
+            "positional": true
+          },
+          "fixed": "unclear",
+          "native": "positional"
+        },
+        {
+          "id": "0dc9a0af698ebf750c12",
+          "reference": {
+            "tactical": true,
+            "positional": true
+          },
+          "fixed": "positional",
+          "native": "mixed"
+        },
+        {
+          "id": "002c996c0db9f61d5b55",
+          "reference": {
+            "tactical": true,
+            "positional": null
+          },
+          "fixed": "mixed",
+          "native": "positional"
+        }
+      ],
+      "reviewedRootMotifs": {
+        "fork": {
+          "original": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "tn": 3,
+            "unknownReference": 69,
+            "precision": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "recall": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 3,
+              "denominator": 3,
+              "interval95": [
+                0.4385029682449546,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 1.0,
+              "numerator": 3,
+              "denominator": 3,
+              "interval95": [
+                0.4385029682449546,
+                1.0
+              ]
+            }
+          },
+          "native": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "tn": 3,
+            "unknownReference": 69,
+            "precision": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "recall": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 3,
+              "denominator": 3,
+              "interval95": [
+                0.4385029682449546,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 1.0,
+              "numerator": 3,
+              "denominator": 3,
+              "interval95": [
+                0.4385029682449546,
+                1.0
+              ]
+            }
+          },
+          "fixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "tn": 3,
+            "unknownReference": 69,
+            "precision": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "recall": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 3,
+              "denominator": 3,
+              "interval95": [
+                0.4385029682449546,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 1.0,
+              "numerator": 3,
+              "denominator": 3,
+              "interval95": [
+                0.4385029682449546,
+                1.0
+              ]
+            }
+          }
+        },
+        "hangingPiece": {
+          "original": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 0,
+            "tn": 1,
+            "unknownReference": 69,
+            "precision": {
+              "value": 1.0,
+              "numerator": 2,
+              "denominator": 2,
+              "interval95": [
+                0.34238022750665303,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 1.0,
+              "numerator": 2,
+              "denominator": 2,
+              "interval95": [
+                0.34238022750665303,
+                1.0
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 1,
+              "denominator": 1,
+              "interval95": [
+                0.20654931437723745,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 1.0,
+              "numerator": 3,
+              "denominator": 3,
+              "interval95": [
+                0.4385029682449546,
+                1.0
+              ]
+            }
+          },
+          "native": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 0,
+            "tn": 1,
+            "unknownReference": 69,
+            "precision": {
+              "value": 1.0,
+              "numerator": 2,
+              "denominator": 2,
+              "interval95": [
+                0.34238022750665303,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 1.0,
+              "numerator": 2,
+              "denominator": 2,
+              "interval95": [
+                0.34238022750665303,
+                1.0
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 1,
+              "denominator": 1,
+              "interval95": [
+                0.20654931437723745,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 1.0,
+              "numerator": 3,
+              "denominator": 3,
+              "interval95": [
+                0.4385029682449546,
+                1.0
+              ]
+            }
+          },
+          "fixed": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 0,
+            "tn": 1,
+            "unknownReference": 69,
+            "precision": {
+              "value": 1.0,
+              "numerator": 2,
+              "denominator": 2,
+              "interval95": [
+                0.34238022750665303,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 1.0,
+              "numerator": 2,
+              "denominator": 2,
+              "interval95": [
+                0.34238022750665303,
+                1.0
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 1,
+              "denominator": 1,
+              "interval95": [
+                0.20654931437723745,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 1.0,
+              "numerator": 3,
+              "denominator": 3,
+              "interval95": [
+                0.4385029682449546,
+                1.0
+              ]
+            }
+          }
+        },
+        "matingThreat": {
+          "original": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 1,
+            "tn": 0,
+            "unknownReference": 71,
+            "precision": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "recall": {
+              "value": 0.0,
+              "numerator": 0,
+              "denominator": 1,
+              "interval95": [
+                0.0,
+                0.7934506856227626
+              ]
+            },
+            "specificity": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "agreement": {
+              "value": 0.0,
+              "numerator": 0,
+              "denominator": 1,
+              "interval95": [
+                0.0,
+                0.7934506856227626
+              ]
+            }
+          },
+          "native": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 1,
+            "tn": 0,
+            "unknownReference": 71,
+            "precision": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "recall": {
+              "value": 0.0,
+              "numerator": 0,
+              "denominator": 1,
+              "interval95": [
+                0.0,
+                0.7934506856227626
+              ]
+            },
+            "specificity": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "agreement": {
+              "value": 0.0,
+              "numerator": 0,
+              "denominator": 1,
+              "interval95": [
+                0.0,
+                0.7934506856227626
+              ]
+            }
+          },
+          "fixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 1,
+            "tn": 0,
+            "unknownReference": 71,
+            "precision": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "recall": {
+              "value": 0.0,
+              "numerator": 0,
+              "denominator": 1,
+              "interval95": [
+                0.0,
+                0.7934506856227626
+              ]
+            },
+            "specificity": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "agreement": {
+              "value": 0.0,
+              "numerator": 0,
+              "denominator": 1,
+              "interval95": [
+                0.0,
+                0.7934506856227626
+              ]
+            }
+          }
+        }
+      }
+    },
+    "mistake": {
+      "available": {
+        "original": 72,
+        "native": 18,
+        "fixed": 19
+      },
+      "measurements": {
+        "original": {
+          "tactical": {
+            "tp": 1,
+            "fp": 1,
+            "fn": 2,
+            "tn": 51,
+            "unknownReference": 17,
+            "precision": {
+              "value": 0.5,
+              "numerator": 1,
+              "denominator": 2,
+              "interval95": [
+                0.09453120573423074,
+                0.9054687942657693
+              ]
+            },
+            "recall": {
+              "value": 0.3333333333333333,
+              "numerator": 1,
+              "denominator": 3,
+              "interval95": [
+                0.06149194472039621,
+                0.7923403991979522
+              ]
+            },
+            "specificity": {
+              "value": 0.9807692307692307,
+              "numerator": 51,
+              "denominator": 52,
+              "interval95": [
+                0.8987948887210774,
+                0.9965971919290547
+              ]
+            },
+            "agreement": {
+              "value": 0.9454545454545454,
+              "numerator": 52,
+              "denominator": 55,
+              "interval95": [
+                0.8514693945594621,
+                0.9812767844453155
+              ]
+            },
+            "eventBootstrap": {
+              "recall95": [
+                0.0,
+                1.0
+              ],
+              "precision95": [
+                0.0,
+                1.0
+              ],
+              "recallDraws": 1937,
+              "precisionDraws": 1768
+            }
+          },
+          "positional": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 9,
+            "tn": 52,
+            "unknownReference": 10,
+            "precision": {
+              "value": 1.0,
+              "numerator": 1,
+              "denominator": 1,
+              "interval95": [
+                0.20654931437723745,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.1,
+              "numerator": 1,
+              "denominator": 10,
+              "interval95": [
+                0.017876213095072896,
+                0.4041500267952385
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 52,
+              "denominator": 52,
+              "interval95": [
+                0.9312077638761376,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.8548387096774194,
+              "numerator": 53,
+              "denominator": 62,
+              "interval95": [
+                0.7465660628844542,
+                0.9217058859468299
+              ]
+            },
+            "eventBootstrap": {
+              "recall95": [
+                0.0,
+                0.3333333333333333
+              ],
+              "precision95": [
+                1.0,
+                1.0
+              ],
+              "recallDraws": 2000,
+              "precisionDraws": 1256
+            }
+          },
+          "mixed": null
+        },
+        "native": {
+          "tactical": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 1,
+            "tn": 52,
+            "unknownReference": 17,
+            "precision": {
+              "value": 1.0,
+              "numerator": 2,
+              "denominator": 2,
+              "interval95": [
+                0.34238022750665303,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.6666666666666666,
+              "numerator": 2,
+              "denominator": 3,
+              "interval95": [
+                0.2076596008020477,
+                0.9385080552796037
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 52,
+              "denominator": 52,
+              "interval95": [
+                0.9312077638761376,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.9818181818181818,
+              "numerator": 54,
+              "denominator": 55,
+              "interval95": [
+                0.903942239378376,
+                0.9967832195451589
+              ]
+            },
+            "eventBootstrap": {
+              "recall95": [
+                0.0,
+                1.0
+              ],
+              "precision95": [
+                1.0,
+                1.0
+              ],
+              "recallDraws": 1937,
+              "precisionDraws": 1765
+            }
+          },
+          "positional": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 8,
+            "tn": 52,
+            "unknownReference": 10,
+            "precision": {
+              "value": 1.0,
+              "numerator": 2,
+              "denominator": 2,
+              "interval95": [
+                0.34238022750665303,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.2,
+              "numerator": 2,
+              "denominator": 10,
+              "interval95": [
+                0.05668215145437519,
+                0.5098375284633583
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 52,
+              "denominator": 52,
+              "interval95": [
+                0.9312077638761376,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.8709677419354839,
+              "numerator": 54,
+              "denominator": 62,
+              "interval95": [
+                0.7655067270982637,
+                0.9331412194071697
+              ]
+            },
+            "eventBootstrap": {
+              "recall95": [
+                0.0,
+                0.4
+              ],
+              "precision95": [
+                1.0,
+                1.0
+              ],
+              "recallDraws": 2000,
+              "precisionDraws": 1767
+            }
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "tn": 52,
+            "unknownReference": 20,
+            "precision": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "recall": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 52,
+              "denominator": 52,
+              "interval95": [
+                0.9312077638761376,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 1.0,
+              "numerator": 52,
+              "denominator": 52,
+              "interval95": [
+                0.9312077638761376,
+                1.0
+              ]
+            },
+            "eventBootstrap": {
+              "recall95": null,
+              "precision95": null,
+              "recallDraws": 0,
+              "precisionDraws": 0
+            }
+          }
+        },
+        "fixed": {
+          "tactical": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 2,
+            "tn": 52,
+            "unknownReference": 17,
+            "precision": {
+              "value": 1.0,
+              "numerator": 1,
+              "denominator": 1,
+              "interval95": [
+                0.20654931437723745,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.3333333333333333,
+              "numerator": 1,
+              "denominator": 3,
+              "interval95": [
+                0.06149194472039621,
+                0.7923403991979522
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 52,
+              "denominator": 52,
+              "interval95": [
+                0.9312077638761376,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.9636363636363636,
+              "numerator": 53,
+              "denominator": 55,
+              "interval95": [
+                0.8767653602534898,
+                0.9899704587106665
+              ]
+            },
+            "eventBootstrap": {
+              "recall95": [
+                0.0,
+                1.0
+              ],
+              "precision95": [
+                1.0,
+                1.0
+              ],
+              "recallDraws": 1937,
+              "precisionDraws": 1290
+            }
+          },
+          "positional": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 8,
+            "tn": 52,
+            "unknownReference": 10,
+            "precision": {
+              "value": 1.0,
+              "numerator": 2,
+              "denominator": 2,
+              "interval95": [
+                0.34238022750665303,
+                1.0
+              ]
+            },
+            "recall": {
+              "value": 0.2,
+              "numerator": 2,
+              "denominator": 10,
+              "interval95": [
+                0.05668215145437519,
+                0.5098375284633583
+              ]
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 52,
+              "denominator": 52,
+              "interval95": [
+                0.9312077638761376,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 0.8709677419354839,
+              "numerator": 54,
+              "denominator": 62,
+              "interval95": [
+                0.7655067270982637,
+                0.9331412194071697
+              ]
+            },
+            "eventBootstrap": {
+              "recall95": [
+                0.0,
+                0.4
+              ],
+              "precision95": [
+                1.0,
+                1.0
+              ],
+              "recallDraws": 2000,
+              "precisionDraws": 1767
+            }
+          },
+          "mixed": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "tn": 52,
+            "unknownReference": 20,
+            "precision": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "recall": {
+              "value": null,
+              "numerator": 0,
+              "denominator": 0,
+              "interval95": null
+            },
+            "specificity": {
+              "value": 1.0,
+              "numerator": 52,
+              "denominator": 52,
+              "interval95": [
+                0.9312077638761376,
+                1.0
+              ]
+            },
+            "agreement": {
+              "value": 1.0,
+              "numerator": 52,
+              "denominator": 52,
+              "interval95": [
+                0.9312077638761376,
+                1.0
+              ]
+            },
+            "eventBootstrap": {
+              "recall95": null,
+              "precision95": null,
+              "recallDraws": 0,
+              "precisionDraws": 0
+            }
+          }
+        }
+      },
+      "changed": [
+        {
+          "id": "00348c948d65bebf83b7",
+          "reference": {
+            "tactical": false,
+            "positional": false
+          },
+          "fixed": "unavailable",
+          "native": "unclear"
+        },
+        {
+          "id": "012d731cddbf78b59cfa",
+          "reference": {
+            "tactical": null,
+            "positional": true
+          },
+          "fixed": "positional",
+          "native": "mixed"
+        },
+        {
+          "id": "0014767858eddaf0073f",
+          "reference": {
+            "tactical": null,
+            "positional": null
+          },
+          "fixed": "unclear",
+          "native": "unavailable"
+        },
+        {
+          "id": "0100cc5fad1b58af22bc",
+          "reference": {
+            "tactical": null,
+            "positional": null
+          },
+          "fixed": "unclear",
+          "native": "unavailable"
+        },
+        {
+          "id": "011ee7b47d52c0273595",
+          "reference": {
+            "tactical": true,
+            "positional": null
+          },
+          "fixed": "unclear",
+          "native": "tactical"
+        }
+      ]
+    }
+  }
+}

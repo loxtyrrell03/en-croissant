@@ -73,6 +73,43 @@ limits precision estimates.
 [Archived and course scores](../benchmarks/decision-evidence/current-classifier-audit/results-v64.json)
 · [72-game transfer scores](../benchmarks/decision-evidence/current-classifier-audit/classical-results-v64.json)
 
+## Live Windows workflow
+
+The isolated Windows build at `8de75033` ran **Analyse last move**
+on all 72 reviewed public classical games. The original scanner
+received the captured Stockfish lines from those same runs. The
+fixed-budget column shows the current worker on the earlier common
+frames. The live benchmark includes the app's adaptive search and
+the extra verification it requests for specific positions.
+
+| Reviewed question | Original | Fixed-budget worker | Live app |
+| --- | ---: | ---: | ---: |
+| Tactical position | 6/29 | 9/29 | 11/29 |
+| Positional position | — | 14/59 | 11/59 |
+| Mixed position | — | 0/17 | 3/17 |
+| Tactical exact move | 6/19 | 8/19 | 9/19 |
+| Positional exact move | — | 8/54 | 6/54 |
+| Mixed exact move | — | 0/7 | 2/7 |
+| Tactical actual mistake | 1/3 | 1/3 | 2/3 |
+| Positional actual mistake | 1/10 | 2/10 | 2/10 |
+
+These are positive-reference counts. The live app made zero false
+tactical calls among the one known negative for position, four for
+exact move and 52 for actual mistake. The original made one false
+tactical mistake call. The live results evaluate axis agreement.
+In Kardzhali, the pawn blockade matches the strategic reference,
+and the report emphasizes a different legal tactical consequence
+than the reviewer did.
+
+The median elapsed time from the analysis action to the report was
+11.21 seconds, and the longest was 26.10 seconds. The search recovered
+a World Amateur endgame at the deeper root budget after correctly
+rejecting two lines that allowed a repetition claim. The final run
+reports on all 72 boards. The exact candidate, move history and
+game board are bound together in the audit.
+[Live scores and uncertainty](../benchmarks/decision-evidence/native-desktop/classical-live-v66.json) ·
+[Run instructions](../benchmarks/decision-evidence/native-desktop/README.md)
+
 ## Verified scope and remaining issues
 
 The v65 follow-up explains an actual castling delay when a

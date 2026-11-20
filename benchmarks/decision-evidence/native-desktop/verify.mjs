@@ -155,6 +155,17 @@ async function expandPosition(page) {
 }
 
 const wanted = new Set(selected);
+const castlingAliases = {
+  e1g1: ["e1h1", "K"], e1c1: ["e1a1", "Q"],
+  e8g8: ["e8h8", "k"], e8c8: ["e8a8", "q"],
+};
+
+function sameRecordedMove(item, received) {
+  if (item.playedMoveUci === received) return true;
+  const alias = castlingAliases[item.playedMoveUci];
+  return !!alias && alias[0] === received && item.fen.split(" ")[2].includes(alias[1]);
+}
+
 async function scenario(name, check) {
   if (!wanted.size || wanted.has(name)) await run(name, check);
 }
@@ -474,7 +485,7 @@ if (audit) {
       }, time);
       assert(Number.isInteger(captured.report.version));
       assert.equal(captured.report.fen, item.fen);
-      assert.equal(captured.input.playedMoveUci, item.playedMoveUci);
+      assert(sameRecordedMove(item, captured.input.playedMoveUci), "Recorded move differs from the frozen game");
       return { id: item.id, ...captured };
     });
   }

@@ -162,6 +162,9 @@ wall time. Review notes remain separate from the software inputs.
 Use `classical-replay.py` to prepare matching inputs for the
 [original scanner replay](../cross-scope-audit/README.md), then use
 its `--score` option with the original and fixed-budget receipts.
+The original scorer and audit use the same legal castling move
+when the app and PGN encode it with different UCI destinations.
+[Full 72-game scorecard](classical-live-v66.json)
 
 ### Recovering a rejected search frame
 
@@ -179,3 +182,4 @@ available during retries, within the existing full-session limit.
 The regression includes the exact three captured frames and checks
 the retry sequence. Use `Repetition Search Recovery` to verify the
 application path with live Stockfish.
+[Windows recovery receipt](repetition-retry-windows.json)
