@@ -1,11 +1,58 @@
-import { makeSquare } from "chessops/util";
+import { makeSquare, opposite } from "chessops/util";
 import {
     MIN_TACTICAL_CAPTURE_GAIN,
     replayTacticalLine,
     tacticalCaptureGain,
     tacticalExchangeGain,
+    type TacticalReplayStep,
 } from "./causalTactics";
 import { measureDecisionLine, type DecisionEngineLine } from "./decisionEvidence";
+
+function takesLoosePawn(step: TacticalReplayStep) {
+    const { before, after, move } = step;
+    return step.capture === 100 && before.board.get(move.to)?.role === "pawn" &&
+        !move.promotion && !before.isCheck() && !after.isCheck() &&
+        before.kingAttackers(move.to, opposite(before.turn), before.board.occupied).isEmpty();
+}
+
+/** The loose pawn is still there after a quiet, similarly strong
+ * alternative. This qualifies the immediate pawn-capture certificate,
+ * without drawing conclusions about other tactical mechanisms. */
+export function findDeferredPawnCapture(
+    fen: string,
+    line: DecisionEngineLine,
+    candidates: DecisionEngineLine[],
+) {
+    const [capture] = replayTacticalLine(fen, line.pvUci.slice(0, 1));
+    if (!capture || !takesLoosePawn(capture) || line.cp === null || line.cp < 300 || line.mate != null)
+        return;
+    const { from, to } = capture.move;
+    const score = line.cp;
+    for (const alternative of candidates) {
+        if (alternative.pvUci[0] === capture.uci || alternative.depth !== line.depth ||
+            alternative.mate != null || alternative.cp === null || alternative.cp < 300 ||
+            Math.abs(score - alternative.cp) > 150) continue;
+        const bounded = { ...alternative, pvUci: alternative.pvUci.slice(0, 10) };
+        const measured = measureDecisionLine(fen, bounded);
+        if (!measured || measured.drawnEnding) continue;
+        const steps = replayTacticalLine(fen, bounded.pvUci);
+        const first = steps[0];
+        if (!first || first.capture || first.move.promotion || first.after.isCheck()) continue;
+        for (const [index, step] of steps.entries()) {
+            if (step.before.turn === capture.before.turn && step.move.from === from &&
+                step.move.to === to && takesLoosePawn(step)) {
+                return {
+                    description: `The pawn on ${makeSquare(to)} can also be taken later. With ${first.san}, the engine keeps a large advantage and still plays ${step.san} in the shown line.`,
+                    linesUci: [[capture.uci], bounded.pvUci.slice(0, index + 1)] as [string[], string[]],
+                };
+            }
+            // The original capturer and original pawn must stay on their
+            // squares. A later piece on either square cannot replace them.
+            if (step.move.from === from || step.move.from === to || step.move.to === from ||
+                step.move.to === to || !step.after.board.get(from) || !step.after.board.get(to)) break;
+        }
+    }
+}
 
 /** An immediate capture can be the critical tactical decision even when it
  * contains no named combination. Require a credible competing root line in

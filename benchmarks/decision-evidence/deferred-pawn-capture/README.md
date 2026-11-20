@@ -31,3 +31,42 @@ the evaluation of the exact capture from the position and actual
 mistake. Include the previously reviewed genuine pawn tactics as
 safety controls. The transfer cases do not include their games or
 other boards already seen in the related development cohorts.
+
+## Results
+
+The independent search supports seven exact deferred captures in six
+games. The remaining cases are unresolved for this specific question.
+Two of the seven appeared in the same app-budget continuation. Both
+previously supplied a tactical label based only on the loose pawn.
+The stricter comparison removes those two certificates. In the Turkish
+league, `h3 Nd5 Qxa3` still takes the pawn on a3. In Davoine, a knight
+manoeuvre after `Nh3` leaves the bishop free to take h4. The deeper
+search sees a different knight manoeuvre before the same capture.
+[Turkish league game](https://lichess.org/broadcast/2026-turkiye-satranc-ligi-turkish-league-super-lig/round-12/A84qp8J6/F0CDb4yY) ·
+[Davoine game](https://lichess.org/broadcast/40e-open-international-davoine/round-3/kqVNSbC7/9QWJoM59)
+
+The score-only comparison would remove four certificates. Three have
+the same independently observed deferral and one remains unresolved.
+The exact-move screen requires the capture to recur in its alternative
+line. The enriched transfer measures agreement on that specific
+observation.
+
+In 1,367 matched replays, four candidate reports and their position
+summaries change. Two are in the fresh sample. In the earlier data,
+`Kxg4` becomes positional and `Nxc5`, whose tactical reference was
+unresolved, becomes unclear. No reviewed tactical positive or actual
+mistake changes. The 1,051 archive and 124 course, puzzle and private
+classical requests have identical reports apart from the version.
+The worker median is about 76 ms in both matched runs. The comparison
+reuses existing legal lines and requests zero extra engine searches.
+At the lightest search tier, the original Candidates
+example may lack the exact deferral. The rule then abstains from
+requalifying the capture.
+[Matched replay and exact lines](results.json)
+
+Run `classical-frames.py` from the broad audit with `transfer.json`
+at the app and reference budgets. Use `readback.py REFERENCE_FRAMES OUTPUT`
+to inspect the legal lines, then replay the same app frames on both
+workers with the broad audit's `replay.config.mjs`. Prefix the input
+IDs by cohort when combining sets. Run `score.py` with the matching
+replay outputs and the frozen [reference](reference.json).

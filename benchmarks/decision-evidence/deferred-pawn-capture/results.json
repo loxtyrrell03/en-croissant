@@ -1,0 +1,354 @@
+{
+  "inputs": {
+    "matched-input.json": "d42b362e50437fcad4f3e98b163aeabc9af900f4f1039796c82a2c1667cea4c4",
+    "matched-before.json": "427adf369f9b210ef93401cd052ab3af9a33cb9cb7ffb7f154d58238b3192eb7",
+    "matched-candidate.json": "d2b4d1bcd426c186e16d60a5c20a4d00cf1f4475284d34a6cd3337b84638f050",
+    "transfer-reference.json": "73cf5e8547fb70f57e8df91c2bf36c0c04b8faa6dad89ec0167d192fbf195a08"
+  },
+  "referenceSha256": "b40efd058edcf438bf070bd868dd71398d16a120b126e74b76cd13f76ced3a69",
+  "counts": {
+    "archive": 1051,
+    "early": 124,
+    "classical": 72,
+    "annotated": 56,
+    "transfer": 64
+  },
+  "compared": 1367,
+  "reportsChanged": 4,
+  "referenceDecisions": 7,
+  "workerMedianMilliseconds": {
+    "v65": 76.19,
+    "v66": 75.72
+  },
+  "additionalEngineQueries": 0,
+  "scoreOnly": [
+    {
+      "id": "transfer#000d21c510642521",
+      "move": "g2d5",
+      "san": "Bxd5",
+      "corroborated": true,
+      "alternatives": [
+        {
+          "root": "f1f2",
+          "scoreCp": 728,
+          "pattern": "pawn moves",
+          "san": [
+            "Rf2",
+            "Bxd3",
+            "Qxd3",
+            "Rxf6",
+            "exf6",
+            "Rd8",
+            "Qd4",
+            "h5",
+            "Qxb4",
+            "d4"
+          ],
+          "uci": [
+            "f1f2",
+            "b5d3",
+            "d4d3",
+            "e6f6",
+            "e5f6",
+            "b8d8",
+            "d3d4",
+            "h7h5",
+            "d4b4",
+            "d5d4"
+          ]
+        },
+        {
+          "root": "f1f3",
+          "scoreCp": 724,
+          "pattern": "unresolved",
+          "san": [
+            "Rf3",
+            "Reb6",
+            "Rf2",
+            "Bxd3",
+            "Qxd3",
+            "Rxf6",
+            "exf6",
+            "Rd8",
+            "Qd4",
+            "h5"
+          ],
+          "uci": [
+            "f1f3",
+            "e6b6",
+            "f3f2",
+            "b5d3",
+            "d4d3",
+            "b6f6",
+            "e5f6",
+            "b8d8",
+            "d3d4",
+            "h7h5"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "transfer#006b761cd4d6f848",
+      "move": "d8h4",
+      "san": "Bxh4",
+      "corroborated": true,
+      "alternatives": [
+        {
+          "root": "f2h3",
+          "scoreCp": 551,
+          "pattern": "deferred",
+          "san": [
+            "Nh3",
+            "Bc6",
+            "Nf4",
+            "d5",
+            "Bxh4"
+          ],
+          "uci": [
+            "f2h3",
+            "d5c6",
+            "h3f4",
+            "d6d5",
+            "d8h4"
+          ]
+        },
+        {
+          "root": "g1h2",
+          "scoreCp": 549,
+          "pattern": "deferred",
+          "san": [
+            "Kh2",
+            "Ke6",
+            "Bxh4"
+          ],
+          "uci": [
+            "g1h2",
+            "f7e6",
+            "d8h4"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "transfer#00fdf80b1db70bd6",
+      "move": "b4a3",
+      "san": "Qxa3",
+      "corroborated": true,
+      "alternatives": [
+        {
+          "root": "h2h3",
+          "scoreCp": 505,
+          "pattern": "deferred",
+          "san": [
+            "h3",
+            "Nd5",
+            "Qxa3"
+          ],
+          "uci": [
+            "h2h3",
+            "f6d5",
+            "b4a3"
+          ]
+        },
+        {
+          "root": "h2h4",
+          "scoreCp": 426,
+          "pattern": "deferred",
+          "san": [
+            "h4",
+            "g5",
+            "hxg5",
+            "hxg5",
+            "Qxa3"
+          ],
+          "uci": [
+            "h2h4",
+            "g7g5",
+            "h4g5",
+            "h6g5",
+            "b4a3"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "transfer#0102d5c77cb30021",
+      "move": "a1a6",
+      "san": "Rxa6",
+      "corroborated": false,
+      "alternatives": [
+        {
+          "root": "d4d5",
+          "scoreCp": 392,
+          "pattern": "collector moves",
+          "san": [
+            "d5",
+            "Qb7",
+            "Rd1"
+          ],
+          "uci": [
+            "d4d5",
+            "e7b7",
+            "a1d1"
+          ]
+        },
+        {
+          "root": "h4h5",
+          "scoreCp": 214,
+          "pattern": "unresolved",
+          "san": [
+            "Rh5",
+            "f4",
+            "gxf4",
+            "Rg7+",
+            "Kf1",
+            "Rdg8",
+            "Rg5",
+            "Qf7",
+            "d5",
+            "Rxg5"
+          ],
+          "uci": [
+            "h4h5",
+            "f5f4",
+            "g3f4",
+            "f7g7",
+            "g2f1",
+            "d8g8",
+            "h5g5",
+            "e7f7",
+            "d4d5",
+            "g7g5"
+          ]
+        }
+      ]
+    }
+  ],
+  "changes": [
+    {
+      "id": "classical#00c734fe12af420d6699",
+      "site": null,
+      "moves": [
+        {
+          "move": "d3c5",
+          "v65": "tactical",
+          "v66": "unclear",
+          "witness": {
+            "description": "The pawn on c5 can also be taken later. With Qf2, the engine keeps a large advantage and still plays Nxc5 in the shown line.",
+            "linesUci": [
+              [
+                "d3c5"
+              ],
+              [
+                "h4f2",
+                "a8d8",
+                "e4e5",
+                "a6c8",
+                "h2h3",
+                "d8d7",
+                "d3c5"
+              ]
+            ]
+          },
+          "independentlyCorroborated": false
+        }
+      ],
+      "position": {
+        "v65": "tactical",
+        "v66": "unclear"
+      }
+    },
+    {
+      "id": "annotated#0dde2de3c123a6750dad",
+      "site": "https://lichess.org/study/Y1yXP80U/Lc9GgIYd",
+      "moves": [
+        {
+          "move": "g3g4",
+          "v65": "mixed",
+          "v66": "positional",
+          "witness": {
+            "description": "The pawn on g4 can also be taken later. With Bb2, the engine keeps a large advantage and still plays Kxg4 in the shown line.",
+            "linesUci": [
+              [
+                "g3g4"
+              ],
+              [
+                "e5b2",
+                "e7d7",
+                "d3c4",
+                "a7c6",
+                "g3g4"
+              ]
+            ]
+          },
+          "independentlyCorroborated": false
+        }
+      ],
+      "position": {
+        "v65": "mixed",
+        "v66": "positional"
+      }
+    },
+    {
+      "id": "transfer#006b761cd4d6f848",
+      "site": "https://lichess.org/broadcast/40e-open-international-davoine/round-3/kqVNSbC7/9QWJoM59",
+      "moves": [
+        {
+          "move": "d8h4",
+          "v65": "tactical",
+          "v66": "unclear",
+          "witness": {
+            "description": "The pawn on h4 can also be taken later. With Nh3, the engine keeps a large advantage and still plays Bxh4 in the shown line.",
+            "linesUci": [
+              [
+                "d8h4"
+              ],
+              [
+                "f2h3",
+                "d5c6",
+                "h3f4",
+                "d6d5",
+                "d8h4"
+              ]
+            ]
+          },
+          "independentlyCorroborated": true
+        }
+      ],
+      "position": {
+        "v65": "mixed",
+        "v66": "positional"
+      }
+    },
+    {
+      "id": "transfer#00fdf80b1db70bd6",
+      "site": "https://lichess.org/broadcast/2026-turkiye-satranc-ligi-turkish-league-super-lig/round-12/A84qp8J6/F0CDb4yY",
+      "moves": [
+        {
+          "move": "b4a3",
+          "v65": "mixed",
+          "v66": "positional",
+          "witness": {
+            "description": "The pawn on a3 can also be taken later. With h3, the engine keeps a large advantage and still plays Qxa3 in the shown line.",
+            "linesUci": [
+              [
+                "b4a3"
+              ],
+              [
+                "h2h3",
+                "f6d5",
+                "b4a3"
+              ]
+            ]
+          },
+          "independentlyCorroborated": true
+        }
+      ],
+      "position": {
+        "v65": "tactical",
+        "v66": "unclear"
+      }
+    }
+  ]
+}

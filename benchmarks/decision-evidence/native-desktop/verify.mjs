@@ -379,4 +379,21 @@ if (wanted.has("Castle Before the Check")) {
   });
 }
 
+if (wanted.has("Pawn Capture Can Wait")) {
+  await run("Pawn Capture Can Wait", async page => {
+    await button(page, "End").click();
+    await openTactics(page);
+    await analyse(page, "Analyse position");
+    const section = page.getByText("What the move achieves", { exact: true }).locator("../..");
+    await section.getByRole("textbox", { name: "Candidate move" }).click();
+    await page.getByRole("option", { name: /^Qxa3(?: ·|$)/ }).click();
+    await section.getByRole("button", { name: "Show evidence", exact: true }).click({ timeout: 6000 });
+    const move = await section.innerText();
+    assert.match(move, /The pawn on a3 can also be taken later/);
+    assert.match(move, /After h3.*h3.*Qxa3/s);
+    assert.doesNotMatch(move, /Hanging Pawn/);
+    return { move };
+  });
+}
+
 if (Object.values(results.scenarios).some(result => !result.passed)) process.exitCode = 1;

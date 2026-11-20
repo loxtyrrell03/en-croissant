@@ -238,6 +238,9 @@ function EvidenceSummary({
               {san}
             </Text>
           ))}
+        {expanded && assessment.deferredPawnCapture && (
+          <Text size="xs">{assessment.deferredPawnCapture.description}</Text>
+        )}
         {expanded && mateDefence && (
           <Stack gap={4}>
             <Text size="xs" style={{ overflowWrap: "anywhere" }}>
@@ -321,6 +324,7 @@ function EvidenceSummary({
           !!matingLines ||
           !!quietThreat ||
           !!mateDefence ||
+          !!assessment.deferredPawnCapture ||
           !!comparedLines?.length ||
           assessment.limitations.length > 0 ||
           assessment.verifiedMotifs.length > 0) && (
@@ -526,6 +530,7 @@ function DecisionReport({
             ...(selected.settledExchangePlan?.linesUci ?? []),
             ...(selected.sharedPassedPawn?.linesUci ?? []),
             ...(selected.retainedPawnSupport?.linesUci ?? []),
+            ...(selected.deferredPawnCapture?.linesUci.slice(1) ?? []),
           ]
             .filter(
               (moves, index, lines) =>

@@ -131,4 +131,9 @@ castle = fixtures / "castling-interruption" / "fixtures.json"
 if castle.is_file():
     target = load("castling-interruption", "fixtures.json")["checked"]
     history_fixture("Castle Before the Check", target["history"], [target["playedMoveUci"]])
+deferred_capture = fixtures / "deferred-pawn-capture" / "transfer.json"
+if deferred_capture.is_file():
+    cases = load("deferred-pawn-capture", "transfer.json")
+    target = next(row for row in cases if row["id"] == "00fdf80b1db70bd6")
+    history_fixture("Pawn Capture Can Wait", target["history"])
 print("Isolated app settings and legal PGN fixtures prepared.")

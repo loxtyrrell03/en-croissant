@@ -43,7 +43,7 @@ import { corroborateMatingLines, type ConfirmedMatingLines } from "./decisionMat
 import { findImmediateMateDefence, type ImmediateMateDefence } from "./decisionMateDefence";
 import { findQuietMateThreat, type QuietMateThreat } from "./decisionQuietMateThreat";
 import { findQuietMateInTwoThreat } from "./decisionQuietMateInTwo";
-import { explainFleetingCapture } from "./decisionCaptureOpportunity";
+import { explainFleetingCapture, findDeferredPawnCapture } from "./decisionCaptureOpportunity";
 import { findConditionalFork, type ConditionalForkEvidence } from "./conditionalForkEvidence";
 import {
     findConditionalMate,
@@ -139,7 +139,7 @@ import { confirmCastleDisplacement, type CastlingDisplacementEvidence } from "./
 const QUIET_REPLY_SCOPE = "The resource applies to this reply. Other defences can change the continuation.";
 const CAPTURE_ORDER_SCOPE = "This capture order applies to the reply shown. Other defences can change the continuation.";
 
-export const DECISION_ASSESSMENT_VERSION = 65;
+export const DECISION_ASSESSMENT_VERSION = 66;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -157,6 +157,7 @@ export type DecisionAssessment = {
     conditionalResources: ConditionalTacticalResource[];
     quietReply?: QuietReplyEvidence;
     captureOrder?: CaptureOrderEvidence;
+    deferredPawnCapture?: NonNullable<ReturnType<typeof findDeferredPawnCapture>>;
     sharedPassedPawn?: PositionStrategicPlan;
     conditionalFork?: ConditionalForkEvidence;
     conditionalMate?: DecisionConditionalMate;
@@ -563,7 +564,7 @@ function assessMove(input: DecisionAssessmentInput, line: DecisionEngineLine): D
             };
         }
     }
-    const certificates =
+    let certificates =
         input.rootCertificates
             ?.find((item) => item.fen === input.fen && item.moveUci === line.pvUci[0])
             ?.motifs.filter(
@@ -572,6 +573,15 @@ function assessMove(input: DecisionAssessmentInput, line: DecisionEngineLine): D
                     motif.ply === 1 &&
                     isImmediateTacticalLesson(motif),
             ) ?? [];
+    const hangingPawn = (motif: TacticalMotifEvidence) =>
+        motif.id === "hangingPiece" && motif.label === "Hanging Pawn" && motif.value === 100;
+    if (certificates.some(hangingPawn)) {
+        const deferred = findDeferredPawnCapture(input.fen, line, input.candidates);
+        if (deferred) {
+            certificates = certificates.filter((motif) => !hangingPawn(motif));
+            result.deferredPawnCapture = deferred;
+        }
+    }
     if (certificates.length) {
         const refined = refineDecisionCertificates(input.fen, line.pvUci[0], certificates);
         result.verifiedMotifs = refined.motifs;

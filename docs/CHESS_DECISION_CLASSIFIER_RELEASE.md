@@ -83,6 +83,14 @@ mistake diagnosis. Collapsed mixed summaries show one reason
 from each supported dimension.
 [Castling-delay benchmark](../benchmarks/decision-evidence/castling-interruption/README.md)
 
+V66 qualifies an immediate loose-pawn certificate when a comparable
+quiet line still takes the same pawn with the same piece. In the
+64-game transfer, the deeper search verifies seven deferred captures.
+The ordinary captured frames reproduce two and both false tactical
+requirements disappear. The 1,367 matched requests retain all reviewed
+tactical positives. The change adds no Stockfish queries.
+[Deferred capture comparison](../benchmarks/decision-evidence/deferred-pawn-capture/README.md)
+
 - Live Stockfish in an isolated Windows build reproduced the
   Candidates discovered check and the European Club Cup fork,
   each with a separately explained pawn-chain effect. The browser
@@ -99,8 +107,9 @@ from each supported dimension.
 - Quiet threats, late effects and strategic purpose are still
   missed in ordinary games. The 72-game transfer contains
   no confirmed mixed mistake, so it cannot measure that recall.
-  Historical mixed mistake recall is 1 of 17. A routine capture
-  such as `Kxg4` can still be reported as tactical.
+  Historical mixed mistake recall is 1 of 17. The `Kxg4` example
+  is corrected on its reviewed frame. A short search can still
+  miss the line that shows the capture can wait.
   [Reviewed failure cases](../benchmarks/decision-evidence/annotation-transfer/README.md)
 - The v64 worker took 82 ms median to produce all three scopes
   on the 72 cached frames. Stockfish and rendering are separate.
