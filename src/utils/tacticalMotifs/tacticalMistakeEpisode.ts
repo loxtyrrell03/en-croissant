@@ -11,6 +11,7 @@ import {
 import { measureDecisionLine, type DecisionEngineLine } from "./decisionEvidence";
 import {
     extractTacticalSequenceWitnesses,
+    sameTacticalMechanism,
     type TacticalSequenceWitness,
 } from "./tacticalSequenceEvidence";
 
@@ -43,7 +44,12 @@ function explainDirectCapture(
     const square = capturedSquare(reply);
     const target = reply.before.board.get(square);
     const capture = `${reply.san} takes the ${target?.role ?? "pawn"} on ${makeSquare(square)}${square !== reply.move.to ? " en passant" : ""}.`;
-    if (!captureIsLegal) return `${capture} That capture is unavailable after ${better.san}.`;
+    if (!captureIsLegal) {
+        const attacker = reply.before.board.get(reply.move.from);
+        if (attacker && better.capture && capturedSquare(better) === reply.move.from)
+            return `${capture} ${better.san} removes the ${attacker.role} on ${makeSquare(reply.move.from)} that would make this capture.`;
+        return `${capture} That capture is unavailable after ${better.san}.`;
+    }
 
     const [alternative] = replayTacticalLine(makeFen(better.after.toSetup()), [reply.uci]);
     if (alternative) {
@@ -145,12 +151,7 @@ export function compareTacticalMistakeEpisode(
             witness.actor === opposite(played.before.turn) &&
             witness.mechanismPly <= 5 &&
             witness.payoffPly <= maxReplyPayoffPly &&
-            !antis.some(
-                (other) =>
-                    other.actor === witness.actor &&
-                    other.mechanism === witness.mechanism &&
-                    other.squares.some((square) => witness.squares.includes(square)),
-            ),
+            !antis.some((other) => sameTacticalMechanism(witness, other)),
     );
     const take = parseUci(reply.uci);
     let directCapture: string | undefined;
@@ -207,7 +208,8 @@ export function compareTacticalMistakeEpisode(
                     betterLineUci: beforeLine,
                     playedLineUci: afterLine,
                     mechanisms: confirmed,
-                    explanation: `${reply.san} takes the ${victim} on ${makeSquare(capturedSquare(reply))}. After ${betterSteps[0].san}, that piece is safe in the immediate exchange check.`,
+                    explanation: directCapture ??
+                        `${reply.san} takes the ${victim} on ${makeSquare(capturedSquare(reply))}. After ${betterSteps[0].san}, no immediate capture of that piece passes the exchange check.`,
                 };
         }
         if (good && settled(good) && (directCapture || confirmed.length)) {

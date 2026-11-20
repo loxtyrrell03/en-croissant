@@ -16,6 +16,7 @@ import {
     extractTacticalSequenceWitnesses,
     mergeTacticalSequenceWitnesses,
     measureTacticalEpisode,
+    sameTacticalMechanism,
     type TacticalEpisodeOutcome,
     type TacticalSequenceWitness,
 } from "./tacticalSequenceEvidence";
@@ -39,6 +40,7 @@ import type { TacticalGameHistory } from "./gameHistory";
 import { corroborateMatingLines, type ConfirmedMatingLines } from "./decisionMatingLines";
 import { findImmediateMateDefence, type ImmediateMateDefence } from "./decisionMateDefence";
 import { findQuietMateThreat, type QuietMateThreat } from "./decisionQuietMateThreat";
+import { explainFleetingCapture } from "./decisionCaptureOpportunity";
 import { findConditionalFork, type ConditionalForkEvidence } from "./conditionalForkEvidence";
 import {
     findConditionalMate,
@@ -81,7 +83,7 @@ import {
     nominatePreparedCheckpoint,
 } from "./decisionPreparedCheckpoint";
 
-export const DECISION_ASSESSMENT_VERSION = 36;
+export const DECISION_ASSESSMENT_VERSION = 37;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -457,6 +459,13 @@ function assessMove(input: DecisionAssessmentInput, line: DecisionEngineLine): D
                     reasons: [mate.explanation],
                 };
             }
+        }
+    }
+    if (corroborated && result.tactical.support !== "supported") {
+        const capture = explainFleetingCapture(input.fen, line, input.candidates, branches[0]);
+        if (capture) {
+            result.tactical = { support: "supported", basis: "engine-supported", reasons: [capture] };
+            result.limitations.push("The material gain and the escape are shown in the compared engine lines.");
         }
     }
     const certificates =
@@ -896,10 +905,6 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
             const comparisonInput = { ...input, candidates: comparison };
             const bestAssessment = assessMove(comparisonInput, comparedBest);
             const playedAssessment = assessMove(comparisonInput, playedLine);
-            const sameMechanism = (a: TacticalSequenceWitness, b: TacticalSequenceWitness) =>
-                a.mechanism === b.mechanism &&
-                a.actor === b.actor &&
-                a.squares.some((square) => b.squares.includes(square));
             const settled = (line: typeof bestMeasured) =>
                 !line.drawnEnding &&
                 line.quietEndingPlies >= 2 &&
@@ -919,7 +924,7 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                                       (uci, index) => comparedBest.pvUci[index] === uci,
                                   ) &&
                                   !playedAssessment.mechanisms.some((other) =>
-                                      sameMechanism(w, other),
+                                      sameTacticalMechanism(w, other),
                                   ),
                           )
                     : [];
@@ -973,7 +978,7 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                         (w) =>
                             w.rootMoveInvolved &&
                             !betterReplyWitnesses.some(
-                                (other) => other.rootMoveInvolved && sameMechanism(w, other),
+                                (other) => other.rootMoveInvolved && sameTacticalMechanism(w, other),
                             ),
                     );
                 }

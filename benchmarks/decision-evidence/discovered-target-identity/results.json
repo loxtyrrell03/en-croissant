@@ -1,0 +1,302 @@
+{
+  "incumbent": "7c3b50eb58e2f6597e57242600460bc16f48a1df",
+  "version": 37,
+  "counts": {
+    "archive": {
+      "received": 1051,
+      "classified": 1050,
+      "old": {
+        "replacement-or-empty": 583,
+        "intact": 350
+      },
+      "new": {
+        "intact": 341
+      },
+      "added": {
+        "4": 87
+      },
+      "removedIntact": 96,
+      "reportChanges": 64,
+      "scopeChanges": {
+        "position": 15,
+        "mistake": 0
+      },
+      "decisionMedianMs": [
+        18.803,
+        19.188
+      ],
+      "inputsSha256": "e9054868e207763655dd6b79e3d541a5104d4d72dcd024b32e0675519a6e40e3"
+    },
+    "classical": {
+      "received": 202,
+      "classified": 202,
+      "old": {
+        "replacement-or-empty": 100,
+        "intact": 60
+      },
+      "new": {
+        "intact": 61
+      },
+      "added": {
+        "4": 16
+      },
+      "removedIntact": 15,
+      "reportChanges": 6,
+      "scopeChanges": {
+        "position": 0,
+        "mistake": 0
+      },
+      "decisionMedianMs": [
+        36.218,
+        38.594
+      ],
+      "inputsSha256": "0280f39bc69e1fdcc68ddcf1fb367c963b584b3752a3bc2df4e15fb01801a08b"
+    },
+    "puzzles": {
+      "received": 450,
+      "classified": 450,
+      "old": {
+        "intact": 99,
+        "replacement-or-empty": 12
+      },
+      "new": {
+        "intact": 97
+      },
+      "added": {},
+      "removedIntact": 2,
+      "reportChanges": 84,
+      "scopeChanges": {
+        "position": 0,
+        "mistake": 0
+      },
+      "decisionMedianMs": [
+        1.048,
+        1.024
+      ],
+      "inputsSha256": "3d1fabe26ee1614c360295c6141e23f83c15b77d180dc9d2f0bf9bf3e53c3dcb",
+      "puzzlesWithAnyDiscovery": {
+        "before": {
+          "related": 3,
+          "discovery": 99,
+          "other": 4
+        },
+        "after": {
+          "related": 1,
+          "discovery": 96
+        }
+      }
+    }
+  },
+  "positionTransitions": [
+    {
+      "id": "tournament-rudar-3d4f715af7f54c3c-29",
+      "before": [
+        "unclear",
+        "unestablished",
+        "unestablished"
+      ],
+      "after": [
+        "tactical",
+        "supported",
+        "unestablished"
+      ]
+    },
+    {
+      "id": "tournament-buongoma-94a4f0c091c3a703-70",
+      "before": [
+        "tactical",
+        "supported",
+        "unestablished"
+      ],
+      "after": [
+        "unclear",
+        "unestablished",
+        "unestablished"
+      ]
+    },
+    {
+      "id": "tournament-kovin-3ace968af6f0201b-41",
+      "before": [
+        "mixed",
+        "supported",
+        "supported"
+      ],
+      "after": [
+        "positional",
+        "unestablished",
+        "supported"
+      ]
+    },
+    {
+      "id": "tournament-spice-7bc8896f9b9e573d-37",
+      "before": [
+        "unclear",
+        "unestablished",
+        "unestablished"
+      ],
+      "after": [
+        "tactical",
+        "supported",
+        "unestablished"
+      ]
+    },
+    {
+      "id": "tournament-turkiye-ffaa61e1f9c9a9bb-30",
+      "before": [
+        "unclear",
+        "unestablished",
+        "unestablished"
+      ],
+      "after": [
+        "tactical",
+        "supported",
+        "unestablished"
+      ]
+    },
+    {
+      "id": "tournament-eliteserien-773d245b74527d35-49",
+      "before": [
+        "unclear",
+        "unestablished",
+        "unestablished"
+      ],
+      "after": [
+        "tactical",
+        "supported",
+        "unestablished"
+      ]
+    },
+    {
+      "id": "tournament-kazakhstan-8e3846b205188956-29",
+      "before": [
+        "tactical",
+        "supported",
+        "unestablished"
+      ],
+      "after": [
+        "unclear",
+        "unestablished",
+        "unestablished"
+      ]
+    },
+    {
+      "id": "tournament-prague-open-2026-34b9156ed96cb766-67",
+      "before": [
+        "unclear",
+        "unestablished",
+        "unestablished"
+      ],
+      "after": [
+        "tactical",
+        "supported",
+        "unestablished"
+      ]
+    },
+    {
+      "id": "recapture-olympiad-dd991363b61bd9c7-49",
+      "before": [
+        "tactical",
+        "supported",
+        "unestablished"
+      ],
+      "after": [
+        "unclear",
+        "unestablished",
+        "unestablished"
+      ]
+    },
+    {
+      "id": "tournament-european-women-2026-039fb226dacca8c7-46",
+      "before": [
+        "unclear",
+        "unestablished",
+        "unestablished"
+      ],
+      "after": [
+        "tactical",
+        "supported",
+        "unestablished"
+      ]
+    },
+    {
+      "id": "tournament-amateur-u1700-2026-b7b765ea84af4f87-74",
+      "before": [
+        "mixed",
+        "supported",
+        "supported"
+      ],
+      "after": [
+        "positional",
+        "unestablished",
+        "supported"
+      ]
+    },
+    {
+      "id": "tournament-bavarian-open-2026-88c53f9041b0dfe5-65",
+      "before": [
+        "positional",
+        "unestablished",
+        "supported"
+      ],
+      "after": [
+        "mixed",
+        "supported",
+        "supported"
+      ]
+    },
+    {
+      "id": "tournament-box-hill-2026-78bd31b085f69d60-32",
+      "before": [
+        "unclear",
+        "unestablished",
+        "unestablished"
+      ],
+      "after": [
+        "tactical",
+        "supported",
+        "unestablished"
+      ]
+    },
+    {
+      "id": "tournament-lugano-standard-2026-bf40fafcd4dea522-56",
+      "before": [
+        "unclear",
+        "unestablished",
+        "unestablished"
+      ],
+      "after": [
+        "tactical",
+        "supported",
+        "unestablished"
+      ]
+    },
+    {
+      "id": "tournament-tyreso-2026-c7ba0afc149d094c-41",
+      "before": [
+        "unclear",
+        "unestablished",
+        "unestablished"
+      ],
+      "after": [
+        "tactical",
+        "supported",
+        "unestablished"
+      ]
+    }
+  ],
+  "reviewedPositionTransitions": {
+    "historicalReviewed": 9,
+    "gainedAgreement": 7,
+    "lostAgreement": 2
+  },
+  "fixtureSha256": "fae387b910b6c8c5419ac48654bae66d6b05a95ec072346e085203d35206db29",
+  "checks": {
+    "focusVitestTests": 87,
+    "typecheck": "passed",
+    "renderedPanelWidthsPx": [
+      320,
+      390,
+      900
+    ]
+  }
+}

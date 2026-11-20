@@ -3952,3 +3952,20 @@ offline. Shared material outcomes across bounded continuations are
 useful training observations, with limited coverage of real tactical
 and mixed decisions.
 [Reproduction, comparison and exact continuations](../benchmarks/decision-evidence/neural-deep-witness/README.md)
+
+## Track the original target of a discovered attack
+
+Decision assessment v37 follows the exposed target and the stationary
+slider until the capture, including one extra turn when the line stays
+open. It can record a related later payoff through a checked exchange.
+Matched scans remove 583 incorrect line witnesses in the archive and
+100 in a separate 202-game classical cohort. The latter gains 16
+discovered captures at the delayed horizon. A 450-puzzle replay removes
+12 wrong-target witnesses while retaining 97 of 99 intact ones.
+
+An additional engine-supported explanation covers a critical capture
+when the quiet alternative lets the same piece escape. In the archived
+report replay, seven of nine previously reviewed changed positions gain
+tactical agreement and two lose it. Neither classical cohort changes
+any played-move mistake category. The update adds no engine requests.
+[Comparisons, known gaps and regression fixtures](../benchmarks/decision-evidence/discovered-target-identity/README.md)

@@ -41,6 +41,19 @@ export type TacticalSequenceWitness = {
     alternatives?: TacticalSequenceWitness[];
 };
 
+/** Two discoveries aimed at the same square can arise from entirely
+ * different threats. Match the revealed slider, target and opening move. */
+export function sameTacticalMechanism(a: TacticalSequenceWitness, b: TacticalSequenceWitness) {
+    if (a.actor !== b.actor || a.mechanism !== b.mechanism) return false;
+    if (a.mechanism === "discoveredAttack")
+        return (
+            a.squares[1] === b.squares[1] &&
+            a.squares[2] === b.squares[2] &&
+            a.lineUci[a.mechanismPly - 1] === b.lineUci[b.mechanismPly - 1]
+        );
+    return a.squares.some((square) => b.squares.includes(square));
+}
+
 /** One label per mechanism and target set, retaining the separate legal reply
  * witnesses for inspection rather than conflating their moves into one PV. */
 export function mergeTacticalSequenceWitnesses(witnesses: TacticalSequenceWitness[]) {
@@ -175,6 +188,91 @@ function canRecapture(position: Chess, capture: NormalMove, defender: Square, si
     if (!copy.isLegal(capture)) return false;
     copy.play(capture);
     return legalCapture(copy, defender, capture.to, opposite(side));
+}
+
+function discoveryPayoff(steps: TacticalReplayStep[], index: number, payoffIndex: number) {
+    const opening = steps[index],
+        payoff = steps[payoffIndex];
+    if (
+        opening.after.isCheck() ||
+        payoff.after.isCheck() ||
+        tacticalExchangeGain(payoff.before, payoff.move) >= MIN_TACTICAL_CAPTURE_GAIN
+    )
+        return payoffIndex;
+
+    // A recapture of the slider can uncover a different payoff. Require the
+    // immediate new capture to improve on what was available before the swap.
+    const retake = steps[payoffIndex + 1];
+    if (!retake?.capture || retake.move.to !== payoff.move.to) return;
+    const materialGain = (end: TacticalReplayStep) =>
+        (end.balance - (steps[index - 1]?.balance ?? 0)) *
+        (opening.before.turn === steps[0].before.turn ? 1 : -1);
+    const follow = steps[payoffIndex + 2];
+    if (follow?.capture && materialGain(follow) >= MIN_TACTICAL_CAPTURE_GAIN) {
+        const gain = tacticalExchangeGain(follow.before, follow.move);
+        const original = tacticalExchangeGain(payoff.before, follow.move);
+        if (
+            gain >= MIN_TACTICAL_CAPTURE_GAIN &&
+            gain - Math.max(original, 0) >= MIN_TACTICAL_CAPTURE_GAIN
+        )
+            return payoffIndex + 2;
+    }
+    // The opening piece can insert a check before taking the very piece
+    // lured onto the ray. Its identity and the retaker's must both persist.
+    const defence = steps[payoffIndex + 3],
+        collect = steps[payoffIndex + 4];
+    if (
+        payoffIndex === index + 2 &&
+        retake.move.to !== opening.move.to &&
+        follow?.move.from === opening.move.to &&
+        follow.after.isCheck() &&
+        defence &&
+        defence.move.from !== retake.move.to &&
+        defence.move.to !== follow.move.to &&
+        collect?.capture &&
+        collect.move.from === follow.move.to &&
+        collect.move.to === retake.move.to &&
+        materialGain(collect) >= MIN_TACTICAL_CAPTURE_GAIN &&
+        tacticalExchangeGain(collect.before, collect.move) >= MIN_TACTICAL_CAPTURE_GAIN
+    )
+        return payoffIndex + 4;
+}
+
+/** A discovery reveals a threat to an existing enemy piece. Follow that
+ * target and the stationary slider until the threat is used. A recapture of
+ * a different piece on the same square can use the ray without being a
+ * discovered attack. */
+function usedDiscoveredAttack(steps: TacticalReplayStep[], index: number, payoffIndex: number) {
+    const first = steps[index];
+    const payoff = steps[payoffIndex];
+    if (!payoff?.capture) return;
+    const side = first.before.turn;
+    const { from, to } = payoff.move;
+    const slider = first.before.board.get(from);
+    if (!slider || slider.color !== side || !["bishop", "rook", "queen"].includes(slider.role))
+        return;
+    const ray = between(from, to);
+    if (
+        !ray.has(first.move.from) ||
+        first.move.to === to ||
+        ray.intersect(first.before.board.occupied).size() !== 1 ||
+        !legalCapture(first.after, from, to, side)
+    )
+        return;
+    for (let ply = index + 1; ply < payoffIndex; ply++) {
+        const reply = steps[ply];
+        if (
+            reply.move.from === from ||
+            reply.move.to === from ||
+            reply.move.from === to ||
+            reply.move.to === to ||
+            !ray.intersect(reply.after.board.occupied).isEmpty()
+        )
+            return;
+    }
+    const through = discoveryPayoff(steps, index, payoffIndex);
+    if (through === undefined) return;
+    return { from, to, through };
 }
 
 function exploitedAbsolutePin(steps: TacticalReplayStep[], index: number) {
@@ -372,24 +470,7 @@ export function extractTacticalSequenceWitnesses(
                 );
             }
 
-            // A stationary slider gains a previously blocked line and uses it.
             const slider = first.before.board.get(third.move.from);
-            if (
-                slider?.color === side &&
-                ["bishop", "rook", "queen"].includes(slider.role) &&
-                third.move.from !== first.move.to &&
-                between(third.move.from, third.move.to).has(first.move.from) &&
-                !attacks(slider, third.move.from, first.before.board.occupied).has(third.move.to) &&
-                attacks(slider, third.move.from, first.after.board.occupied).has(third.move.to)
-            ) {
-                push(
-                    "discoveredAttack",
-                    i,
-                    i + 2,
-                    [first.move.from, third.move.from, third.move.to],
-                    `${first.san} opens the ${makeSquare(third.move.from)}–${makeSquare(third.move.to)} line; ${third.san} uses the discovered attack after ${reply.san}.`,
-                );
-            }
             if (
                 slider?.color === side &&
                 ["bishop", "rook", "queen"].includes(slider.role) &&
@@ -426,6 +507,27 @@ export function extractTacticalSequenceWitnesses(
                         `${first.san} attacks the more valuable piece on ${makeSquare(reply.move.from)}. After it moves, ${third.san} takes the piece behind it.`,
                     );
             }
+        }
+
+        for (const k of [i + 2, i + 4]) {
+            const discovery = usedDiscoveredAttack(steps, i, k);
+            if (!discovery) continue;
+            const { from, to, through } = discovery;
+            const target = first.after.board.get(to)!;
+            const slider = first.after.board.get(from)!;
+            const followUp =
+                through === k
+                    ? ""
+                    : through === k + 2
+                      ? ` The exchange also enables ${steps[through].san}.`
+                      : ` ${steps[k + 2].san} inserts a check before ${steps[through].san} takes the recapturing piece.`;
+            push(
+                "discoveredAttack",
+                i,
+                through,
+                [first.move.from, from, to],
+                `${first.san} uncovers the ${slider.role} on ${makeSquare(from)} against the ${target.role} on ${makeSquare(to)}. The ${slider.role} takes it with ${steps[k].san} in the analysed line.${followUp}`,
+            );
         }
 
         // Defender removal can enable a later combination, rather than the
