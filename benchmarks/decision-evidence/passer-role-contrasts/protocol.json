@@ -1,0 +1,13 @@
+{
+  "scope": "Strategic use or containment of an original passed pawn on its fifth rank or farther, separately for position and the exact normal-budget root move.",
+  "development": "Previously reviewed 72-board classical scope benchmark. The Bf2 case is a known development example.",
+  "test": "72 advanced-pawn positions and 48 independently sampled ordinary positions from distinct games. Source families are separate from development. The first blind review roster consists of 24 advanced and 12 ordinary positions, sampled by identifier hash before reading classifier results.",
+  "normal": "Stockfish 19, 2.4M nodes MultiPV 3, 2.4M matched played root when needed, 1M separate replies for the leader and played move, adaptive 4M when depth or root score agreement is missing.",
+  "reference": "Stockfish 19, 5.4M nodes MultiPV 4, 3.2M separate replies for near-leading roots. One reviewer assigns the original pawn's role from the legal continuations, independently from the prototype's predictions. The exact normal move is rated only when the evidence addresses that move. Indeterminate references stay open. Follow-up cases reviewed after seeing proposals are reported separately.",
+  "variants": {
+    "feature": "Original advanced passed-pawn presence.",
+    "repeated": "Same original pawn explicitly advances, is removed, or is physically blockaded in two viable continuations.",
+    "distinct": "Require a different route to the same original pawn. A prior transposition alone is insufficient. The exact-move claim also requires the original mover to contribute in both lines."
+  },
+  "outcomes": "Track the cited pawn identity, confirmed aims, false calls on known negatives, unknowns, exact move coverage, and combinations with independently verified tactical evidence. Reused searches add no optional engine query. A narrow board feature does not determine the whole positional axis."
+}
