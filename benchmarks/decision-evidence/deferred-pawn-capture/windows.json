@@ -1,0 +1,32 @@
+{
+  "revision": "6d359be0d93e6386ab179f7c10ec9fd5e9c2e4d4",
+  "scenarios": {
+    "Queen Keeps the Pawn Chain": {
+      "passed": true,
+      "seconds": 9.143,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "position": "Position character\n\nMIXED\n\n3 candidate moves examined\n\nTactical \u00b7 Checked local proof. Qd4+ forks the king on g1 and bishop on d5; no legal reply saves both targets without conceding material.\n\nPositional \u00b7 Strategic interpretation. After Qd4+ Kh1 Qxd5, the pawn on b7 still supports c6. Taking the same bishop immediately with cxd5 breaks that pawn link.\n\nAfter Qd4+. Qd4+ Kh1 Qxd5 Qe5+ Qxe5 fxe5\n\nAfter cxd5. cxd5 Qxf7 Qc5+ Kh1 d4 Rab1\n\nFORK\n\nThe position assessment covers the candidate moves and replies examined in this search.\n\nThe pawn link survives in the shown lines. Other replies can change the structure.\n\nHide evidence",
+      "move": "What the move achieves\n\nMIXED\n\nTactical \u00b7 Checked local proof. Qd4+ forks the king on g1 and bishop on d5; no legal reply saves both targets without conceding material.\n\nPositional \u00b7 Strategic interpretation. After Qd4+ Kh1 Qxd5, the pawn on b7 still supports c6. Taking the same bishop immediately with cxd5 breaks that pawn link.\n\nAfter Qd4+ Kh1. Qd4+ Kh1 Qxd5 Qe5+ Qxe5 fxe5\n\nAfter cxd5 Qxf7. cxd5 Qxf7 Qc5+ Kh1 d4 Rab1\n\nFORK\n\nThe local tactical certificate covers its recorded mechanism and search horizon, not a complete proof of the position's value.\n\nThe pawn link survives in the shown lines. Other replies can change the structure.\n\nHide evidence"
+    },
+    "Castle Before the Check": {
+      "passed": true,
+      "seconds": 16.276,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "mistake": "What c6 missed or allowed\n\nMIXED\n\nEngine evaluation loss 1.85 pawns\n\nTactical \u00b7 Engine supported. c6 allows Nd6+. Every legal reply moves the king, as in Kd7. After O-O-O Nd6+, cxd6 takes the knight.\n\nTactical \u00b7 Engine supported. Your move allowed this tactic: Nd6+ exploits the pawn on c4, pinned to the knight on a6 by the bishop on f1. No legal reply avoids material loss in the immediate exchange. After O-O-O, cxd6 answers Nd6+; a profitable immediate follow-up capture of the pawn on c4 or the knight on a6 is no longer forced.\n\nTactical \u00b7 Engine supported. Against Nd6+, O-O-O gives you cxd6, a profitable capture. c6 leaves that capture unavailable.\n\nPositional \u00b7 Strategic interpretation. Moving the king permanently gives up castling. O-O-O gets the king out first.\n\nPlayed line. c6 Nd6+ Kd7 Nxb7\n\nBetter line. O-O-O Nd6+ cxd6 Bxc4\n\nCheck after delaying castling. c6 Nd6+ Kd7\n\nSame check after castling first. O-O-O Nd6+ cxd6\n\nThis compares objective consequences. It cannot establish what the player saw or misunderstood.\n\nThe compared branches and finite search depth limit the attribution. A delayed strategic collapse can remain unresolved.\n\nHide evidence"
+    },
+    "Pawn Capture Can Wait": {
+      "passed": true,
+      "seconds": 8.702,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "move": "What the move achieves\n\nUNCLEAR\n\nThe search did not establish a specific cause.\n\nAfter h3 Qd8. h3 Qd8 Qxa3\n\nThe pawn on a3 can also be taken later. With h3, the engine keeps a large advantage and still plays Qxa3 in the shown line.\n\nHide evidence"
+    }
+  },
+  "binarySha256": "1a7cdd65427334d44d789999701c7d8e171195558366872bea8af6ec3190f2a9",
+  "profile": "Isolated Windows QA profile and live Stockfish 19"
+}

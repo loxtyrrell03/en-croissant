@@ -134,3 +134,31 @@ test explains the actual `...c6` mistake using both the forced
 king move and the independent `...O-O-O Nd6+ cxd6` line.
 The queen and played-pawn-lock scenarios also pass.
 [Run receipt](../castling-interruption/windows.json)
+
+Revision `6d359be0` adds `Pawn Capture Can Wait`. The exact
+`h3 Qd8 Qxa3` continuation is visible in the candidate report with
+live Stockfish 19. The mixed queen and castling cases also pass.
+[Run receipt](../deferred-pawn-capture/windows.json)
+
+### Full classical workflow audit
+
+To run the same isolated app on the 72 frozen classical games, set
+`$selection` to the checked-in
+`benchmarks/decision-evidence/current-classifier-audit/classical-2026-11.json`.
+Prepare its small fixtures and run the desktop verifier with the
+following arguments. The receipt can resume only on the same build
+and sample. An optional limit after the output path runs a smoke test.
+
+```powershell
+python benchmarks/decision-evidence/native-desktop/prepare-classical.py $decisionQa $selection
+node benchmarks/decision-evidence/native-desktop/verify.mjs $decisionQa $decisionPlaywright --classical-audit $selection $output
+```
+
+Each case opens its game and runs **Analyse last move**. The receipt
+binds the exact report and final worker input to that game's selected
+board. It records wall time from the analysis action and the count
+of worker passes. Stockfish searches and the renderer contribute to
+wall time. Review notes remain separate from the software inputs.
+Use `classical-replay.py` to prepare matching inputs for the
+[original scanner replay](../cross-scope-audit/README.md), then use
+its `--score` option with the original and fixed-budget receipts.

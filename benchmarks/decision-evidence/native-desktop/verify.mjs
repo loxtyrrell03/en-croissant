@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
+import { createHash } from "node:crypto";
 import { readFile, writeFile } from "node:fs/promises";
 import { createServer } from "node:net";
 import { join, resolve } from "node:path";
@@ -8,10 +9,29 @@ import { setTimeout as delay } from "node:timers/promises";
 
 const [qaPath, playwright, ...selected] = process.argv.slice(2);
 if (!qaPath || !playwright) throw new Error("Usage: node verify.mjs QA_DIRECTORY PLAYWRIGHT_ENTRY [SCENARIOS]");
+const audit = selected[0] === "--classical-audit";
+const [, samplePath, auditOutput, limitArg] = audit ? selected : [];
+if (audit && (!samplePath || !auditOutput)) {
+  throw new Error("Use --classical-audit SAMPLE OUTPUT [LIMIT]");
+}
 const qa = resolve(qaPath);
 const { chromium } = await import(pathToFileURL(playwright).href);
 const exe = join(qa, "target", "release", "en-croissant-fork.exe");
-const results = { revision: (await readFile(join(qa, "revision.txt"), "utf8")).trim(), scenarios: {} };
+const revision = (await readFile(join(qa, "revision.txt"), "utf8")).trim();
+const sample = audit && await readFile(samplePath);
+const sampleSha256 = sample && createHash("sha256").update(sample).digest("hex");
+const results = { revision, ...(sample ? { sampleSha256 } : {}), scenarios: {} };
+if (audit) {
+  const saved = await readFile(auditOutput, "utf8").catch(error => {
+    if (error.code !== "ENOENT") throw error;
+  });
+  if (saved) {
+    const previous = JSON.parse(saved);
+    assert.equal(previous.revision, revision);
+    assert.equal(previous.sampleSha256, sampleSha256);
+    results.scenarios = previous.scenarios;
+  }
+}
 
 async function availablePort() {
   const server = createServer();
@@ -58,6 +78,26 @@ async function run(name, check) {
     browser = await chromium.connectOverCDP(endpoint, { timeout: 12000 });
     const context = browser.contexts()[0];
     page = context.pages()[0] ?? await context.waitForEvent("page", { timeout: 12000 });
+    if (audit) {
+      await context.addInitScript(() => {
+        window.decisionAudit = [];
+        window.Worker = class extends window.Worker {
+          postMessage(request, ...other) {
+            if (request?.input?.fen && request?.engineName) {
+              this.addEventListener("message", ({ data }) => {
+                if (data?.type === "result") {
+                  window.decisionAudit.push({
+                    input: { ...request.input, history: request.history ?? request.input.history },
+                    report: data.report,
+                  });
+                }
+              });
+            }
+            return super.postMessage(request, ...other);
+          }
+        };
+      });
+    }
     page.on("pageerror", error => faults.push(String(error)));
     await page.waitForFunction(() => window.__TAURI_INTERNALS__ && localStorage.getItem("document-dir"), null, { timeout: 25000 });
     const origin = await page.evaluate(() => location.origin);
@@ -67,13 +107,16 @@ async function run(name, check) {
     const stored = await page.evaluate(() => ["document-dir", "engines-dir", "databases-dir", "puzzles-dir"]
       .map(key => JSON.parse(localStorage.getItem(key))));
     for (const path of stored) assert(path.startsWith(join(qa, "runtime-fixtures")));
+    if (audit) {
+      await page.getByPlaceholder("Search for files", { exact: true }).fill(name);
+    }
     await page.getByText(name, { exact: true }).first().dblclick({ timeout: 18000 });
     await page.getByRole("button", { name: "Next move", exact: true }).waitFor({ timeout: 22000 });
     const started = Date.now();
     const evidence = await check(page);
     assert.deepEqual(faults, []);
     results.scenarios[name] = { passed: true, seconds: (Date.now() - started) / 1000, engine: "Stockfish 19 QA", origin, browser: debug.Browser, ...evidence };
-    await page.screenshot({ path: join(qa, name + ".png"), timeout: 4000 }).catch(() => {});
+    if (!audit) await page.screenshot({ path: join(qa, name + ".png"), timeout: 4000 }).catch(() => {});
   } catch (error) {
     const body = await page?.locator("body").innerText({ timeout: 1000 }).catch(() => "");
     const interactive = await page?.locator("button, [role=tab]").evaluateAll(nodes => nodes.map(node =>
@@ -84,8 +127,11 @@ async function run(name, check) {
     await Promise.race([exited, delay(3000)]);
     await browser?.close().catch(() => {});
   }
-  console.log(name, JSON.stringify(results.scenarios[name]));
-  await writeFile(join(qa, "receipt.json"), JSON.stringify(results, null, 2) + "\n");
+  const row = results.scenarios[name];
+  console.log(name, JSON.stringify(audit && row.passed
+    ? { seconds: row.seconds, analysisSeconds: row.analysisSeconds, category: row.report.position.category }
+    : row));
+  await writeFile(audit ? auditOutput : join(qa, "receipt.json"), JSON.stringify(results, null, 2) + "\n");
 }
 
 const visible = (page, text, timeout = 24000) => page.getByText(text, { exact: true }).first().waitFor({ timeout });
@@ -394,6 +440,33 @@ if (wanted.has("Pawn Capture Can Wait")) {
     assert.doesNotMatch(move, /Hanging Pawn/);
     return { move };
   });
+}
+
+if (audit) {
+  const cases = JSON.parse(sample);
+  const limit = limitArg ? Number(limitArg) : cases.length;
+  if (!Number.isSafeInteger(limit) || limit < 1) throw new Error("Invalid classical audit limit");
+  for (const item of cases.slice(0, limit)) {
+    const name = "Classical Audit " + item.id;
+    if (results.scenarios[name]?.passed) continue;
+    await run(name, async page => {
+      await button(page, "End").click();
+      await openTactics(page);
+      const time = await page.evaluate(() => performance.now());
+      await analyse(page, "Analyse last move");
+      const captured = await page.evaluate(start => {
+        const evidence = window.decisionAudit;
+        return {
+          analysisSeconds: (performance.now() - start) / 1000,
+          passes: evidence.length, ...evidence.at(-1),
+        };
+      }, time);
+      assert(Number.isInteger(captured.report.version));
+      assert.equal(captured.report.fen, item.fen);
+      assert.equal(captured.input.playedMoveUci, item.playedMoveUci);
+      return { id: item.id, ...captured };
+    });
+  }
 }
 
 if (Object.values(results.scenarios).some(result => !result.passed)) process.exitCode = 1;

@@ -64,6 +64,11 @@ example may lack the exact deferral. The rule then abstains from
 requalifying the capture.
 [Matched replay and exact lines](results.json)
 
+The isolated Windows build shows the exact `h3 Qd8 Qxa3` line
+using live Stockfish 19 at its normal search budget. The mixed queen
+fork and castling-delay checks also pass on that build.
+[Windows smoke result](windows.json)
+
 Run `classical-frames.py` from the broad audit with `transfer.json`
 at the app and reference budgets. Use `readback.py REFERENCE_FRAMES OUTPUT`
 to inspect the legal lines, then replay the same app frames on both
