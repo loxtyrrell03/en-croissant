@@ -1,0 +1,52 @@
+{
+  "pythonChess": "1.11.2",
+  "numpy": "2.5.5",
+  "sklearn": "1.9.1",
+  "inputs": [
+    {
+      "source": "defender-capture-order",
+      "name": "holdout-common.json",
+      "sha256": "bf821e0f8b7a3c4d68e0a8f9ffec962173decda188926817d236eeac882b137b"
+    },
+    {
+      "source": "cached-capture-selection",
+      "name": "common.json",
+      "sha256": "4e0098f5b0ab2a2fed06730ecbef692193d006583b6cd889a9fadc5f8476c099"
+    },
+    {
+      "source": "defender-capture-order",
+      "name": "holdout-reference.json",
+      "sha256": "45e81203f135c83cff24c6ebed63a9945772b8a74d0cc7c7d2216dc0a56c7218"
+    },
+    {
+      "source": "defender-capture-order",
+      "name": "candidate-reference.json",
+      "sha256": "735f71e8a6f1b44d037709f108724cc14886ba10425753f2c4f84306563c95d2"
+    },
+    {
+      "source": "cached-capture-selection",
+      "name": "reference.json",
+      "sha256": "328319cba52d5d881d6612f84ff68632e14638818a72ee9d5729fc980ad9a514"
+    },
+    {
+      "source": "cached-capture-selection",
+      "name": "alternate-reference.json",
+      "sha256": "1a536d6d3c191bc251d09448129048b2440445a71aa438c906d144ece763a018"
+    },
+    {
+      "source": "unseen-legal-replies",
+      "name": "training.json",
+      "sha256": "a34d2cfeee586646940750c759364767d1cedf493cae36c7208ddc30ba266998"
+    },
+    {
+      "source": "unseen-legal-replies",
+      "name": "training-final.json",
+      "sha256": "8593638481f1e31224c4e0e211a8d9ac49228eb5bddfcac5607f48473b031f48"
+    },
+    {
+      "source": "unseen-legal-replies",
+      "name": "models-converged.joblib",
+      "sha256": "695184ff18f605bdaa014fd317310b8d29d677f64ef5cb6c5482c15300788d31"
+    }
+  ]
+}

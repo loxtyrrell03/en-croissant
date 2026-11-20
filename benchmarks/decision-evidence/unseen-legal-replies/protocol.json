@@ -1,0 +1,12 @@
+{
+  "task": "Nominate one exact capture order after a legal opponent reply absent from the root continuation and the shared MultiPV reply frame for that initial move.",
+  "engine": "Stockfish 19, 45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+  "shared": "2.4M-node MultiPV root and standard cached separate replies. Both must score the initial move consistently. Same-board paired comparisons can exclude an inferior root.",
+  "legality": "The quiet move puts the prep piece on a square from which it can take an opposing guard. After an otherwise legal immediate capture, the original guard has a legal recapture. Every exact question still needs a concrete choice, line and outcome from independent Stockfish searches.",
+  "features": "Root estimate and rank, exact geometry, legal attacks, piece and target roles, distances and checks. Features exclude recorded choices, prior labels, group identities, player identities, and membership in the cached lines.",
+  "training": "Two older public classical cohorts. Include checked exact choices from earlier deep audits and additional sampled options. The latter use 120k and 620k same-depth paired searches, a separate 450k restricted reply where needed and original-guard agreement. Keep unresolved labels outside fitting.",
+  "validation": "Five event-group folds. Train standardized logistic regression and three neural fits of shape 24/12 with fixed seeds 41,59,73 on the same inputs. Report unseen-reply ranking on labelled candidates for development only.",
+  "heldout": "Another frozen event-disjoint public classical sample. Reference uses 5.4M and 8M nodes, competitive exact reply and root, and verifies the better capture is compatible with the overall position.",
+  "budget": "One nominated pair per eligible board, 1.4M nodes total. The shallow-engine selector spends 150k nodes across at most eight replies behind the same material shortlist, then uses at most 1.25M to verify. The other arms spend the full 1.4M on the pair.",
+  "adoption": "An increase of at least two independently verified witnesses over the strongest non-neural arm, across at least two event families, with no more confirmed false calls. Report unresolved calls and extra searches on ordinary games regardless of outcome."
+}
