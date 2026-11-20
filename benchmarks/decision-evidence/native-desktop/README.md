@@ -83,3 +83,11 @@ test shows h3 and Qg3 with an engine-supported explanation and
 the conditional scope note in both sections. The Finnish and
 Berjaya scenarios also pass on this revision.
 [Run receipt](../quiet-reply-counterplay/windows.json)
+
+Revision `893c9234` adds `Amager Defender Capture`. The native
+app displays the exact captures and the conditional scope in both
+the position and move sections. The exploratory `Ganja Defender
+Capture` case stays unclear at the normal live search budget. The
+fixed-budget replay finds its ordering after the different reply
+`...Rb8`. The earlier Finnish and quiet counterattack scenarios
+still pass. [Run receipt](../cached-capture-selection/windows.json)

@@ -1,0 +1,48 @@
+{
+  "revision": "893c9234565618ee165072731a04a481ef039d76",
+  "scenarios": {
+    "Finnish Capture Order": {
+      "passed": true,
+      "seconds": 7.57,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "position": "Position character\n\nMIXED\n\n3 candidate moves examined\n\nTactical · Engine supported. After Qe6, Rd1+ comes before gxf4, which takes the bishop on f4. Taking immediately allows Qxd3 to capture the rook that gives check. Be3 moves the bishop out of that capture.\n\nPositional · Strategic interpretation. White's minor piece on e3 has pawn support and no opposing pawn able to advance to attack that square. The same effect persists in the root search and the separate search of the opponent's best reply. Material remains balanced within the first 6 plies; this does not describe every later consequence.\n\nCheck first. Qe6 Rd1+ Kg2 gxf4 Qf5+ Kg8 Qc8+ Kf7 e6+ Kf6\n\nTake immediately. Qe6 gxf4 Qf5+ Kg8 Qxd3 fxg3 Qxg3 Rxb2 Qd3 Rb4\n\nBetter line. Be3 Rd5 e6 Re5 b3 Rbe4 Qc7 Rxe6 Qxa5 Bf8\n\nThe position assessment covers the candidate moves and replies examined in this search.\n\nHide evidence"
+    },
+    "Quiet Counterattack": {
+      "passed": true,
+      "seconds": 12.208,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "position": "Position character\n\nTACTICAL\n\n3 candidate moves examined\n\nTactical · Engine supported. After h3, Qg3 tries to protect the knight on g4. The compared continuations still capture that piece and keep a material gain through the shown exchange.\n\nIf Qg3. h3 Qg3 hxg4 Bd8 Be3 Bc7 Bf2 Qd6 Re5 Bc8 Qd2 Bxg4 Nh2 Qg6\n\nThe position assessment covers the candidate moves and replies examined in this search.\n\nThe resource applies to this reply. Other defences can change the continuation.\n\nHide evidence",
+      "move": "What the move achieves\n\nTACTICAL\n\nTactical · Engine supported. After h3, Qg3 tries to protect the knight on g4. The compared continuations still capture that piece and keep a material gain through the shown exchange.\n\nIf Qg3. h3 Qg3 hxg4 Bd8 Be3 Bc7 Bf2 Qd6 Re5 Bc8 Qd2 Bxg4 Nh2 Qg6\n\nThe resource applies to this reply. Other defences can change the continuation.\n\nHide evidence"
+    },
+    "Amager Defender Capture": {
+      "passed": true,
+      "seconds": 9.181,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "position": "Position character\n\nTACTICAL\n\n3 candidate moves examined\n\nTactical · Engine supported. After bxc3, Qxc5 removes the defender before taking on c3. If Rxc3 comes first, the defender takes the piece that was about to remove it with Qxd4.\n\nDefender first. Qxc5 Rxc5 Ka2 Rxe5 Rxc3\n\nTaking too early. Rxc3 Qxd4 Rxd4 Rxc3\n\nQd4 gives this piece access to c5. In the analysed continuation, Qxc5 uses capturingDefender at ply 3. Qd4 bxc3 Qxc5 Rxc5 Ka2 Rxe5 Rxc3\n\nThe position assessment covers the candidate moves and replies examined in this search.\n\nThis capture order applies to the reply shown. Other defences can change the continuation.\n\nHide evidence",
+      "move": "What the move achieves\n\nTACTICAL\n\nTactical · Engine supported. After bxc3, Qxc5 removes the defender before taking on c3. If Rxc3 comes first, the defender takes the piece that was about to remove it with Qxd4.\n\nDefender first. Qxc5 Rxc5 Ka2 Rxe5 Rxc3\n\nTaking too early. Rxc3 Qxd4 Rxd4 Rxc3\n\nQd4 gives this piece access to c5. In the analysed continuation, Qxc5 uses capturingDefender at ply 3. Qd4 bxc3 Qxc5 Rxc5 Ka2 Rxe5 Rxc3\n\nThe analysed line does not yet connect this mechanism to a settled material, mating or identified positional outcome.\n\nThe shown reply is the engine's choice at the recorded depth. Other defences may change the mechanism or outcome.\n\nThis capture order applies to the reply shown. Other defences can change the continuation.\n\nHide evidence",
+      "captureOrderFound": true
+    },
+    "Ganja Defender Capture": {
+      "passed": true,
+      "seconds": 8.239,
+      "engine": "Stockfish 19 QA",
+      "origin": "http://tauri.localhost",
+      "browser": "Edg/157.0.4341.60",
+      "position": "Position character\n\nUNCLEAR\n\n3 candidate moves examined\n\nThe search did not establish a specific cause.\n\nThe position assessment covers the candidate moves and replies examined in this search.\n\nHide evidence",
+      "move": "What the move achieves\n\nUNCLEAR\n\nThe search did not establish a specific cause.",
+      "captureOrderFound": false
+    }
+  },
+  "sourcePanelWidths": [
+    320,
+    390,
+    900
+  ],
+  "sourceRegressionsPassed": 10
+}

@@ -73,6 +73,14 @@ In Amager, after `...Qd4 bxc3`, Black needs `...Qxc5` before taking
 on c3. The immediate `...Rxc3` gives White `Qxd4`, taking the piece
 that was about to remove the defender. [Game broadcast](https://lichess.org/broadcast/amagers-100ars-jubilumsturnering-open/round-6/L3aezZWu/YweFrqkr)
 
+The isolated Windows build reproduced the Amager explanation using
+Stockfish through the normal Tactics panel. The Ganja challenge
+remained unclear at the normal live search budget. The fixed-budget
+replay verifies the capture order after
+the separate `...Rb8` reply. The renderer passed at 320, 390 and 900
+pixels, including opening and closing both evidence sections.
+[Windows and renderer receipt](windows.json)
+
 ## Reproduce
 
 Run from the repository root using Python with `python-chess` and
@@ -107,6 +115,13 @@ python "$bench/replay.py" selections.json questions.json $stockfish probes.json
 $env:CAPTURE_REPLAY_PROBES = 'probes.json'
 $env:CAPTURE_REPLAY_OUTPUT = 'application.json'
 node node_modules/vitest/vitest.mjs run --config "$bench/runtime.config.mjs"
+```
+
+Use the [isolated Windows workflow](../native-desktop/README.md) for
+the live cases. The source render test uses the recorded inputs:
+
+```powershell
+node "$bench/verify-panel.mjs" $decisionPlaywright $chromeExecutable
 ```
 
 These scores measure one position and move-justification mechanism.

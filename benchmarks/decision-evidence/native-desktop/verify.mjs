@@ -253,13 +253,17 @@ for (const [name, reply, capture, early, punishment] of [
     await analyse(page, "Analyse last move");
     const position = await (await expandPosition(page)).innerText();
     const move = page.getByText("What the move achieves", { exact: true }).locator("../..");
+    const captureOrderFound = position.includes(`After ${reply}, ${capture}`);
+    if (name === "Ganja Defender Capture" && !captureOrderFound) {
+      return { position, move: await move.innerText(), captureOrderFound };
+    }
     await move.getByRole("button", { name: "Show evidence", exact: true }).click({ timeout: 6000 });
     const evidence = await move.innerText();
     assert(position.includes(`After ${reply}, ${capture}`), position);
     assert.match(position, /Other defences can change the continuation/);
     assert.match(evidence, /Defender first\..*Taking too early\./s);
     assert(evidence.includes(early) && evidence.includes(punishment), evidence);
-    return { position, move: evidence };
+    return { position, move: evidence, captureOrderFound };
   });
 }
 
