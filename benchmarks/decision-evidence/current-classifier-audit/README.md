@@ -165,8 +165,12 @@ of the three recorded mover-rating bands and three move-number windows
 has eight games. The time-control evidence, export URLs, prior input
 hashes and inclusion counts are in `classical-2026-11.manifest.json`.
 The game and board exclusions include the older mixed and course
-audits and the recent neural and checking-order cohorts. The reference
-is pending review. The archive scores above are separate.
+audits and the recent neural and checking-order cohorts. The
+[sealed review](classical-reference.json) labels all three questions
+on all 72 boards before viewing either classifier's output. It is a
+single engine-assisted assessment. Tactical position negatives and
+individually reviewed motif controls are sparse. The archive scores
+above are separate.
 
 Both Stockfish passes completed. The leading move agreed on 60 of 72
 boards. All 72 exact app-budget leading moves have a separate deeper

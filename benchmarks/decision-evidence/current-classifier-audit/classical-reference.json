@@ -1,0 +1,7873 @@
+{
+  "version": 1,
+  "reviewedOn": "2026-11-20",
+  "reviewer": "One engine-assisted analyst",
+  "independentSecondReviewer": false,
+  "classifierOutputsVisibleDuringReview": false,
+  "sampleSha256": "6f3387a90934bdec162afcc03f951ad535c42578ef3abb9c22558f43b45d5f85",
+  "engineFrameSha256": {
+    "app": "a39fdeb343e7c5219d7a77429f78613222179b1b868bf8370c888bdd1d3a0cb7",
+    "deep": "feb0de9c259a7a39fd91b71fb2c6054a0d38eb5877316e2e7db74d75962e9603"
+  },
+  "cases": [
+    {
+      "id": "0018fea9b0e62c09d804",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "The lasting queenside lever is a4 against the b5–c4 pawn structure. Both root searches retain it after Bxa7 Rxa7, and alternative lines play it after Bxf5 as well. The move-order value of Bxa7 requires more concrete testing before assigning a tactical cause.",
+        "linesUci": [
+          [
+            "e3a7",
+            "a8a7",
+            "a2a4",
+            "b5b4",
+            "g4e3",
+            "f5e3",
+            "f2e3",
+            "f8f1",
+            "g1f1",
+            "g6e7"
+          ],
+          [
+            "c2f5",
+            "d7f5",
+            "a2a4",
+            "b5b4",
+            "e3a7",
+            "a8a7",
+            "g4e3",
+            "f5f7",
+            "c3b4",
+            "g6f4"
+          ],
+          [
+            "c2e4",
+            "f5e3",
+            "g4e3",
+            "d7f7",
+            "e1f3",
+            "g6e7",
+            "f1e1",
+            "a7e3",
+            "f2e3",
+            "b7d5"
+          ]
+        ]
+      },
+      "move": {
+        "uci": "e3a7",
+        "tactical": null,
+        "positional": null,
+        "note": "Rxa7 is the best reply, but the exchange itself neither proves a tactical dependency nor explains the exact choice over Bxf5. The queenside pawn break is shared with alternative lines.",
+        "linesUci": [
+          [
+            "e3a7",
+            "a8a7",
+            "g4e3",
+            "f5e3",
+            "f2e3",
+            "f8f1",
+            "g1f1",
+            "g6e7",
+            "c2e4",
+            "d7c7"
+          ],
+          [
+            "e3a7",
+            "g6f4",
+            "a7e3",
+            "f4d5",
+            "e3d2",
+            "a8e8",
+            "g4e3",
+            "f5e3",
+            "d2e3",
+            "d7c7"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Bxa7 is the leading move in both root frames.",
+        "uci": "e3a7",
+        "linesUci": [
+          [
+            "e3a7",
+            "a8a7",
+            "g4e3",
+            "f5e3",
+            "f2e3",
+            "f8f1",
+            "g1f1",
+            "g6e7",
+            "c2e4",
+            "d7c7"
+          ],
+          [
+            "e3a7",
+            "g6f4",
+            "a7e3",
+            "f4d5",
+            "e3d2",
+            "a8e8",
+            "g4e3",
+            "f5e3",
+            "d2e3",
+            "d7c7"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "0038144a24e796b55b79",
+      "position": {
+        "tactical": true,
+        "positional": null,
+        "note": "Black's exchange on e1 wins the queen for a rook, then both independent reply lines allow Qxb3 to take the bishop. The two quiet alternatives lose decisively on the matched roots. The immediate material resolution dominates the observed move choice.",
+        "linesUci": [
+          [
+            "e8e1",
+            "a1e1",
+            "d5b3",
+            "e1e8",
+            "g8h7",
+            "g1h2",
+            "g3f5",
+            "g2g4",
+            "f5e3",
+            "e8e7"
+          ],
+          [
+            "d5d7",
+            "e1c1",
+            "g6g5",
+            "c1c5",
+            "b5b4",
+            "g1h2",
+            "g3e2",
+            "g2g3",
+            "e2g3",
+            "c5d5"
+          ],
+          [
+            "d5e5",
+            "b3f7",
+            "g8f7",
+            "a1a7",
+            "f7e6",
+            "a7e7",
+            "e8e7",
+            "e1e5",
+            "e6e5",
+            "f6e7"
+          ]
+        ]
+      },
+      "move": {
+        "uci": "e8e1",
+        "tactical": true,
+        "positional": null,
+        "note": "Rxe1+ captures the queen. Rxe1 and Kh2 both concede Qxb3. This supports a queen-and-bishop capture sequence; Qxb3's possible move-order mechanism was not reviewed by a separate search.",
+        "linesUci": [
+          [
+            "e8e1",
+            "g1h2",
+            "d5b3",
+            "a1e1",
+            "g3f5",
+            "e1e8",
+            "g8h7",
+            "e8b8",
+            "b3e6",
+            "h2g1"
+          ],
+          [
+            "e8e1",
+            "a1e1",
+            "d5b3",
+            "h3h4",
+            "g8h7",
+            "e1e7",
+            "g3f5",
+            "f2f4",
+            "h6h5",
+            "e7b7"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Rxe1+ is the leading move in both root frames.",
+        "uci": "e8e1",
+        "linesUci": [
+          [
+            "e8e1",
+            "g1h2",
+            "d5b3",
+            "a1e1",
+            "g3f5",
+            "e1e8",
+            "g8h7",
+            "e8b8",
+            "b3e6",
+            "h2g1"
+          ],
+          [
+            "e8e1",
+            "a1e1",
+            "d5b3",
+            "h3h4",
+            "g8h7",
+            "e1e7",
+            "g3f5",
+            "f2f4",
+            "h6h5",
+            "e7b7"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "006f8c9b64e4e51f6650",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "Black's doubled rooks on the a-file define White's immediate defensive plan. The viable Rxa3 and preparatory king or queen moves reach a rook exchange followed by Ra2 opposing the remaining rook. After bxa3 a different knight and pawn continuation becomes viable.",
+        "linesUci": [
+          [
+            "a2a3",
+            "a5a3",
+            "a1a2",
+            "d8c7",
+            "e2f2",
+            "a8g8",
+            "a2e2",
+            "a3a1",
+            "e2e1",
+            "f7f5"
+          ],
+          [
+            "e2f2",
+            "a5a7",
+            "f2c2",
+            "d8c7",
+            "a2a3",
+            "a7a3",
+            "a1a2",
+            "c7b6",
+            "c2f2",
+            "f7f6"
+          ],
+          [
+            "h2h3",
+            "d8c7",
+            "a2a3",
+            "a5a3",
+            "a1a2",
+            "c7b6",
+            "g3h4",
+            "e7h4",
+            "h3h4",
+            "c6a5"
+          ]
+        ]
+      },
+      "move": {
+        "uci": "a2a3",
+        "tactical": null,
+        "positional": true,
+        "note": "Rxa3 removes one of the invading rooks and leaves a single-rook opposition with Ra2. The separate bxa3 reply allows Nd6 Bxd6 exd6 and new central play. The role of that secondary reply does not establish a unique tactical justification for the root move.",
+        "linesUci": [
+          [
+            "a2a3",
+            "a5a3",
+            "a1a2",
+            "d8c7",
+            "h2h3",
+            "c7b6",
+            "e4f2",
+            "a8e8",
+            "g2e4",
+            "e8f8"
+          ],
+          [
+            "a2a3",
+            "b4a3",
+            "e4d6",
+            "e7d6",
+            "e5d6",
+            "c6b4",
+            "g2b7",
+            "a8b7",
+            "g4g5",
+            "b7c6"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Kg1 is 1 and 24 centipawns below Rxa3 in the matched frames. It retains the same rook exchange and Ra2 placement.",
+        "uci": "h2g1",
+        "linesUci": [
+          [
+            "h2g1",
+            "a5a6",
+            "g2h1",
+            "d8c7",
+            "h1g2",
+            "c7b6",
+            "a2a3",
+            "a6a3",
+            "a1a2",
+            "a8g8"
+          ],
+          [
+            "h2g1",
+            "d8c7",
+            "a2a3",
+            "a5a3",
+            "a1a2",
+            "c7b6",
+            "g1h2",
+            "a3a2",
+            "c1a2",
+            "a8a3"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "00aa89b4d2df6c904503",
+      "position": {
+        "tactical": true,
+        "positional": true,
+        "note": "Bg5 attacks the rook. The apparent ...f6 interception opens the b3–g8 bishop diagonal and both reply searches find Bg8+ with a substantially better White score than after ...Rc7. The independent continuations also keep the passed d4 pawn and White's active eighth-rank rook as strategic factors.",
+        "linesUci": [
+          [
+            "f4g5",
+            "e7c7",
+            "g5f4",
+            "c7e7",
+            "g1f2",
+            "b7c6",
+            "d8c8",
+            "c6e4",
+            "f4g5",
+            "e7b7"
+          ],
+          [
+            "g1f2",
+            "b7c6",
+            "d8c8",
+            "c6e4",
+            "f4g5",
+            "e7b7",
+            "c8e8",
+            "e4c6",
+            "e8e7",
+            "b7e7"
+          ],
+          [
+            "b3c4",
+            "g7f6",
+            "d8d6",
+            "f6h4",
+            "g2g3",
+            "g6g5",
+            "d6d4",
+            "g5f4",
+            "c4d3",
+            "h7g7"
+          ]
+        ]
+      },
+      "move": {
+        "uci": "f4g5",
+        "tactical": true,
+        "positional": null,
+        "note": "The defence ...f6 attacks the bishop on g5 but frees Bg8+. Stockfish scores it worse by 127 and 118 centipawns compared with ...Rc7. The leading reply can lead to a bishop retreat; no separate lasting improvement unique to Bg5 is established.",
+        "linesUci": [
+          [
+            "f4g5",
+            "e7c7",
+            "g5f4",
+            "c7e7",
+            "b3c4",
+            "b7c6",
+            "b2b3",
+            "c6e4",
+            "f4d6",
+            "e7a7"
+          ],
+          [
+            "f4g5",
+            "f7f6",
+            "b3g8",
+            "h7h8",
+            "g8c4",
+            "h8h7",
+            "g5f4",
+            "b7c6",
+            "b2b3",
+            "g7h6"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Matched comparisons put Kf2 8 and 0 centipawns from Bg5. The two branches can use the same eighth-rank rook and bishop plan.",
+        "uci": "g1f2",
+        "linesUci": [
+          [
+            "g1f2",
+            "b7c6",
+            "d8c8",
+            "c6e4",
+            "f4g5",
+            "e7b7",
+            "c8e8",
+            "e4f5",
+            "f2f3",
+            "d4d3"
+          ],
+          [
+            "g1f2",
+            "b7a6",
+            "d8d6",
+            "a6c8",
+            "f2f3",
+            "c8b7",
+            "b3d5",
+            "b7d5",
+            "d6d5",
+            "e7e1"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "00ccc249dc752e61b8e3",
+      "position": {
+        "tactical": true,
+        "positional": null,
+        "note": "Rxc1+ forces Kf2 or the losing Bd1 Rxd1+. Black preserves the rook and infiltrates h1.",
+        "linesUci": [
+          [
+            "c8c1",
+            "g1f2",
+            "c1h1",
+            "a4c5",
+            "b4d2",
+            "e3e2",
+            "d2f4",
+            "e2e1",
+            "h1h2",
+            "e5g6"
+          ],
+          [
+            "b4d2",
+            "c1c8",
+            "e6c8",
+            "e3e2",
+            "d2g5",
+            "a4c5",
+            "c8f5",
+            "e5c6",
+            "f6d7",
+            "c5d7"
+          ],
+          [
+            "c8e8",
+            "a4c3",
+            "b4d6",
+            "e3e1",
+            "g7g5",
+            "c3b5",
+            "d6b4",
+            "b5a7",
+            "b4d2",
+            "c1d1"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": true,
+        "positional": null,
+        "note": "Rxc1+ captures the rook with check and the forced choice lets Black swing to h1 rather than yield the file to White's capture on c8.",
+        "uci": "c8c1",
+        "linesUci": [
+          [
+            "c8c1",
+            "g1f2",
+            "c1h1",
+            "a4c5",
+            "b4d2",
+            "e3e2",
+            "d2f4",
+            "e2e1",
+            "h1e1",
+            "f2e1"
+          ],
+          [
+            "c8c1",
+            "b3d1",
+            "c1d1",
+            "g1f2",
+            "d1d4",
+            "e5c6",
+            "d4c4",
+            "c6b4",
+            "c4b4",
+            "b2b3"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Rxc1+ leads both budgets.",
+        "uci": "c8c1",
+        "linesUci": [
+          [
+            "c8c1",
+            "g1f2",
+            "c1h1",
+            "a4c5",
+            "b4d2",
+            "e3e2",
+            "d2f4",
+            "e2e1",
+            "h1e1",
+            "f2e1"
+          ],
+          [
+            "c8c1",
+            "b3d1",
+            "c1d1",
+            "g1f2",
+            "d1d4",
+            "e5c6",
+            "d4c4",
+            "c6b4",
+            "c4b4",
+            "b2b3"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "00223c1e03b93a38bc52",
+      "position": {
+        "tactical": true,
+        "positional": null,
+        "note": "Qxg6+ and Qf7+ are needed against White's material deficit. Kh8 instead of Bg7 allows Nf7 mate.",
+        "linesUci": [
+          [
+            "g5g6",
+            "f8g7",
+            "g6f7",
+            "g8h8",
+            "g3h5",
+            "b8b7",
+            "h5f6",
+            "d8f6",
+            "c1c8",
+            "h8h7"
+          ],
+          [
+            "e5g6",
+            "f8g7",
+            "g6e5",
+            "a4a7",
+            "c1c3",
+            "b8a8",
+            "c3d3",
+            "f6h7",
+            "g5d8",
+            "a8d8"
+          ],
+          [
+            "c1d1",
+            "d8e7",
+            "g5g6",
+            "e7g7",
+            "g6g7",
+            "f8g7",
+            "g3e2",
+            "a4a7",
+            "e2c3",
+            "d5a8"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": true,
+        "positional": false,
+        "note": "Qxg6+ keeps a mating threat and checks through f7. On immediate Nxg6 Bg7 the queen has no analogous check sequence. The distinguishing value of the exact move is the short king attack rather than a lasting feature across the compared continuations.",
+        "motifs": {
+          "matingThreat": true
+        },
+        "uci": "g5g6",
+        "linesUci": [
+          [
+            "g5g6",
+            "f8g7",
+            "g6f7",
+            "g8h8",
+            "g3h5",
+            "b8b7",
+            "h5f6",
+            "d8f6",
+            "c1c8",
+            "h8h7"
+          ],
+          [
+            "g5g6",
+            "g8h8",
+            "e5f7"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Qxg6+ leads both budgets.",
+        "uci": "g5g6",
+        "linesUci": [
+          [
+            "g5g6",
+            "f8g7",
+            "g6f7",
+            "g8h8",
+            "g3h5",
+            "b8b7",
+            "h5f6",
+            "d8f6",
+            "c1c8",
+            "h8h7"
+          ],
+          [
+            "g5g6",
+            "g8h8",
+            "e5f7"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "00dde1ca672037aaa486",
+      "position": {
+        "tactical": true,
+        "positional": true,
+        "note": "Nxe4 Nxe4 Bb7 Rc7 Bxe4 Rxd7 Bxg2 is an exact exchange sequence, while White's rook intrusion on c7 and penetration on the d-file also persist after Kg7.",
+        "linesUci": [
+          [
+            "f6e4",
+            "c3e4",
+            "c8b7",
+            "c6c7",
+            "b7e4",
+            "c7d7",
+            "e4g2",
+            "g1g2",
+            "a7a5",
+            "f1d1"
+          ],
+          [
+            "g8g7",
+            "c6c7",
+            "f6e4",
+            "c3e4",
+            "a7a5",
+            "f1d1",
+            "d7c5",
+            "e4d6",
+            "f8d6",
+            "d1d6"
+          ],
+          [
+            "e8e6",
+            "c6c7",
+            "f6e8",
+            "c7a7",
+            "f7f5",
+            "e4d2",
+            "d7f6",
+            "g2d5",
+            "f6d5",
+            "c4d5"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": true,
+        "positional": null,
+        "note": "Nxe4 lets Black use Bb7 to recapture on e4 and take on g2 when White's rook captures d7. The repeated line avoids leaving the e4 and d7 exchanges unconnected.",
+        "uci": "f6e4",
+        "linesUci": [
+          [
+            "f6e4",
+            "c3e4",
+            "c8b7",
+            "c6c7",
+            "b7e4",
+            "c7d7",
+            "e4g2",
+            "g1g2",
+            "b8a8",
+            "f1d1"
+          ],
+          [
+            "f6e4",
+            "g2e4",
+            "d7c5",
+            "e4d5",
+            "g8g7",
+            "h3h4",
+            "c5e6",
+            "c3b5",
+            "c8b7",
+            "b5a7"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Nxe4 leads both budgets.",
+        "uci": "f6e4",
+        "linesUci": [
+          [
+            "f6e4",
+            "c3e4",
+            "c8b7",
+            "c6c7",
+            "b7e4",
+            "c7d7",
+            "e4g2",
+            "g1g2",
+            "b8a8",
+            "f1d1"
+          ],
+          [
+            "f6e4",
+            "g2e4",
+            "d7c5",
+            "e4d5",
+            "g8g7",
+            "h3h4",
+            "c5e6",
+            "c3b5",
+            "c8b7",
+            "b5a7"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "0184c9f0beec78b03a65",
+      "position": {
+        "tactical": true,
+        "positional": true,
+        "note": "The concrete threats after e4 and after Bd5 Nd2 f3 coexist with Black's long diagonal pressure and White's b4 queenside break.",
+        "linesUci": [
+          [
+            "b3d5",
+            "f3d2",
+            "f4f3",
+            "h2f3",
+            "f6f3",
+            "d2f3",
+            "d5f3",
+            "g2f3",
+            "f7f3",
+            "e2f3"
+          ],
+          [
+            "e5e4",
+            "d3e4",
+            "b3c4",
+            "e2d1",
+            "c6e5",
+            "h4h5",
+            "e5f3",
+            "g2f3",
+            "g6e5",
+            "g3f4"
+          ],
+          [
+            "g6e7",
+            "f3d2",
+            "b3d5",
+            "g2d5",
+            "e7d5",
+            "d2e4",
+            "f6e6",
+            "e4c5",
+            "d6c5",
+            "e2e4"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "Bd5 lines up the bishop with f3 and g2, reinforcing pressure around White's king. The repeated continuations use either f3 or Bxg2. The exact tactical necessity is unresolved.",
+        "uci": "b3d5",
+        "linesUci": [
+          [
+            "b3d5",
+            "f3d2",
+            "f4f3",
+            "h2f3",
+            "d5f3",
+            "d2f3",
+            "f6f3",
+            "g2f3",
+            "f7f3",
+            "e2f3"
+          ],
+          [
+            "b3d5",
+            "h2g4",
+            "f6f5",
+            "g4h2",
+            "h7h8",
+            "f3d2",
+            "d5g2",
+            "g1g2",
+            "d6d5",
+            "g2h1"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": null,
+        "positional": true,
+        "note": "After Be6, b4 cxb4 cxb4 and b5 gain space against Black's knight while Bd5 at once uses the bishop actively without conceding the same expansion.",
+        "uci": "b3e6",
+        "linesUci": [
+          [
+            "b3e6",
+            "b2b4",
+            "c5b4",
+            "c3b4",
+            "e6d5",
+            "h4h5",
+            "g6e7",
+            "b4b5",
+            "f4g3",
+            "f2g3"
+          ],
+          [
+            "b3e6",
+            "g3g4",
+            "h7g8",
+            "h4h5",
+            "g6e7",
+            "g1h1",
+            "e6d7",
+            "c1d2",
+            "f6e6",
+            "c3c4"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "01e91a721ff039a86c7c",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "Black's knight coordination protects the extra material and preserves e5. After Nf4 the engine branches give up or weaken control of e5 and permit f-file activity.",
+        "linesUci": [
+          [
+            "d5f6",
+            "e4e3",
+            "e8e6",
+            "c1b2",
+            "d8d7",
+            "a2a4",
+            "g6f7",
+            "e3d3",
+            "d4e2",
+            "g1h2"
+          ],
+          [
+            "d5f4",
+            "g1h2",
+            "h6h5",
+            "g2g3",
+            "f4e6",
+            "e4e5",
+            "e6g7",
+            "c1f4",
+            "d4e6",
+            "f4e3"
+          ],
+          [
+            "d5c3",
+            "e4g4",
+            "g6h5",
+            "g1h2",
+            "e8f8",
+            "g4g7",
+            "c3e4",
+            "f1e1",
+            "d4e6",
+            "g7a7"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "Nf6 attacks the e4 rook and redirects it to e3. Re6 preserves e5 and keeps Black's extra pieces coordinated, unlike the branch where Rxe5 follows Nfe6.",
+        "uci": "d5f6",
+        "linesUci": [
+          [
+            "d5f6",
+            "e4e3",
+            "e8e6",
+            "c1b2",
+            "d4c6",
+            "g1h2",
+            "f6h5",
+            "a2a4",
+            "d8d7",
+            "c4c5"
+          ],
+          [
+            "d5f6",
+            "e4e1",
+            "d4c2",
+            "e1e2",
+            "c2d4",
+            "e2e3",
+            "e8e6",
+            "g1h2",
+            "d8g8",
+            "c1b2"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Nf6 leads both budgets.",
+        "uci": "d5f6",
+        "linesUci": [
+          [
+            "d5f6",
+            "e4e3",
+            "e8e6",
+            "c1b2",
+            "d4c6",
+            "g1h2",
+            "f6h5",
+            "a2a4",
+            "d8d7",
+            "c4c5"
+          ],
+          [
+            "d5f6",
+            "e4e1",
+            "d4c2",
+            "e1e2",
+            "c2d4",
+            "e2e3",
+            "e8e6",
+            "g1h2",
+            "d8g8",
+            "c1b2"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "000ced6e147d6d5ab791",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "The choices turn on keeping White's rooks out of the seventh rank. Re8 brings the rook against Be4 and reaches a queen trade with activity on b2, while Qa3 permits Rd7 and Qc6.",
+        "linesUci": [
+          [
+            "f8e8",
+            "e4d3",
+            "g8g7",
+            "c2b2",
+            "b4b2",
+            "d3c4",
+            "b2b7",
+            "c4b3",
+            "h7h5",
+            "g1g2"
+          ],
+          [
+            "b2c2",
+            "e4c2",
+            "f8b8",
+            "g1g2",
+            "f6e7",
+            "c2b3",
+            "b4b7",
+            "d5d7",
+            "g8g7",
+            "f2f4"
+          ],
+          [
+            "b4b7",
+            "c2b2",
+            "b7b2",
+            "d5d7",
+            "b2a2",
+            "e4d5",
+            "a2a6",
+            "g1g2",
+            "g8g7",
+            "e3e4"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "Re8 uses the e-file to displace the e4 bishop and keeps the queen exchange available. The reply lines retain an active black rook after the queens come off.",
+        "uci": "f8e8",
+        "linesUci": [
+          [
+            "f8e8",
+            "e4d3",
+            "g8g7",
+            "c2b2",
+            "b4b2",
+            "d3c4",
+            "b2c2",
+            "c4b3",
+            "c2c7",
+            "g3g4"
+          ],
+          [
+            "f8e8",
+            "d5d2",
+            "b2c2",
+            "e4c2",
+            "b4b2",
+            "c2a4",
+            "b2d2",
+            "d1d2",
+            "e8e4",
+            "a4b3"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": null,
+        "positional": true,
+        "note": "Qa3 retreats without challenging Be4 or the doubled rooks. Rd7 followed by Qc6 and Qc7 establishes sustained penetration in both searches. No discrete forcing payoff is established.",
+        "uci": "b2a3",
+        "linesUci": [
+          [
+            "b2a3",
+            "d5d7",
+            "b4b2",
+            "c2c6",
+            "b2b6",
+            "c6c7",
+            "a3a4",
+            "c7c2",
+            "a4c2",
+            "e4c2"
+          ],
+          [
+            "b2a3",
+            "d5d3",
+            "a3a6",
+            "e4d5",
+            "g8g7",
+            "d3c3",
+            "b4b5",
+            "c3c7",
+            "f6e5",
+            "c7d7"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "0010093bac6adb755f95",
+      "position": {
+        "tactical": true,
+        "positional": true,
+        "note": "The improvement Rc8 uses the c-file and retains the e7 rook behind the bishop outpost. The alternate Nc4 poses the concrete Ne5 Nxe3 fxe3 Bxe5 dxe5 Rxe5 calculation.",
+        "linesUci": [
+          [
+            "a8c8",
+            "f3e5",
+            "f5e4",
+            "e2a6",
+            "c8c3",
+            "a1c1",
+            "c3a3",
+            "a2e2",
+            "e7c7",
+            "e2g4"
+          ],
+          [
+            "a5c4",
+            "e2c4",
+            "d5c4",
+            "a2c4",
+            "e7c7",
+            "c4e2",
+            "c7c3",
+            "f3e5",
+            "d8f6",
+            "e3d2"
+          ],
+          [
+            "d8d7",
+            "a3a4",
+            "a8c8",
+            "e2a6",
+            "c8c3",
+            "f3e5",
+            "d7e6",
+            "a1c1",
+            "e7c7",
+            "c1c3"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "Rc8 targets c3 while keeping the e-rook available to support Be4. Both the Ne5 and Bxa6 replies are met with c-file activity.",
+        "uci": "a8c8",
+        "linesUci": [
+          [
+            "a8c8",
+            "f3e5",
+            "f5e4",
+            "e2a6",
+            "c8c3",
+            "a1c1",
+            "e7c7",
+            "a2e2",
+            "c3a3",
+            "e2g4"
+          ],
+          [
+            "a8c8",
+            "e2a6",
+            "c8c3",
+            "f3e5",
+            "d8a8",
+            "a6f1",
+            "f7f6",
+            "f1d3",
+            "c3a3",
+            "a2c2"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": null,
+        "positional": true,
+        "note": "Rc7 gives up e-file support. Ne5 and Be6 recur, with Bf3 applying pressure to the isolated d5 pawn. Both root continuations take it and the separate reply suggests Nc4 as partial compensation.",
+        "uci": "e7c7",
+        "linesUci": [
+          [
+            "e7c7",
+            "f3e5",
+            "f5e6",
+            "e2f3",
+            "a5c4",
+            "e5c4",
+            "c7c4",
+            "e3d2",
+            "b6b5",
+            "d1e1"
+          ],
+          [
+            "e7c7",
+            "d1c1",
+            "a5c4",
+            "e2c4",
+            "d5c4",
+            "a2e2",
+            "f5d3",
+            "e2d2",
+            "c7e7",
+            "c1e1"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "001a6009922115f686d6",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "White's large advantage has several conversion routes. Rd1 targets d6, while Qa7 and a4 preserve White's queenside pawn majority and access with the queen.",
+        "linesUci": [
+          [
+            "f1d1",
+            "g7g6",
+            "a2a3",
+            "f8g7",
+            "f2e3",
+            "e5c5",
+            "e3d3",
+            "c5e5",
+            "b1a2",
+            "e6g5"
+          ],
+          [
+            "f2a7",
+            "b8e8",
+            "f1h1",
+            "g7g6",
+            "b3d5",
+            "e8e7",
+            "a7b8",
+            "e7e8",
+            "b8b4",
+            "e6d4"
+          ],
+          [
+            "f1h1",
+            "b8b7",
+            "h1d1",
+            "g7g5",
+            "a2a3",
+            "e6f4",
+            "f2h2",
+            "b7c7",
+            "a3a4",
+            "c7c5"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "Rd1 places the rook opposite the isolated d6 pawn while the queen can enter on a7. The pressure remains after g6 and Bxe6 Qxe6.",
+        "uci": "f1d1",
+        "linesUci": [
+          [
+            "f1d1",
+            "g7g6",
+            "f2a7",
+            "b8e8",
+            "b3e6",
+            "e5e6",
+            "a7a3",
+            "f8g7",
+            "b2b3",
+            "e8h8"
+          ],
+          [
+            "f1d1",
+            "e6c5",
+            "f2h4",
+            "g7g5",
+            "h4h6",
+            "f8e7",
+            "d1d5",
+            "e5g3",
+            "h6g5",
+            "g3g5"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Qa7 is within 7 and 13 centipawns of Rd1 with no established tactical or strategic loss.",
+        "uci": "f2a7",
+        "linesUci": [
+          [
+            "f2a7",
+            "b8e8",
+            "a2a4",
+            "e5c5",
+            "a7b7",
+            "e8e7",
+            "b7d5",
+            "e7a7",
+            "f1d1",
+            "c5d5"
+          ],
+          [
+            "f2a7",
+            "e5b5",
+            "f1d1",
+            "b8b7",
+            "a7e3",
+            "g7g5",
+            "e3d2",
+            "b5e5",
+            "d2d6",
+            "e5d6"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "0064e92e1d823db1a78a",
+      "position": {
+        "tactical": true,
+        "positional": null,
+        "note": "Qxh3 wins the bishop immediately. Quiet queen moves such as Qg6 allow Be6+ and leave White decisively better.",
+        "linesUci": [
+          [
+            "f5h3",
+            "d2d1",
+            "b6c5",
+            "c2g2",
+            "h7h6",
+            "g3g4",
+            "c5b4",
+            "g2g3",
+            "h3h4",
+            "d1d3"
+          ],
+          [
+            "f5g6",
+            "h3e6",
+            "g8h8",
+            "f4g5",
+            "e7e6",
+            "d5e6",
+            "g6e6",
+            "d2d3",
+            "b6c5",
+            "g5f4"
+          ],
+          [
+            "f5h5",
+            "h3e6",
+            "g8h8",
+            "f4g5",
+            "e7e6",
+            "d5e6",
+            "e8e6",
+            "g5f4",
+            "h7h6",
+            "d2d3"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": true,
+        "positional": false,
+        "note": "Qxh3 takes the bishop on h3 and keeps Black's rook pressure. Qg2 or Qd1 are met without giving back the captured minor piece in the analysed lines. The tested choices are decided by the immediate gain of the undefended bishop; no separate strategic rationale is needed to explain the difference.",
+        "motifs": {
+          "hangingPiece": true
+        },
+        "uci": "f5h3",
+        "linesUci": [
+          [
+            "f5h3",
+            "d2d1",
+            "h7h6",
+            "f4c1",
+            "h3f5",
+            "h1g2",
+            "b6c5",
+            "h2h4",
+            "e7e5",
+            "c1f4"
+          ],
+          [
+            "f5h3",
+            "d2g2",
+            "h3f5",
+            "g2d2",
+            "g7g5",
+            "f4g5",
+            "e7e1",
+            "c2c1",
+            "e1e2",
+            "g3g4"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Qxh3 leads both budgets.",
+        "uci": "f5h3",
+        "linesUci": [
+          [
+            "f5h3",
+            "d2d1",
+            "h7h6",
+            "f4c1",
+            "h3f5",
+            "h1g2",
+            "b6c5",
+            "h2h4",
+            "e7e5",
+            "c1f4"
+          ],
+          [
+            "f5h3",
+            "d2g2",
+            "h3f5",
+            "g2d2",
+            "g7g5",
+            "f4g5",
+            "e7e1",
+            "c2c1",
+            "e1e2",
+            "g3g4"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "008c637caed8f1d1f908",
+      "position": {
+        "tactical": true,
+        "positional": null,
+        "note": "Both Qf6+ and Qg7+ exploit the exposed king. Alternating checking lines marshal queen, bishop and rook. Qg7+ Kd6 permits mate in six.",
+        "linesUci": [
+          [
+            "h8f6",
+            "e7d6",
+            "f6e5",
+            "d6e7",
+            "e5g7",
+            "e7d8",
+            "b2f6",
+            "d8c8",
+            "e1c1",
+            "b7c6"
+          ],
+          [
+            "h8g7",
+            "e7d8",
+            "b2f6",
+            "d8c8",
+            "e1c1",
+            "b7c6",
+            "b4b5",
+            "d7g7",
+            "f6g7",
+            "e8d8"
+          ],
+          [
+            "h8h7",
+            "e7d8",
+            "b2g7",
+            "d7e7",
+            "h7h6",
+            "d8d7",
+            "g7d4",
+            "e7f8",
+            "h6h7",
+            "f8e7"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": true,
+        "positional": null,
+        "note": "Qf6+ forces Kd6, then Rc1 and Be5+ lead to the forcing Rc7+ or the queen rechecks via e5 and g7. The key observed value is the continued attack.",
+        "uci": "h8f6",
+        "linesUci": [
+          [
+            "h8f6",
+            "e7d6",
+            "e1c1",
+            "d7d8",
+            "b2e5",
+            "d6d7",
+            "c1c7",
+            "d8c7",
+            "e5c7",
+            "d7c7"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Qf6+ leads both budgets.",
+        "uci": "h8f6",
+        "linesUci": [
+          [
+            "h8f6",
+            "e7d6",
+            "e1c1",
+            "d7d8",
+            "b2e5",
+            "d6d7",
+            "c1c7",
+            "d8c7",
+            "e5c7",
+            "d7c7"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "00082d998cd505455952",
+      "position": {
+        "tactical": null,
+        "positional": null,
+        "note": "The board has several repeated checks in a lost position. Qc3+ improves in the deeper root but the exact Qc2+ reply search gives widely different scores from that root. No stable defensive lesson yet.",
+        "linesUci": [
+          [
+            "b2c3",
+            "c5b6",
+            "c3b2",
+            "b6a7",
+            "b2a2",
+            "a7b8",
+            "a2b2",
+            "b8c7",
+            "b2g7",
+            "c7c8"
+          ],
+          [
+            "b2c2",
+            "c5b6",
+            "c2b2",
+            "b6a7",
+            "b2a2",
+            "a7b8",
+            "a2b2",
+            "b8c7",
+            "b2g7",
+            "c7c8"
+          ],
+          [
+            "b2a3",
+            "c5c4",
+            "a3a4",
+            "c4c3",
+            "g1g2",
+            "d6d5",
+            "a4a3",
+            "d5b3",
+            "a3a7",
+            "b3c4"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": null,
+        "note": "Qc2+ keeps Qb2+ available, yet Black can use Kb4 or Kb6. A concrete tactical gain or lasting positional justification is unproved.",
+        "uci": "b2c2",
+        "linesUci": [
+          [
+            "b2c2",
+            "c5b4",
+            "c2b2",
+            "b4c5",
+            "b2c3",
+            "c5b6",
+            "c3b2",
+            "b6c7",
+            "b2g7",
+            "c7c8"
+          ],
+          [
+            "b2c2",
+            "c5b6",
+            "c2b2",
+            "b6c7",
+            "b2g7",
+            "c7c8",
+            "g7c3",
+            "d6d5",
+            "g1g2",
+            "c8b7"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": null,
+        "positional": null,
+        "note": "Qa3+ ties Qc2+ in one search and is worse in the other. Both remain losing. No exact mechanism is established.",
+        "uci": "b2a3",
+        "linesUci": [
+          [
+            "b2a3",
+            "c5b6",
+            "a3b2",
+            "b6c7",
+            "b2g7",
+            "c7c8",
+            "g7h8",
+            "d6d8",
+            "h8c3",
+            "d8d5"
+          ],
+          [
+            "b2a3",
+            "c5c4",
+            "a3a4",
+            "c4c3",
+            "g1g2",
+            "d6d5",
+            "a4a3",
+            "d5b3",
+            "a3f8",
+            "b3c4"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "001055ecd152ba7fcd67",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "The isolated c4 pawn and access to the c-file constrain White. Nf3 allows Black to play Rc8 and invade d2, while Nb3 and R5a3 keep an active rook and can support c5.",
+        "linesUci": [
+          [
+            "d4b3",
+            "d6b6",
+            "a5a3",
+            "a8c8",
+            "f2f3",
+            "e4c5",
+            "b3c5",
+            "c8c5",
+            "a3a5",
+            "c5a5"
+          ],
+          [
+            "d4f3",
+            "a8c8",
+            "f3e1",
+            "e4c5",
+            "a1a3",
+            "d6d2",
+            "g1f1",
+            "d2b2",
+            "a3a2",
+            "b2a2"
+          ],
+          [
+            "a1b1",
+            "a8b8",
+            "b1d1",
+            "b8d8",
+            "f2f3",
+            "d6d4",
+            "d1d4",
+            "d8d4",
+            "f3e4",
+            "b7e4"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "Nb3 keeps c5 available and places the knight where R5a3 can support it against Rb6. It avoids the passive Nf3 Ne1 branch.",
+        "uci": "d4b3",
+        "linesUci": [
+          [
+            "d4b3",
+            "d6b6",
+            "a5a3",
+            "a8b8",
+            "e2d3",
+            "b8c8",
+            "f2f3",
+            "e4f6",
+            "b3a5",
+            "b7a8"
+          ],
+          [
+            "d4b3",
+            "a8b8",
+            "a5a3",
+            "b7c8",
+            "c4c5",
+            "d6c6",
+            "e2f3",
+            "b8b4",
+            "b3d2",
+            "f7f5"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Nb3 leads both budgets.",
+        "uci": "d4b3",
+        "linesUci": [
+          [
+            "d4b3",
+            "d6b6",
+            "a5a3",
+            "a8b8",
+            "e2d3",
+            "b8c8",
+            "f2f3",
+            "e4f6",
+            "b3a5",
+            "b7a8"
+          ],
+          [
+            "d4b3",
+            "a8b8",
+            "a5a3",
+            "b7c8",
+            "c4c5",
+            "d6c6",
+            "e2f3",
+            "b8b4",
+            "b3d2",
+            "f7f5"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "00348c948d65bebf83b7",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "The c-file route Rc6 and bishop pressure against the knight on e6 persist after Bg4. Kxf2 instead gives back a bishop and changes the rook plan.",
+        "linesUci": [
+          [
+            "h5g4",
+            "f2c5",
+            "d6c6",
+            "c7e6",
+            "f1e2",
+            "c5e7",
+            "g4e6",
+            "f7e6",
+            "c6e6",
+            "e7f6"
+          ],
+          [
+            "f1f2",
+            "g6h5",
+            "f6b2",
+            "e8e6",
+            "d6e6",
+            "c7e6",
+            "d1d5",
+            "g8h7",
+            "d5h5",
+            "h7g6"
+          ],
+          [
+            "h5g6",
+            "f7g6",
+            "f1f2",
+            "e8f8",
+            "f2e2",
+            "c7e8",
+            "f6e7",
+            "e8d6",
+            "e7f8",
+            "d6c4"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "Bg4 preserves the bishop from gxh5 and can later take the e6 knight from g4 after Rc6 brings the rook into play.",
+        "uci": "h5g4",
+        "linesUci": [
+          [
+            "h5g4",
+            "f2c5",
+            "d6c6",
+            "c5e7",
+            "f6d4",
+            "c7e6",
+            "g4e6",
+            "f7e6",
+            "c6e6",
+            "e7f8"
+          ],
+          [
+            "h5g4",
+            "f2e3",
+            "g4d7",
+            "e8f8",
+            "f6e7",
+            "f8b8",
+            "d7c6",
+            "a8a7",
+            "d6d8",
+            "b8d8"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Bg4 leads both budgets.",
+        "uci": "h5g4",
+        "linesUci": [
+          [
+            "h5g4",
+            "f2c5",
+            "d6c6",
+            "c5e7",
+            "f6d4",
+            "c7e6",
+            "g4e6",
+            "f7e6",
+            "c6e6",
+            "e7f8"
+          ],
+          [
+            "h5g4",
+            "f2e3",
+            "g4d7",
+            "e8f8",
+            "f6e7",
+            "f8b8",
+            "d7c6",
+            "a8a7",
+            "d6d8",
+            "b8d8"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "00378253f5dcaab79243",
+      "position": {
+        "tactical": true,
+        "positional": true,
+        "note": "The e5 pawn supports Black's rook on d4 and permits the concrete Rxd4 exd4 sequence. The f5 break and White's knight manoeuvre against a4 give the endgame a separate structural dimension.",
+        "linesUci": [
+          [
+            "f6f5",
+            "b1c3",
+            "f5e4",
+            "f3e4",
+            "f8g7",
+            "b2a4",
+            "g7f6",
+            "a4c5",
+            "d7c5",
+            "c3b5"
+          ],
+          [
+            "f8e7",
+            "c2c3",
+            "d4b4",
+            "a3b4",
+            "c5b7",
+            "b2a4",
+            "b7d6",
+            "b1d2",
+            "f6f5",
+            "c3d3"
+          ],
+          [
+            "g6g5",
+            "c2c3",
+            "g5g4",
+            "b4d4",
+            "e5d4",
+            "c3d4",
+            "g4f3",
+            "g2f3",
+            "c5b3",
+            "d4c3"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "f5 challenges the e4 centre and produces a changed pawn structure after Nc3 fxe4 fxe4. Rxd4 exd4 is a secondary exchange, insufficient on its own to establish why f5 is best.",
+        "uci": "f6f5",
+        "linesUci": [
+          [
+            "f6f5",
+            "b1c3",
+            "f5e4",
+            "f3e4",
+            "f8e7",
+            "b2a4",
+            "e7f6",
+            "a4c5",
+            "d7c5",
+            "c3b5"
+          ],
+          [
+            "f6f5",
+            "b4d4",
+            "e5d4",
+            "b2d3",
+            "c5b7",
+            "e4e5",
+            "d7b6",
+            "d3b4",
+            "b7c5",
+            "b1d2"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "f5 leads both budgets.",
+        "uci": "f6f5",
+        "linesUci": [
+          [
+            "f6f5",
+            "b1c3",
+            "f5e4",
+            "f3e4",
+            "f8e7",
+            "b2a4",
+            "e7f6",
+            "a4c5",
+            "d7c5",
+            "c3b5"
+          ],
+          [
+            "f6f5",
+            "b4d4",
+            "e5d4",
+            "b2d3",
+            "c5b7",
+            "e4e5",
+            "d7b6",
+            "d3b4",
+            "b7c5",
+            "b1d2"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "226eb30eaeccb09020ee",
+      "position": {
+        "tactical": true,
+        "positional": true,
+        "note": "The defensive Nf3 forces the queen decision Qf6 and a trade, while the viable Kb1 invites the c6 pawn break and keeps a different structure with queens on.",
+        "linesUci": [
+          [
+            "c1b1",
+            "h4g5",
+            "f4f2",
+            "c7c6",
+            "d5c6",
+            "b7c6",
+            "f2d4",
+            "f8e8",
+            "g1f1",
+            "g5e7"
+          ],
+          [
+            "h2f3",
+            "h4f6",
+            "f4f6",
+            "g8f6",
+            "f3e5",
+            "d6e5",
+            "g4g5",
+            "h6g5",
+            "g1g5",
+            "f8e8"
+          ],
+          [
+            "c3e2",
+            "h4g5",
+            "f4g5",
+            "h6g5",
+            "e2d4",
+            "a8e8",
+            "h2f3",
+            "g8f6",
+            "f3g5",
+            "f8h8"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": true,
+        "positional": null,
+        "note": "Nf3 attacks Qh4 while retaining the queen trade after Qf6. If Qe7 sidesteps it, g5 and the exchange on f3 open White's counterplay at a much better score.",
+        "uci": "h2f3",
+        "linesUci": [
+          [
+            "h2f3",
+            "h4f6",
+            "f4f6",
+            "g8f6",
+            "f3e5",
+            "d6e5",
+            "g4g5",
+            "h6g5",
+            "g1g5",
+            "f8e8"
+          ],
+          [
+            "h2f3",
+            "h4e7",
+            "g4g5",
+            "e5f3",
+            "f4f3",
+            "c7c5",
+            "d5c6",
+            "b7c6",
+            "g5h6",
+            "g7h7"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Kb1 ties Nf3 initially and leads the deeper root.",
+        "uci": "c1b1",
+        "linesUci": [
+          [
+            "c1b1",
+            "h4g5",
+            "f4f2",
+            "c7c6",
+            "d5c6",
+            "b7c6",
+            "f2d4",
+            "g8f6",
+            "c3e2",
+            "a8e8"
+          ],
+          [
+            "c1b1",
+            "c7c6",
+            "d5c6",
+            "b7c6",
+            "f4e3",
+            "h4g5",
+            "e3d4",
+            "g8f6",
+            "c3e2",
+            "a8e8"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "0004dc640efac6bd5b14",
+      "position": {
+        "tactical": true,
+        "positional": true,
+        "note": "Black's h2 passer dictates the struggle. After Kg3, Rxh2 loses the rook and Kg2 threatens promotion; Kf5 lets Rxh2 capture with the rook intact.",
+        "linesUci": [
+          [
+            "g4g3",
+            "d2e3",
+            "g3g2",
+            "e3d4",
+            "h2h1q",
+            "h8h1",
+            "g2h1",
+            "d4c4",
+            "h1g1",
+            "c4b4"
+          ],
+          [
+            "g4f5",
+            "h8h2",
+            "f5g5",
+            "h2h1",
+            "g5f5",
+            "h1h5",
+            "f5f4",
+            "h5d5",
+            "f4e4",
+            "d5c5"
+          ],
+          [
+            "g4f3",
+            "h8h2",
+            "f3g3",
+            "h2h5",
+            "g3f4",
+            "h5d5",
+            "f4e4",
+            "d5c5",
+            "e4f4",
+            "c5c4"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": true,
+        "positional": true,
+        "note": "Kg3 supports a permanent advanced passed pawn and makes the immediate rook capture fail to Kxh2. The alternate wait Ke3 Kg2 still runs into promotion and the rook trade.",
+        "uci": "g4g3",
+        "linesUci": [
+          [
+            "g4g3",
+            "d2e3",
+            "g3g2",
+            "e3d4",
+            "h2h1q",
+            "h8h1",
+            "g2h1",
+            "d4c4",
+            "h1g2",
+            "c4c5"
+          ],
+          [
+            "g4g3",
+            "h8h2",
+            "g3h2",
+            "d2e3",
+            "h2g3",
+            "e3d4",
+            "g3f3",
+            "d4c4",
+            "f3e4",
+            "c4c5"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Kg3 leads both budgets.",
+        "uci": "g4g3",
+        "linesUci": [
+          [
+            "g4g3",
+            "d2e3",
+            "g3g2",
+            "e3d4",
+            "h2h1q",
+            "h8h1",
+            "g2h1",
+            "d4c4",
+            "h1g2",
+            "c4c5"
+          ],
+          [
+            "g4g3",
+            "h8h2",
+            "g3h2",
+            "d2e3",
+            "h2g3",
+            "e3d4",
+            "g3f3",
+            "d4c4",
+            "f3e4",
+            "c4c5"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "001cba5a5063a75d8d93",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "Queenside pressure via b5 is common, but Rde1 retains Qe3 and the route into a7 and c7. Na4 is displaced by b5 and Black gains activity after the exchange on c8.",
+        "linesUci": [
+          [
+            "d1e1",
+            "b7b5",
+            "f3e3",
+            "a8b8",
+            "e3a7",
+            "f6d7",
+            "a7c7",
+            "b5b4",
+            "c3d5",
+            "e5b2"
+          ],
+          [
+            "g2g4",
+            "h6h5",
+            "g4h5",
+            "h8h5",
+            "h1g1",
+            "c8d7",
+            "b3d2",
+            "d7c6",
+            "c1b1",
+            "e5h2"
+          ],
+          [
+            "a2a3",
+            "c8d7",
+            "h1e1",
+            "b7b5",
+            "f3e3",
+            "e8g8",
+            "h2h3",
+            "f8c8",
+            "e3d4",
+            "e5d4"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "Rde1 reinforces the white centre and permits Qe3 and Qa7 under ...b5 and ...Rb8. The quieter alternative g4 shows another viable plan.",
+        "uci": "d1e1",
+        "linesUci": [
+          [
+            "d1e1",
+            "b7b5",
+            "f3e3",
+            "a8b8",
+            "e3a7",
+            "f6d7",
+            "a7c7",
+            "c8b7",
+            "h1f1",
+            "g7f6"
+          ],
+          [
+            "d1e1",
+            "a8b8",
+            "f3e3",
+            "b7b5",
+            "e3a7",
+            "f6d7",
+            "b3a5",
+            "e5c5",
+            "a7c5",
+            "d7c5"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": null,
+        "positional": true,
+        "note": "Na4 exposes the knight to the thematic b5 advance; Nb6 Rb8 and Nxc8 Rxc8 leave Black with an active c-file rook and White without the candidate's queenside penetration.",
+        "uci": "c3a4",
+        "linesUci": [
+          [
+            "c3a4",
+            "b7b5",
+            "a4b6",
+            "a8b8",
+            "b6c8",
+            "b8c8",
+            "f3g3",
+            "e5g3",
+            "h2g3",
+            "f6d7"
+          ],
+          [
+            "c3a4",
+            "f6d7",
+            "a4c3",
+            "a8b8",
+            "d3e2",
+            "d7f6",
+            "b3d4",
+            "c8d7",
+            "c3d5",
+            "e8g8"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "002fbb75907381957f6f",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "Both strong moves converge on Rf6, Rf2 and an a-pawn break. White's e6 pawn and supported f7 bishop make that coordination important to Black's defence.",
+        "linesUci": [
+          [
+            "h6f6",
+            "f1f2",
+            "d6b8",
+            "a1f1",
+            "a6a5",
+            "b2b4",
+            "h7h6",
+            "h2h4",
+            "c8c4",
+            "h4h5"
+          ],
+          [
+            "d6b8",
+            "f1f2",
+            "h6f6",
+            "a1f1",
+            "a6a5",
+            "b2b4",
+            "h7h6",
+            "h2h4",
+            "c8c4",
+            "h4h5"
+          ],
+          [
+            "a6a5",
+            "f1f2",
+            "d6b8",
+            "b2b4",
+            "h6f6",
+            "a1f1",
+            "h7h6",
+            "h2h4",
+            "c8c4",
+            "h4h5"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "Rf6 improves Black's active f-file restraint before White doubles rooks. Qb8 often transposes. The earlier Ng8 and later queenside expansion are separate defensive routes.",
+        "uci": "h6f6",
+        "linesUci": [
+          [
+            "h6f6",
+            "f1f2",
+            "e7g8",
+            "e3f4",
+            "d6b6",
+            "a1f1",
+            "g8h6",
+            "f7h5",
+            "h6g8",
+            "f4e5"
+          ],
+          [
+            "h6f6",
+            "e3f4",
+            "d6f4",
+            "f1f4",
+            "g7g5",
+            "f4f2",
+            "h8g7",
+            "f7h5",
+            "g5g4",
+            "a1f1"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Rf6 leads both budgets.",
+        "uci": "h6f6",
+        "linesUci": [
+          [
+            "h6f6",
+            "f1f2",
+            "e7g8",
+            "e3f4",
+            "d6b6",
+            "a1f1",
+            "g8h6",
+            "f7h5",
+            "h6g8",
+            "f4e5"
+          ],
+          [
+            "h6f6",
+            "e3f4",
+            "d6f4",
+            "f1f4",
+            "g7g5",
+            "f4f2",
+            "h8g7",
+            "f7h5",
+            "g5g4",
+            "a1f1"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "00871509f83a8e13ff9f",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "The white rook repeatedly uses d2 and d6 to create counterplay, while Black's bishop and kingside pawn advance shape the competing branches.",
+        "linesUci": [
+          [
+            "h8h5",
+            "f7g8",
+            "d1d2",
+            "e7f7",
+            "h5f3",
+            "g8h7",
+            "f3c6",
+            "e6f5",
+            "c6a6",
+            "f7c4"
+          ],
+          [
+            "h8h7",
+            "e6g4",
+            "d1d2",
+            "e7c7",
+            "h2h3",
+            "c7c8",
+            "h1g1",
+            "e8h8",
+            "h7e4",
+            "g4f5"
+          ],
+          [
+            "h8h4",
+            "e6f5",
+            "h4h5",
+            "g7g6",
+            "h5h7",
+            "f7e6",
+            "h7h6",
+            "e7f8",
+            "h6h7",
+            "e8e7"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": null,
+        "note": "Qh5+ keeps the queen active but Qh7 is nearly equivalent. The checks and subsequent queen rechecks do not establish a meaningful forced gain or a distinct strategic improvement.",
+        "uci": "h8h5",
+        "linesUci": [
+          [
+            "h8h5",
+            "f7g8",
+            "h2h3",
+            "e7f7",
+            "h5f3",
+            "g7g5",
+            "d1d6",
+            "g8g7",
+            "f3c6",
+            "e5e4"
+          ],
+          [
+            "h8h5",
+            "f7f8",
+            "d1d2",
+            "e7f7",
+            "h5h8",
+            "f7g8",
+            "h8h5",
+            "g8f7"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Qh5+ leads both budgets.",
+        "uci": "h8h5",
+        "linesUci": [
+          [
+            "h8h5",
+            "f7g8",
+            "h2h3",
+            "e7f7",
+            "h5f3",
+            "g7g5",
+            "d1d6",
+            "g8g7",
+            "f3c6",
+            "e5e4"
+          ],
+          [
+            "h8h5",
+            "f7f8",
+            "d1d2",
+            "e7f7",
+            "h5h8",
+            "f7g8",
+            "h8h5",
+            "g8f7"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "012d731cddbf78b59cfa",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "The choice changes the centre. exf4 forces White to resolve f4 before Black castles; Ng6 concedes the bolder exchange on g6 and the e5 capture with d4 next.",
+        "linesUci": [
+          [
+            "e5f4",
+            "e3f4",
+            "e8g8",
+            "d1d2",
+            "a7a5",
+            "f1f2",
+            "d6f4",
+            "d2f4",
+            "b8f4",
+            "g3f4"
+          ],
+          [
+            "e8g8",
+            "f4e5",
+            "d6e5",
+            "d1d2",
+            "a7a5",
+            "h4f3",
+            "e5f6",
+            "e3d4",
+            "b8d6",
+            "d2f4"
+          ],
+          [
+            "a7a5",
+            "f4e5",
+            "d6e5",
+            "d1d2",
+            "e8g8",
+            "h4f3",
+            "e5f6",
+            "e3d4",
+            "b8d6",
+            "d2f4"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "exf4 removes White's f-pawn early and lets Black castle with active e-file play after Bxf4. The important result is how the central breaks are ordered.",
+        "uci": "e5f4",
+        "linesUci": [
+          [
+            "e5f4",
+            "e3f4",
+            "e8g8",
+            "d1d2",
+            "f8e8",
+            "d3d4",
+            "a7a6",
+            "f4d6",
+            "b8d6",
+            "f1f3"
+          ],
+          [
+            "e5f4",
+            "g3f4",
+            "e8g8",
+            "d1e1",
+            "a7a5",
+            "e1f2",
+            "e7g6",
+            "h4g6",
+            "f7g6",
+            "a1c1"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": null,
+        "positional": true,
+        "note": "Ng6 permits Nxg6 hxg6 fxe5 Bxe5 and d4. It accepts the changed kingside structure and lets White advance the centre before Black castles.",
+        "uci": "e7g6",
+        "linesUci": [
+          [
+            "e7g6",
+            "h4g6",
+            "h7g6",
+            "f4e5",
+            "d6e5",
+            "d3d4",
+            "e5d6",
+            "e3d2",
+            "e8g8",
+            "d2b4"
+          ],
+          [
+            "e7g6",
+            "f4e5",
+            "g6h4",
+            "e5d6",
+            "h4g2",
+            "g1g2",
+            "b8d6",
+            "e3a7",
+            "b7b6",
+            "d1d2"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "0000da33c60d04ce8c58",
+      "position": {
+        "tactical": true,
+        "positional": true,
+        "note": "Qxa7+ wins a pawn while forcing a queen block or bishop block, unlike Nxb5 Qxd4. The advanced d6 passer stays a central factor across both responses.",
+        "linesUci": [
+          [
+            "d4a7",
+            "e6d7",
+            "a7a3",
+            "b5b4",
+            "a3b4",
+            "c8b8",
+            "b4a3",
+            "d7e6",
+            "g2c6",
+            "e8d8"
+          ],
+          [
+            "d4d2",
+            "h7h5",
+            "c3b5",
+            "c8b8",
+            "g2c6",
+            "e8d8",
+            "d2a5",
+            "e6d7",
+            "a5a7",
+            "g7h6"
+          ],
+          [
+            "c3b5",
+            "f6d4",
+            "d1d4",
+            "c8c4",
+            "h1d1",
+            "c4d4",
+            "d1d4",
+            "e6d7",
+            "b5a7",
+            "e8e1"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": true,
+        "positional": true,
+        "note": "The move captures with tempo against the king. Qa3 protects d6 after Bd7 and Nxb5 or Qxb4 follows. After Qf7 the queen trade leaves the d6 passer intact.",
+        "uci": "d4a7",
+        "linesUci": [
+          [
+            "d4a7",
+            "e6d7",
+            "a7a3",
+            "b5b4",
+            "a3b4",
+            "c8b8",
+            "b4a3",
+            "d7e6",
+            "c3d5",
+            "e6d5"
+          ],
+          [
+            "d4a7",
+            "f6f7",
+            "a7f7",
+            "g7f7",
+            "c3b5",
+            "c8b8",
+            "b5c7",
+            "e8d8",
+            "d1d4",
+            "b8b6"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Qxa7+ leads both budgets.",
+        "uci": "d4a7",
+        "linesUci": [
+          [
+            "d4a7",
+            "e6d7",
+            "a7a3",
+            "b5b4",
+            "a3b4",
+            "c8b8",
+            "b4a3",
+            "d7e6",
+            "c3d5",
+            "e6d5"
+          ],
+          [
+            "d4a7",
+            "f6f7",
+            "a7f7",
+            "g7f7",
+            "c3b5",
+            "c8b8",
+            "b5c7",
+            "e8d8",
+            "d1d4",
+            "b8b6"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "000eccd923b7d4b6c194",
+      "position": {
+        "tactical": true,
+        "positional": true,
+        "note": "Black's d3 passer and active rook determine the plan. After the natural f3 in several branches, Rc2+ and Rxh2 punish the opening of the second rank.",
+        "linesUci": [
+          [
+            "f6e5",
+            "h2h4",
+            "c1c5",
+            "f2f3",
+            "e4f3",
+            "g2f3",
+            "c5d5",
+            "d8e8",
+            "e5d4",
+            "f3f2"
+          ],
+          [
+            "f6e7",
+            "d8d4",
+            "e7f6",
+            "h2h4",
+            "f6e5",
+            "d4d8",
+            "c1c5",
+            "f2f3",
+            "e4f3",
+            "g2f3"
+          ],
+          [
+            "c1c2",
+            "h2h4",
+            "f6e5",
+            "g2f1",
+            "c2c1",
+            "f1g2",
+            "c1c5",
+            "f2f3",
+            "e4f3",
+            "g2f3"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "Rc2 controls d2 in support of the d3 passer and makes other second-rank threats viable. Ke5 and Ke7 also retain the same winning plan.",
+        "uci": "c1c2",
+        "linesUci": [
+          [
+            "c1c2",
+            "g2f1",
+            "c2c1",
+            "f1g2",
+            "f6e5",
+            "f2f3",
+            "c1c2",
+            "g2f1",
+            "c2h2",
+            "f1e1"
+          ],
+          [
+            "c1c2",
+            "h2h4",
+            "f6e5",
+            "d8d7",
+            "c2b2",
+            "h4h5",
+            "h7h6",
+            "d7d8",
+            "b2b5",
+            "f2f3"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": null,
+        "positional": null,
+        "note": "g5 remains decisively winning. Its root gap is 36 centipawns initially and 11 at the deeper budget. The independent replies do not establish a distinct error.",
+        "uci": "g7g5",
+        "linesUci": [
+          [
+            "g7g5",
+            "h2h3",
+            "f6e5",
+            "f2f3",
+            "c1b1",
+            "g2f2",
+            "b1b2",
+            "f2e1",
+            "b2b5",
+            "f3e4"
+          ],
+          [
+            "g7g5",
+            "f2f3",
+            "c1c2",
+            "g2f1",
+            "c2h2",
+            "f1e1",
+            "h2e2",
+            "e1f1",
+            "f6e5",
+            "f3e4"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "0014767858eddaf0073f",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "White's c5 pawn restricts Black's use of the queenside, and Bd4 and Rh2 are alternative ways to keep the bishop and rook active under knight pressure. cxb6 gives Black a freer rook.",
+        "linesUci": [
+          [
+            "c3d4",
+            "g1f3",
+            "d4h8",
+            "f3e1",
+            "c2e2",
+            "e1f3",
+            "h8c3",
+            "f3g1",
+            "e2h2",
+            "g1f3"
+          ],
+          [
+            "c2h2",
+            "g1f3",
+            "h2b2",
+            "b6c5",
+            "c3a5",
+            "e7d7",
+            "a5c3",
+            "f3g1",
+            "b2d2",
+            "d7e7"
+          ],
+          [
+            "c5b6",
+            "e6b6",
+            "b3b4",
+            "a5b4",
+            "a4a5",
+            "b6b8",
+            "c2b2",
+            "g1h3",
+            "b2b4",
+            "b8b4"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "Bd4 supports c5 and keeps the option of Bc3 after Nf3. Both searches keep the rook available to guard the second rank.",
+        "uci": "c3d4",
+        "linesUci": [
+          [
+            "c3d4",
+            "g1f3",
+            "d4c3",
+            "f3g1",
+            "c2h2",
+            "g1f3",
+            "h2g2",
+            "b6c5",
+            "c3a5",
+            "e7d7"
+          ],
+          [
+            "c3d4",
+            "b6c5",
+            "c2c5",
+            "g1h3",
+            "c5a5",
+            "e7d7",
+            "b3b4",
+            "h3f4",
+            "a5g5",
+            "f4g2"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": null,
+        "positional": null,
+        "note": "cxb6 Rxb6 opens b-file activity and sometimes leaves h3 vulnerable. The loss is modest and the deeper reply also finds Rb2 with continued resistance.",
+        "uci": "c5b6",
+        "linesUci": [
+          [
+            "c5b6",
+            "e6b6",
+            "c2b2",
+            "b6a6",
+            "b2h2",
+            "a6b6",
+            "b3b4",
+            "b6c6",
+            "c3h8",
+            "a5b4"
+          ],
+          [
+            "c5b6",
+            "e6d6",
+            "c3a5",
+            "d6d3",
+            "e3e4",
+            "d3b3",
+            "e4d5",
+            "b3b1",
+            "d5c6",
+            "g1h3"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "001d004a45def1b67e6c",
+      "position": {
+        "tactical": true,
+        "positional": true,
+        "note": "Black can capture on e5 in either order after Bb2. The forcing Nxf7 version instead permits Kxf7 and leaves the king able to retreat after Qe6+, enabling Nxa3. White's e-file activity survives the sounder liquidation.",
+        "linesUci": [
+          [
+            "a3b2",
+            "g7e5",
+            "e4e5",
+            "c7e5",
+            "e1e5",
+            "b5d6",
+            "b2a3",
+            "g8f8",
+            "a1e1",
+            "a8d8"
+          ],
+          [
+            "e5c6",
+            "g7c3",
+            "c6e7",
+            "g8g7",
+            "d5d6",
+            "b5d6",
+            "e7d5",
+            "e8e4",
+            "d5c7",
+            "e4e1"
+          ],
+          [
+            "h2h4",
+            "b5a3",
+            "a1a3",
+            "c7c5",
+            "a3a1",
+            "c5c3",
+            "e5c6",
+            "a6b7",
+            "a1d1",
+            "g7f6"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": true,
+        "positional": true,
+        "note": "Bb2 saves the a3 bishop from Nxa3 and leaves the e5 exchange yielding an active rook on e5. Both ...Qxe5 and ...Bxe5 orders repeat that resolution.",
+        "uci": "a3b2",
+        "linesUci": [
+          [
+            "a3b2",
+            "c7e5",
+            "e4e5",
+            "g7e5",
+            "e1e5",
+            "b5d6",
+            "b2a3",
+            "d6c4",
+            "e5e1",
+            "c4a3"
+          ],
+          [
+            "a3b2",
+            "g7e5",
+            "e4e5",
+            "c7e5",
+            "e1e5",
+            "b5d6",
+            "b2a3",
+            "d6c4",
+            "e5e4",
+            "a8a7"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": true,
+        "positional": null,
+        "note": "Nxf7 Kxf7 accepts the offered knight; Qe6+ Kf8 followed by ...Nxa3 withstands the attack. The separate Bf6 decline is far worse for Black, exposing the importance of accepting.",
+        "uci": "e5f7",
+        "linesUci": [
+          [
+            "e5f7",
+            "g8f7",
+            "e4e6",
+            "f7f8",
+            "e1e3",
+            "b5a3",
+            "d5d6",
+            "e7d6",
+            "e3f3",
+            "g7f6"
+          ],
+          [
+            "e5f7",
+            "g7f6",
+            "e4e6",
+            "g8g7",
+            "a3c1",
+            "c7c8",
+            "f7g5",
+            "b5d6",
+            "c1f4",
+            "h7h6"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "0024602cab8975872cbc",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "The e-file and Black's isolated d5 pawn shape the exchanges. Re4 and Rae8 recur as Black improves the rooks after the alternative White development moves.",
+        "linesUci": [
+          [
+            "h7h6",
+            "c1e3",
+            "e8e4",
+            "f1e1",
+            "a8e8",
+            "g1f1",
+            "a7a6",
+            "f3d2",
+            "e4e6",
+            "d2f3"
+          ],
+          [
+            "e8e6",
+            "c1g5",
+            "f6e4",
+            "a1d1",
+            "h7h6",
+            "g5e3",
+            "a8d8",
+            "f1e1",
+            "e6e7",
+            "d3c2"
+          ],
+          [
+            "c7b6",
+            "c1f4",
+            "f6e4",
+            "f4e5",
+            "a8d8",
+            "e5d4",
+            "b6c7",
+            "f1e1",
+            "h7h6",
+            "e1e2"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "h6 takes g5 away from the white bishop and keeps active rook play on the e-file. After Re6 instead, White can use Bg5 before Black resolves the pressure with Ne4.",
+        "uci": "h7h6",
+        "linesUci": [
+          [
+            "h7h6",
+            "c1e3",
+            "e8e4",
+            "a1d1",
+            "a8e8",
+            "e3d4",
+            "f6h5",
+            "d4e3"
+          ],
+          [
+            "h7h6",
+            "f1e1",
+            "e8e4",
+            "c1e3",
+            "a8e8",
+            "a1d1",
+            "a7a6",
+            "a2a3",
+            "d7c6",
+            "e3d4"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "h6 leads both budgets.",
+        "uci": "h7h6",
+        "linesUci": [
+          [
+            "h7h6",
+            "c1e3",
+            "e8e4",
+            "a1d1",
+            "a8e8",
+            "e3d4",
+            "f6h5",
+            "d4e3"
+          ],
+          [
+            "h7h6",
+            "f1e1",
+            "e8e4",
+            "c1e3",
+            "a8e8",
+            "a1d1",
+            "a7a6",
+            "a2a3",
+            "d7c6",
+            "e3d4"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "000ffae36a3c5fb6db8d",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "White's b4 and b5 expansion and Black's bishop or knight activity define the two equal branches. The different pawn captures do not resolve into a clear tactic.",
+        "linesUci": [
+          [
+            "b2b4",
+            "g7b2",
+            "e3h6",
+            "e4c2",
+            "b4b5",
+            "c6d4",
+            "f3d4",
+            "b2d4",
+            "a3a4",
+            "e7e5"
+          ],
+          [
+            "f1c1",
+            "e4d3",
+            "e3h6",
+            "g7h6",
+            "c1h6",
+            "d3b1",
+            "g1h2",
+            "b1b2",
+            "h6e3",
+            "b2c2"
+          ],
+          [
+            "b2b3",
+            "e4c2",
+            "b3b4",
+            "e7e5",
+            "h4h5",
+            "e5e4",
+            "f3d2",
+            "g6h5",
+            "f1e2",
+            "c2c1"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "b4 gains queenside space and makes the further b5 advance possible after Bb2. Qc1 can prepare the same expansion.",
+        "uci": "b2b4",
+        "linesUci": [
+          [
+            "b2b4",
+            "g7b2",
+            "e3h6",
+            "e4c2",
+            "b4b5",
+            "c6d4",
+            "f3d4",
+            "b2d4",
+            "h6e3",
+            "d4e3"
+          ],
+          [
+            "b2b4",
+            "c6e5",
+            "f3e5",
+            "g7e5",
+            "f1c1",
+            "e4h4",
+            "g2g3",
+            "h4g4",
+            "e3h6",
+            "e5d4"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "b4 is a joint leading choice in both frames.",
+        "uci": "b2b4",
+        "linesUci": [
+          [
+            "b2b4",
+            "g7b2",
+            "e3h6",
+            "e4c2",
+            "b4b5",
+            "c6d4",
+            "f3d4",
+            "b2d4",
+            "h6e3",
+            "d4e3"
+          ],
+          [
+            "b2b4",
+            "c6e5",
+            "f3e5",
+            "g7e5",
+            "f1c1",
+            "e4h4",
+            "g2g3",
+            "h4g4",
+            "e3h6",
+            "e5d4"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "003e43b909b9bf929cf8",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "White's h-pawn advance and Black's b-pawn expansion remain strategic factors with or without the immediate queen exchange.",
+        "linesUci": [
+          [
+            "d6b8",
+            "a8b8",
+            "h4h5",
+            "h7h6",
+            "a2a3",
+            "d7d5",
+            "e4e5",
+            "f6d7",
+            "h1e1",
+            "c6a8"
+          ],
+          [
+            "d3f1",
+            "b8d6",
+            "d1d6",
+            "e8c8",
+            "b3a5",
+            "a8a7",
+            "h4h5",
+            "h7h6",
+            "a2a3",
+            "c6a8"
+          ],
+          [
+            "d6h2",
+            "b5b4",
+            "c3e2",
+            "a6a5",
+            "b3d4",
+            "a5a4",
+            "h2b8",
+            "e8b8",
+            "g4g5",
+            "f6h5"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": false,
+        "positional": true,
+        "note": "Qxb8 removes queens before the pawn race and lets White bring the knight to c5 or gain kingside space with h5, both depending on Black's chosen rook recapture. Both rook recaptures are available with a balanced queen trade, and lead to ordinary pawn expansion rather than a tactical payoff.",
+        "motifs": {
+          "hangingPiece": false
+        },
+        "uci": "d6b8",
+        "linesUci": [
+          [
+            "d6b8",
+            "a8b8",
+            "h4h5",
+            "h7h6",
+            "d1g1",
+            "b5b4",
+            "c3e2",
+            "c6b5",
+            "g4g5",
+            "h6g5"
+          ],
+          [
+            "d6b8",
+            "e8b8",
+            "c3e2",
+            "d7d6",
+            "g4g5",
+            "f6h5",
+            "b3a5",
+            "b8b6",
+            "f3f4",
+            "e7g6"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Qxb8 leads both budgets.",
+        "uci": "d6b8",
+        "linesUci": [
+          [
+            "d6b8",
+            "a8b8",
+            "h4h5",
+            "h7h6",
+            "d1g1",
+            "b5b4",
+            "c3e2",
+            "c6b5",
+            "g4g5",
+            "h6g5"
+          ],
+          [
+            "d6b8",
+            "e8b8",
+            "c3e2",
+            "d7d6",
+            "g4g5",
+            "f6h5",
+            "b3a5",
+            "b8b6",
+            "f3f4",
+            "e7g6"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "00447a1b3aa15d57e561",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "Black uses Rfe8 to prepare e5 or improves the bishop via Bg6. Different White knight placements support the Nd4 reaction to the central break.",
+        "linesUci": [
+          [
+            "d2b3",
+            "f8e8",
+            "d1d2",
+            "h5g6",
+            "d3g6",
+            "h7g6",
+            "e2f4",
+            "f6e4",
+            "d2c1",
+            "e8e7"
+          ],
+          [
+            "d2f1",
+            "f8e8",
+            "d1d2",
+            "h5g6",
+            "e2f4",
+            "g6d3",
+            "f4d3",
+            "c6e7",
+            "d2e2",
+            "a7a5"
+          ],
+          [
+            "d1c2",
+            "b8c8",
+            "c2c1",
+            "e6e5",
+            "d4e5",
+            "c6e5",
+            "c1b1",
+            "a7a6",
+            "e2d4",
+            "c8e8"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": null,
+        "note": "Qc1 and Qb1 leave much the same plans. The deeper engine places other White moves first by a few centipawns, with no established special benefit to Qc1.",
+        "uci": "d1c1",
+        "linesUci": [
+          [
+            "d1c1",
+            "f8e8",
+            "d2b3",
+            "h5g6",
+            "d3b5",
+            "a7a6",
+            "b5c6",
+            "c7c6",
+            "b3c5",
+            "a6a5"
+          ],
+          [
+            "d1c1",
+            "e6e5",
+            "d4e5",
+            "c6e5",
+            "c1c2",
+            "b8e8",
+            "e2d4",
+            "a7a6",
+            "d3f5",
+            "h5g6"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Qb1 is within 11 and 10 centipawns of the leaders and retains the same central response.",
+        "uci": "d1b1",
+        "linesUci": [
+          [
+            "d1b1",
+            "f8e8",
+            "g2g3",
+            "e6e5",
+            "d4e5",
+            "c6e5",
+            "e2f4",
+            "h5g6",
+            "f4g6",
+            "h7g6"
+          ],
+          [
+            "d1b1",
+            "a7a6",
+            "d2b3",
+            "f8e8",
+            "b1c2",
+            "h5g6",
+            "d3g6",
+            "h7g6",
+            "e2c1",
+            "e6e5"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "0079cb89e05dd81b9640",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "White needs rook activity from the seventh rank while Black's active rook and b-pawn threaten b3. The alternatives trade down differently and both retain counterplay.",
+        "linesUci": [
+          [
+            "a5a7",
+            "d7e8",
+            "d4c6",
+            "d3b3",
+            "a7e7",
+            "e8f8",
+            "e7e6",
+            "f8g7",
+            "e6e2",
+            "g6d3"
+          ],
+          [
+            "d4f5",
+            "g6f5",
+            "a5f5",
+            "d3b3",
+            "f5f2",
+            "d7c6",
+            "h4h5",
+            "c6c5",
+            "h5h4",
+            "c5c4"
+          ],
+          [
+            "d4b5",
+            "g6e4",
+            "a5a7",
+            "d7e6",
+            "a7a5"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "Ra7+ penetrates the seventh and supports Rc7 or Re7 pressure after Nc6. The board remains near equal and neither king reply proves a unique forcing win.",
+        "uci": "a5a7",
+        "linesUci": [
+          [
+            "a5a7",
+            "d7e8",
+            "d4c6",
+            "d3b3",
+            "a7e7",
+            "e8f8",
+            "e7e2",
+            "g6e8",
+            "c6d4",
+            "b3d3"
+          ],
+          [
+            "a5a7",
+            "d7c8",
+            "d4c6",
+            "d3b3",
+            "a7a4",
+            "g6d3",
+            "a4b4",
+            "b3b4",
+            "c6b4",
+            "d3c4"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Ra7+ leads both budgets.",
+        "uci": "a5a7",
+        "linesUci": [
+          [
+            "a5a7",
+            "d7e8",
+            "d4c6",
+            "d3b3",
+            "a7e7",
+            "e8f8",
+            "e7e2",
+            "g6e8",
+            "c6d4",
+            "b3d3"
+          ],
+          [
+            "a5a7",
+            "d7c8",
+            "d4c6",
+            "d3b3",
+            "a7a4",
+            "g6d3",
+            "a4b4",
+            "b3b4",
+            "c6b4",
+            "d3c4"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "007d1e68be8ba47c1463",
+      "position": {
+        "tactical": false,
+        "positional": true,
+        "note": "Opposite-coloured bishops and Black's kingside pawn front limit White's outside passer. Several bishop moves preserve the blockade while a pawn exchange changes the shape without the evaluation. The reviewed bishop and pawn alternatives maintain the opposite-coloured bishop blockade without a forcing material or mating requirement.",
+        "linesUci": [
+          [
+            "b6c7",
+            "a2a4",
+            "c7b6",
+            "c4d3",
+            "b6a5",
+            "e2f3",
+            "a5c7",
+            "f3g2",
+            "f8g7",
+            "g2f3"
+          ],
+          [
+            "b6d8",
+            "a2a4",
+            "d8b6",
+            "c4d3",
+            "b6a5",
+            "e2f3",
+            "a5c7",
+            "f3g2",
+            "f8g7",
+            "g2f3"
+          ],
+          [
+            "f8e7",
+            "a2a4",
+            "b6c7",
+            "e2f3",
+            "c7d8",
+            "c4d3",
+            "e7f8",
+            "d3c4",
+            "d8c7",
+            "c4b3"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": false,
+        "positional": true,
+        "note": "f4 can exchange one of the doubled f-pawns. The gxf4 f5 continuation fixes the pawn fronts with opposite-coloured bishops and no breakthrough established. The two replies to the exact f4 push maintain equality by different pawn trades or king moves. No tactical requirement distinguishes it from the quiet bishop alternatives.",
+        "uci": "f5f4",
+        "linesUci": [
+          [
+            "f5f4",
+            "g3f4",
+            "f6f5",
+            "a2a4",
+            "f8g7",
+            "c4b5",
+            "g7f8"
+          ],
+          [
+            "f5f4",
+            "e2f3",
+            "f4g3",
+            "f3g3",
+            "b6c7",
+            "f2f4",
+            "f8g7",
+            "g3f3",
+            "g7h6",
+            "c4b3"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Kg7 and the leading alternatives all remain equal at both budgets.",
+        "uci": "f8g7",
+        "linesUci": [
+          [
+            "f8g7",
+            "c4b5",
+            "g7f8",
+            "b5c4",
+            "f8g7",
+            "a2a4",
+            "g7f8",
+            "e2f3",
+            "b6c7",
+            "c4d3"
+          ],
+          [
+            "f8g7",
+            "a2a4",
+            "b6d8",
+            "e2f3",
+            "g7f8",
+            "c4a2",
+            "f8g7",
+            "a2b1",
+            "g7h6",
+            "b1d3"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "0007c40aa33627515f8b",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "White converts via either queenside passed pawn. The rook on c7 keeps both routes viable as Black makes a kingside or central counterbreak.",
+        "linesUci": [
+          [
+            "b4b5",
+            "e6e5",
+            "b5b6",
+            "e5e4",
+            "b6b7",
+            "e4e3",
+            "f2e3",
+            "f5d5",
+            "g2f3",
+            "d5d1"
+          ],
+          [
+            "a4a5",
+            "f5d5",
+            "a5a6",
+            "d5d8",
+            "a6a7",
+            "g6g5",
+            "b4b5",
+            "g5h4",
+            "g3h4",
+            "d8g8"
+          ],
+          [
+            "c7c5",
+            "e6e5",
+            "b4b5",
+            "g6g5",
+            "b5b6",
+            "g5h4",
+            "g3h4",
+            "f5f6",
+            "c5b5",
+            "f6g6"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "b5 advances an outside passer and the independent replies preserve b6 and b7. The other passer offers a nearly equal conversion route.",
+        "uci": "b4b5",
+        "linesUci": [
+          [
+            "b4b5",
+            "f5d5",
+            "b5b6",
+            "d5d2",
+            "a4a5",
+            "e6e5",
+            "b6b7",
+            "e5e4",
+            "b7b8q",
+            "e4e3"
+          ],
+          [
+            "b4b5",
+            "g6g5",
+            "b5b6",
+            "g5h4",
+            "g3h4",
+            "f5f4",
+            "b6b7",
+            "f4h4",
+            "c7c8",
+            "h4a4"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "a5 trails by only 16 and 27 centipawns and keeps a clear winning route.",
+        "uci": "a4a5",
+        "linesUci": [
+          [
+            "a4a5",
+            "g6g5",
+            "a5a6",
+            "g5h4",
+            "g3h4",
+            "f5d5",
+            "a6a7",
+            "d5d8",
+            "b4b5",
+            "d8g8"
+          ],
+          [
+            "a4a5",
+            "f5d5",
+            "a5a6",
+            "g6g5",
+            "a6a7",
+            "d5d8",
+            "h4g5",
+            "g7g6",
+            "b4b5",
+            "h5h4"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "000b6b3e6addd1d641ad",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "White has persistent kingside restraint problems around g3 and h3. Rf3 improves coordination while Nc3 invites Bb4 before White completes the defensive setup.",
+        "linesUci": [
+          [
+            "f2f3",
+            "a8h8",
+            "g3e2",
+            "g6h5",
+            "f3g3",
+            "a3f8",
+            "e3f2",
+            "h4d8",
+            "g3g5",
+            "h7g8"
+          ],
+          [
+            "a2c3",
+            "a3b4",
+            "e3d2",
+            "b4c3",
+            "d2c3",
+            "a8h8",
+            "f2f3",
+            "h4h6",
+            "g3f1",
+            "g6h5"
+          ],
+          [
+            "b3b4",
+            "a3b4",
+            "f2f3",
+            "a8h8",
+            "e3d2",
+            "b4d2",
+            "g3e2",
+            "g6h5",
+            "f3h3",
+            "h4h3"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "Rf3 protects the g3 knight from the side and permits Nf1 or Rfg3 under Rh8 and Qh6. The independent reply repeats the defensive setup.",
+        "uci": "f2f3",
+        "linesUci": [
+          [
+            "f2f3",
+            "a8h8",
+            "g3f1",
+            "h4h6",
+            "a2c3",
+            "a3f8",
+            "e3d2",
+            "c6b4",
+            "d3b1",
+            "d7f7"
+          ],
+          [
+            "f2f3",
+            "h4h6",
+            "a2c3",
+            "a8h8",
+            "g3f1",
+            "a3b4",
+            "f3g3",
+            "c6e7",
+            "e3d2",
+            "b4c3"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": null,
+        "positional": true,
+        "note": "Nc3 allows Bb4 to put pressure on the c3 knight and d4. The compared roots leave Black with stronger kingside or central activity despite White's later Rf3.",
+        "uci": "a2c3",
+        "linesUci": [
+          [
+            "a2c3",
+            "a3b4",
+            "e3d2",
+            "a8h8",
+            "f2f3",
+            "h4h6",
+            "g3e2",
+            "g6h5",
+            "f3g3",
+            "b4c3"
+          ],
+          [
+            "a2c3",
+            "a8h8",
+            "f2f3",
+            "h7g8",
+            "g3e2",
+            "g6h5",
+            "f3g3",
+            "h5g4",
+            "g3g4",
+            "f5g4"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "0040060df26ef73a3dc3",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "The e4 knight and queenside pawns sustain Black's initiative. Bf8 and Rb7 are different routes to maintain it against Nf3.",
+        "linesUci": [
+          [
+            "g7f8",
+            "d4f3",
+            "b6c6",
+            "f3d2",
+            "f8c5",
+            "e3c5",
+            "e4d2",
+            "d1d2",
+            "c6c5",
+            "g4g5"
+          ],
+          [
+            "b6b7",
+            "d4f3",
+            "a4a3",
+            "f3d2",
+            "e4d2",
+            "e3d2",
+            "a3b2",
+            "b1b2",
+            "e8d7",
+            "d1f1"
+          ],
+          [
+            "b6a6",
+            "d4f3",
+            "a6c6",
+            "h1e1",
+            "h5g4",
+            "h3g4",
+            "h8h3",
+            "f3d2",
+            "e4d2",
+            "e3d2"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "Bf8 redeploys the bishop to c5 and keeps the active knight in play through the exchange. The c5 route repeats against Nf3 and Ne2.",
+        "uci": "g7f8",
+        "linesUci": [
+          [
+            "g7f8",
+            "d4f3",
+            "f8c5",
+            "e3c5",
+            "e4c5",
+            "f3g5",
+            "a4a3",
+            "b2b3",
+            "e8e7",
+            "g4h5"
+          ],
+          [
+            "g7f8",
+            "d4e2",
+            "f8c5",
+            "e3c5",
+            "e4c5",
+            "h1g1",
+            "c5e4",
+            "f4f5",
+            "e4f2",
+            "d1c1"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Rb7 is 3 and 7 centipawns behind Bf8 and retains the active plan.",
+        "uci": "b6b7",
+        "linesUci": [
+          [
+            "b6b7",
+            "d4f3",
+            "e8d7",
+            "g4h5",
+            "h8h5",
+            "h3h4",
+            "g7h6",
+            "d1d3",
+            "b7b8",
+            "h1h2"
+          ],
+          [
+            "b6b7",
+            "g4h5",
+            "h8h5",
+            "h3h4",
+            "a4a3",
+            "d4f3",
+            "a3b2",
+            "d1d3",
+            "g7f8",
+            "b1b2"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "00cd9384f3e3a406c7bf",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "White's queen advantage can be used through bishop development and pressure on d5 or the uncastled king. Bc4, Bg5 and Bd2 remain competitive and lead to different castling or exchange plans.",
+        "linesUci": [
+          [
+            "c1g5",
+            "e7d6",
+            "d3f5",
+            "d7c6",
+            "f5e4",
+            "d5b4",
+            "e4c6",
+            "b4c6",
+            "d1e2",
+            "e8f8"
+          ],
+          [
+            "c1d2",
+            "e8c8",
+            "d1c2",
+            "h8e8",
+            "d2a5",
+            "c8b8",
+            "d3e4",
+            "e7b4",
+            "h2h4",
+            "d7g4"
+          ],
+          [
+            "d3c4",
+            "d7c6",
+            "d1e2",
+            "e8c8",
+            "f3e5",
+            "h8e8",
+            "c1e3",
+            "d5e3",
+            "e2e3",
+            "e7f6"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "Bc4 develops against the d5 knight and f7 and retains Bg5. The independent Bc6 line retains piece activity. The Bxf7+ branch does not establish that the capture is necessary.",
+        "uci": "d3c4",
+        "linesUci": [
+          [
+            "d3c4",
+            "d7c6",
+            "c1g5",
+            "f7f6",
+            "f3d4",
+            "f6g5",
+            "d4e6",
+            "d5f4",
+            "e6c7",
+            "e8f8"
+          ],
+          [
+            "d3c4",
+            "d5f6",
+            "c4f7",
+            "e8f7",
+            "d1b3",
+            "f7f8",
+            "b3b7",
+            "a8d8",
+            "c1f4",
+            "e7d6"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Be4 retains a decisive advantage and is within 21 and 15 centipawns of the leaders.",
+        "uci": "d3e4",
+        "linesUci": [
+          [
+            "d3e4",
+            "d5f6",
+            "e4b7",
+            "a8b8",
+            "b7a6",
+            "e8g8",
+            "c1e3",
+            "d7e6",
+            "d1c1",
+            "f8e8"
+          ],
+          [
+            "d3e4",
+            "d7c6",
+            "f3d4",
+            "e8g8",
+            "e4d5",
+            "c6d5",
+            "d4f5",
+            "f8d8",
+            "d1h5",
+            "e7f6"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "014e886eb1b18272ecf8",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "Black's defence turns on putting a knight on c4 or impeding White's minority advance. Red8 allows b5, the c-file exchange and Rxc5.",
+        "linesUci": [
+          [
+            "g4e3",
+            "a2a4",
+            "e3c4",
+            "b2c3",
+            "d6d8",
+            "c1e1",
+            "h7h6",
+            "a1c1",
+            "e6f7",
+            "g1h2"
+          ],
+          [
+            "h7h5",
+            "a2a4",
+            "e6f7",
+            "b4b5",
+            "c6b5",
+            "a4b5",
+            "d6d7",
+            "a1a4",
+            "f7b3",
+            "a4b4"
+          ],
+          [
+            "a7a6",
+            "a2a4",
+            "g4e3",
+            "a4a5",
+            "b6b5",
+            "c1c5",
+            "e3c4",
+            "b2c3",
+            "e8c8",
+            "g1f2"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "Ne3 secures Nc4 under both leading White replies. The knight limits queenside play and supports Black's coordinated rooks.",
+        "uci": "g4e3",
+        "linesUci": [
+          [
+            "g4e3",
+            "a2a4",
+            "e3c4",
+            "b2c3",
+            "d6d8",
+            "c1e1",
+            "e6f7",
+            "a1b1",
+            "h7h6",
+            "g3g4"
+          ],
+          [
+            "g4e3",
+            "b2c3",
+            "e3c4",
+            "a2a4",
+            "d6d8",
+            "c1e1",
+            "e6f7",
+            "a1b1",
+            "h7h6",
+            "g3g4"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": null,
+        "positional": true,
+        "note": "Red8 cedes the b5 break. After c5 dxc5 bxc5 Rxc5, White wins the c-pawn and the rook stays active on the fifth rank; Ne3 establishes the c4 blockade first.",
+        "uci": "e8d8",
+        "linesUci": [
+          [
+            "e8d8",
+            "b4b5",
+            "c6c5",
+            "d4c5",
+            "b6c5",
+            "c1c5",
+            "d6d3",
+            "a2a4",
+            "h7h5",
+            "a1c1"
+          ],
+          [
+            "e8d8",
+            "a2a4",
+            "h7h5",
+            "a4a5",
+            "g4e3",
+            "a5b6",
+            "a7b6",
+            "a1a6",
+            "e3c4",
+            "b2a1"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "001f5e676ef0663972e0",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "Exchanges on d5 and c5 change the queenside pawn structure. Qg4 instead permits the a5 break. The resulting c-file pressure and bishop trade matter more than the individual captures alone.",
+        "linesUci": [
+          [
+            "c6d5",
+            "c4d5",
+            "b7c5",
+            "a3c5",
+            "c8c5",
+            "c1c5",
+            "b6c5",
+            "b2c3",
+            "c5c4",
+            "c3a5"
+          ],
+          [
+            "b7c5",
+            "a3c5",
+            "b6c5",
+            "b2a3",
+            "c6d5",
+            "c4d5",
+            "c5c4",
+            "c1c3",
+            "h6h5",
+            "a1c1"
+          ],
+          [
+            "h6h5",
+            "a4a5",
+            "b7a5",
+            "a3b4",
+            "c6d5",
+            "b4a5",
+            "b6a5",
+            "e4d5",
+            "c8c5",
+            "g2f1"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "cxd5 resolves the centre before Nc5 and the c5 exchange. The recapture leaves pawns on c5 and d5 and changes the balance of queenside pressure.",
+        "uci": "c6d5",
+        "linesUci": [
+          [
+            "c6d5",
+            "c4d5",
+            "b7c5",
+            "a3c5",
+            "c8c5",
+            "c1c5",
+            "b6c5",
+            "b2c3",
+            "c5c4",
+            "g2f1"
+          ],
+          [
+            "c6d5",
+            "e4d5",
+            "b7a5",
+            "b2b4",
+            "h6h5",
+            "h2h4",
+            "e5e4",
+            "a3b2",
+            "f6g4",
+            "d2e4"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": null,
+        "positional": true,
+        "note": "Qg4 lets a5 induce bxa5, pulling the b-pawn away from c5 and retaining White's pressure on the queenside. The cxd5 branch resolves that structure before a5.",
+        "uci": "d7g4",
+        "linesUci": [
+          [
+            "d7g4",
+            "a4a5",
+            "b6a5",
+            "b2b3",
+            "g4g6",
+            "g2h3",
+            "c8d8",
+            "c1e1",
+            "c6d5",
+            "e4d5"
+          ],
+          [
+            "d7g4",
+            "h2h3",
+            "g4g6",
+            "a4a5",
+            "b6a5",
+            "b2b3",
+            "f6d7",
+            "b3e3",
+            "g6g5",
+            "e3g5"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "001f815a70831a913a43",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "White can expand with b5 against Black's queenside or use g5 to force a kingside change, and both plans hold up in the separate replies.",
+        "linesUci": [
+          [
+            "f3e2",
+            "c7c6",
+            "b4b5",
+            "c6b5",
+            "e2b5",
+            "d7c8",
+            "b5a6",
+            "b7a6",
+            "d1e2",
+            "h7h5"
+          ],
+          [
+            "g4g5",
+            "f7f5",
+            "g5f6",
+            "g7f6",
+            "f3g4",
+            "d7d8",
+            "a4a5",
+            "g8h8",
+            "a1a3",
+            "f6g7"
+          ],
+          [
+            "a1c1",
+            "c7c6",
+            "g4g5",
+            "c6d5",
+            "e4d5",
+            "f7f6",
+            "g5f6",
+            "g7f6",
+            "f3g4",
+            "e7f5"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "Be2 aligns the bishop to take back on b5 and then trade on a6, changing Black's queenside structure when the b-pawn recaptures.",
+        "uci": "f3e2",
+        "linesUci": [
+          [
+            "f3e2",
+            "g8h8",
+            "a1b1",
+            "c7c6",
+            "b4b5",
+            "a6c5",
+            "d5c6",
+            "b7c6",
+            "d2b4",
+            "c5b7"
+          ],
+          [
+            "f3e2",
+            "c7c6",
+            "b4b5",
+            "c6b5",
+            "e2b5",
+            "d7c7",
+            "b5a6",
+            "b7a6",
+            "d1e2",
+            "f7f5"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Be2 leads both budgets.",
+        "uci": "f3e2",
+        "linesUci": [
+          [
+            "f3e2",
+            "g8h8",
+            "a1b1",
+            "c7c6",
+            "b4b5",
+            "a6c5",
+            "d5c6",
+            "b7c6",
+            "d2b4",
+            "c5b7"
+          ],
+          [
+            "f3e2",
+            "c7c6",
+            "b4b5",
+            "c6b5",
+            "e2b5",
+            "d7c7",
+            "b5a6",
+            "b7a6",
+            "d1e2",
+            "f7f5"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "009790746fe9489e27cf",
+      "position": {
+        "tactical": true,
+        "positional": true,
+        "note": "The c6 pawn can capture on b7. After the tempting Qxb2, Rb1 and cxb7 yield dangerous open-file activity. The strong choice removes the advanced pawn and releases Black from that constraint.",
+        "linesUci": [
+          [
+            "b7c6",
+            "e1e2",
+            "c2f5",
+            "a2c4",
+            "f5d7",
+            "d4b6",
+            "d7b7",
+            "b6b7",
+            "c8b7",
+            "c3e4"
+          ],
+          [
+            "c2b2",
+            "f2h4",
+            "a8a6",
+            "h4f6",
+            "a6c6",
+            "f6e5",
+            "c8e6",
+            "a2b1",
+            "f7f6",
+            "c3b5"
+          ],
+          [
+            "a8a6",
+            "d4c4",
+            "c2g6",
+            "c6b7",
+            "c8b7",
+            "c4c7",
+            "b7f3",
+            "g2f3",
+            "a6d6",
+            "e1d1"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": true,
+        "positional": true,
+        "note": "bxc6 takes away the c-pawn before the queen can be attacked on the b-file. Re2 Qf5 remains playable and Black preserves the resulting c6 pawn in both lines.",
+        "uci": "b7c6",
+        "linesUci": [
+          [
+            "b7c6",
+            "e1e2",
+            "c2f5",
+            "a2c4",
+            "f5d7",
+            "d4b6",
+            "d7d6",
+            "b2b3",
+            "c8e6",
+            "c4e6"
+          ],
+          [
+            "b7c6",
+            "d4b6",
+            "c8d7",
+            "a2b1",
+            "c2d2",
+            "e1d1",
+            "d2f4",
+            "c3e4",
+            "f6d5",
+            "b6b7"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "bxc6 leads both budgets.",
+        "uci": "b7c6",
+        "linesUci": [
+          [
+            "b7c6",
+            "e1e2",
+            "c2f5",
+            "a2c4",
+            "f5d7",
+            "d4b6",
+            "d7d6",
+            "b2b3",
+            "c8e6",
+            "c4e6"
+          ],
+          [
+            "b7c6",
+            "d4b6",
+            "c8d7",
+            "a2b1",
+            "c2d2",
+            "e1d1",
+            "d2f4",
+            "c3e4",
+            "f6d5",
+            "b6b7"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "014c9c6a6c7f84414934",
+      "position": {
+        "tactical": true,
+        "positional": true,
+        "note": "The b2 pawn is a concrete target after Bd3 Bxd3 Qxd3 Qxb2, when White must play actively. Qb3 instead preserves it and often reaches a queen exchange and changed b-file structure.",
+        "linesUci": [
+          [
+            "c2b3",
+            "d5f4",
+            "f1e1",
+            "b6b3",
+            "a2b3",
+            "f4e2",
+            "e1e2",
+            "f8e8",
+            "h2h3",
+            "f7f6"
+          ],
+          [
+            "e2d3",
+            "f5d3",
+            "c2d3",
+            "b6b2",
+            "c3c4",
+            "d5b4",
+            "d3e4",
+            "b4a2",
+            "f1e1",
+            "a2c3"
+          ],
+          [
+            "c2d1",
+            "b6b2",
+            "e2c4",
+            "d5c3",
+            "d1b3",
+            "b2b3",
+            "c4b3",
+            "f5e4",
+            "f1e1",
+            "a7a5"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "Qb3 defends b2 and offers a queen exchange. The independent Qxb3 axb3 and a5 Qxb6 branches support different resulting structures without conceding the pawn as in Bd3.",
+        "uci": "c2b3",
+        "linesUci": [
+          [
+            "c2b3",
+            "b6b3",
+            "a2b3",
+            "d5f4",
+            "e2d1",
+            "f7f6",
+            "b3b4",
+            "f5e6",
+            "g3f4",
+            "h6f4"
+          ],
+          [
+            "c2b3",
+            "a7a5",
+            "b3b6",
+            "d5b6",
+            "a2a4",
+            "f7f6",
+            "h2h3",
+            "f8e8",
+            "f1e1",
+            "f5e6"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Qb3 leads both budgets.",
+        "uci": "c2b3",
+        "linesUci": [
+          [
+            "c2b3",
+            "b6b3",
+            "a2b3",
+            "d5f4",
+            "e2d1",
+            "f7f6",
+            "b3b4",
+            "f5e6",
+            "g3f4",
+            "h6f4"
+          ],
+          [
+            "c2b3",
+            "a7a5",
+            "b3b6",
+            "d5b6",
+            "a2a4",
+            "f7f6",
+            "h2h3",
+            "f8e8",
+            "f1e1",
+            "f5e6"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "19241455181a151fa9d9",
+      "position": {
+        "tactical": true,
+        "positional": null,
+        "note": "Only Bxa1 keeps Black in the game. The rook capture offsets the forcing gxf5+ attack. Quiet queen retreats permit decisive checks and a queen exchange with inferior material.",
+        "linesUci": [
+          [
+            "f6a1",
+            "g4f5",
+            "g6g7",
+            "g2e4",
+            "c5c1",
+            "d7d2",
+            "c1d2",
+            "e1d2",
+            "g7f6",
+            "d2a5"
+          ],
+          [
+            "c5d5",
+            "d7f5",
+            "d5f5",
+            "g4f5",
+            "g6f5",
+            "a1a5",
+            "f5e6",
+            "g2h3",
+            "g5g4",
+            "h3g4"
+          ],
+          [
+            "c5d4",
+            "g4f5",
+            "g6g7",
+            "a1a7",
+            "d4d7",
+            "a7d7",
+            "h7h5",
+            "g2e4",
+            "g7g8",
+            "f2f3"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": true,
+        "positional": false,
+        "note": "Bxa1 takes the rook while Black can meet gxf5+ with Kg7 and reach a queen trade. Bd2 also lets Black use Kg7 and retain the gain. Only the immediate capture of the rook offsets the checking attack; the alternative queen retreats lose before a strategic conversion.",
+        "motifs": {
+          "hangingPiece": true
+        },
+        "uci": "f6a1",
+        "linesUci": [
+          [
+            "f6a1",
+            "g4f5",
+            "g6g7",
+            "g2e4",
+            "c5c1",
+            "d7d2",
+            "c1d2",
+            "e1d2",
+            "h7h6",
+            "g1g2"
+          ],
+          [
+            "f6a1",
+            "e1d2",
+            "g6g7",
+            "d2e3",
+            "c5d5",
+            "d7a4",
+            "a1e5",
+            "g4f5",
+            "a7a5",
+            "e3g5"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Bxa1 leads both budgets.",
+        "uci": "f6a1",
+        "linesUci": [
+          [
+            "f6a1",
+            "g4f5",
+            "g6g7",
+            "g2e4",
+            "c5c1",
+            "d7d2",
+            "c1d2",
+            "e1d2",
+            "h7h6",
+            "g1g2"
+          ],
+          [
+            "f6a1",
+            "e1d2",
+            "g6g7",
+            "d2e3",
+            "c5d5",
+            "d7a4",
+            "a1e5",
+            "g4f5",
+            "a7a5",
+            "e3g5"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "00726fef95fa715c5f61",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "White's bishop pair and active queen sustain pressure on the exposed king. Rae1 lines up on e6, while Rac1 supplies c-file pressure and Bb5+ after the different bishop exchange.",
+        "linesUci": [
+          [
+            "a1e1",
+            "d7c8",
+            "h7h6",
+            "b6b4",
+            "g7e5",
+            "e6d7",
+            "h6f6",
+            "e8e6",
+            "f6f3",
+            "c5d6"
+          ],
+          [
+            "a1c1",
+            "c5d4",
+            "g7d4",
+            "b6d4",
+            "d3b5",
+            "d7e7",
+            "f1e1",
+            "g8h8",
+            "h7f5",
+            "e8c8"
+          ],
+          [
+            "a1d1",
+            "d7c8",
+            "h7h6",
+            "e6d7",
+            "d1c1",
+            "c8b8",
+            "d3h7",
+            "e8e6",
+            "h6f4",
+            "c5d6"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "Rae1 uses the e-file against the e6 bishop and allows Qh6 and Be5 after the king moves. Black cannot resolve the pressure by choosing between Kc7 and Kc8 alone.",
+        "uci": "a1e1",
+        "linesUci": [
+          [
+            "a1e1",
+            "d7c7",
+            "h7h6",
+            "d5d4",
+            "e1c1",
+            "c7b8",
+            "d3h7",
+            "b8a8",
+            "h7g8",
+            "e8g8"
+          ],
+          [
+            "a1e1",
+            "d7c8",
+            "h7h6",
+            "b6b4",
+            "g7e5",
+            "c5d6",
+            "a2a3",
+            "b4b6",
+            "e5g7",
+            "e8d8"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": null,
+        "positional": null,
+        "note": "Rac1 is 45 centipawns behind at the first budget and 6 at the deeper root. Both moves preserve a large advantage via different attacks.",
+        "uci": "a1c1",
+        "linesUci": [
+          [
+            "a1c1",
+            "c5d4",
+            "g7d4",
+            "b6d4",
+            "d3b5",
+            "d7e7",
+            "f1d1",
+            "d4g4",
+            "g2g3",
+            "e8c8"
+          ],
+          [
+            "a1c1",
+            "e8c8",
+            "g7c3",
+            "c5d4",
+            "d3f5",
+            "g8g7",
+            "f5e6",
+            "f7e6",
+            "h7h6",
+            "c8c6"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "0078993662da8bd0179d",
+      "position": {
+        "tactical": true,
+        "positional": true,
+        "note": "Black's knight and king must contain the queenside pawns. Ke8 gets the king to d7. The premature Nd5 or g5 leads to sacrificing the knight for the b-pawn after it reaches b6.",
+        "linesUci": [
+          [
+            "f7e8",
+            "c5d6",
+            "c7d5",
+            "d6e5",
+            "e8d7",
+            "c4c5",
+            "g7g6",
+            "g2g3",
+            "d7c8",
+            "c5d6"
+          ],
+          [
+            "g7g5",
+            "b4b5",
+            "c7d5",
+            "b5b6",
+            "d5b6",
+            "c5b6",
+            "f7g6",
+            "b2b4",
+            "f5f4",
+            "h4g5"
+          ],
+          [
+            "c7d5",
+            "b4b5",
+            "h7h5",
+            "b5b6",
+            "d5b6",
+            "c5b6",
+            "g7g5",
+            "f2f3",
+            "f7f6",
+            "c4c5"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "Ke8 improves the king's access to d7 while keeping the knight able to blockade. White retains a large advantage in the independent replies.",
+        "uci": "f7e8",
+        "linesUci": [
+          [
+            "f7e8",
+            "c5d6",
+            "c7d5",
+            "b4b5",
+            "e8d7",
+            "c4c5",
+            "f5f4",
+            "d6e5",
+            "g7g6",
+            "f2f3"
+          ],
+          [
+            "f7e8",
+            "b4b5",
+            "e8d7",
+            "b5b6",
+            "c7a6",
+            "c4b5",
+            "a6b8",
+            "c5f8",
+            "g7g6",
+            "f8g7"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Ke8 leads both budgets.",
+        "uci": "f7e8",
+        "linesUci": [
+          [
+            "f7e8",
+            "c5d6",
+            "c7d5",
+            "b4b5",
+            "e8d7",
+            "c4c5",
+            "f5f4",
+            "d6e5",
+            "g7g6",
+            "f2f3"
+          ],
+          [
+            "f7e8",
+            "b4b5",
+            "e8d7",
+            "b5b6",
+            "c7a6",
+            "c4b5",
+            "a6b8",
+            "c5f8",
+            "g7g6",
+            "f8g7"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "00c734fe12af420d6699",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "White can use the d-file and attack the weak c5 pawn in either order. The bishop retreats to c8 under both Nxc5 and Nfe5, leaving the file and knight placement central to the plan.",
+        "linesUci": [
+          [
+            "d3c5",
+            "a6c8",
+            "d1d2",
+            "h7h6",
+            "h2h3",
+            "g8f6",
+            "f1d1",
+            "f6h5",
+            "f3e5",
+            "a8a5"
+          ],
+          [
+            "f3e5",
+            "a6c8",
+            "d3c5",
+            "a8a2",
+            "f1f2",
+            "a2f2",
+            "h4f2",
+            "f8d8",
+            "d1d8",
+            "c7d8"
+          ],
+          [
+            "h4f2",
+            "f8d8",
+            "f3e5",
+            "g8f6",
+            "d3c5",
+            "d8d1",
+            "f1d1",
+            "a8d8",
+            "d1d8",
+            "c7d8"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "Nxc5 removes the front c-pawn and gives White the c5 square. White can continue with Rd2 or Ne5 while preserving a large advantage.",
+        "uci": "d3c5",
+        "linesUci": [
+          [
+            "d3c5",
+            "a6c8",
+            "f3e5",
+            "a8a2",
+            "f1f2",
+            "a2f2",
+            "h4f2",
+            "f8d8",
+            "d1d8",
+            "c7d8"
+          ],
+          [
+            "d3c5",
+            "g8h6",
+            "f3e5",
+            "a6c8",
+            "h4f2",
+            "g7g8",
+            "h2h3",
+            "f7f6",
+            "e5d3",
+            "c7g7"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Nxc5 leads both budgets.",
+        "uci": "d3c5",
+        "linesUci": [
+          [
+            "d3c5",
+            "a6c8",
+            "f3e5",
+            "a8a2",
+            "f1f2",
+            "a2f2",
+            "h4f2",
+            "f8d8",
+            "d1d8",
+            "c7d8"
+          ],
+          [
+            "d3c5",
+            "g8h6",
+            "f3e5",
+            "a6c8",
+            "h4f2",
+            "g7g8",
+            "h2h3",
+            "f7f6",
+            "e5d3",
+            "c7g7"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "0100cc5fad1b58af22bc",
+      "position": {
+        "tactical": true,
+        "positional": null,
+        "note": "The forcing Rxf2+ Bxf2 Rxf2+ exchange and Kh3 R2f3 provide different concrete ways to keep active rook play in a difficult position.",
+        "linesUci": [
+          [
+            "f3f2",
+            "e3f2",
+            "f8f2",
+            "h2h3",
+            "c7e6",
+            "d6e4",
+            "f2b2",
+            "d4d5",
+            "e6f8",
+            "d5c6"
+          ],
+          [
+            "b7b5",
+            "h2g2",
+            "a5a4",
+            "g3g4",
+            "b5c4",
+            "d6f5",
+            "f3f5",
+            "g4f5",
+            "c7d5",
+            "c1c4"
+          ],
+          [
+            "c6c5",
+            "d4d5",
+            "a6b8",
+            "d6b7",
+            "g7b2",
+            "c1c2",
+            "b2d4",
+            "e3h6",
+            "f8f6",
+            "h6f4"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "Rxf2+ can exchange a rook for bishop and pawn to occupy the second rank with the other rook. If Kh3 declines the immediate trade, R2f3 maintains active contact with the White king.",
+        "uci": "f3f2",
+        "linesUci": [
+          [
+            "f3f2",
+            "e3f2",
+            "f8f2",
+            "h2h1",
+            "c7e6",
+            "d4d5",
+            "e6g5",
+            "d6b7",
+            "c6d5",
+            "c1c2"
+          ],
+          [
+            "f3f2",
+            "h2h3",
+            "f2f3",
+            "d1e1",
+            "b7b5",
+            "c4b5",
+            "c6b5",
+            "e3d2",
+            "c7d5",
+            "d6b5"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": null,
+        "positional": null,
+        "note": "b6 scores about four tenths of a pawn below Rxf2+ at both budgets. Black is badly lost either way, and the compared replies leave no distinct proved mechanism.",
+        "uci": "b7b6",
+        "linesUci": [
+          [
+            "b7b6",
+            "h2g2",
+            "c6c5",
+            "d4d5",
+            "a6b8",
+            "d1e1",
+            "g7b2",
+            "c1b1",
+            "b2c3",
+            "e3h6"
+          ],
+          [
+            "b7b6",
+            "c1c2",
+            "c6c5",
+            "d4c5",
+            "b6c5",
+            "d6b5",
+            "c7e6",
+            "h2g2",
+            "f3f6",
+            "c2d2"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "023ea2e0f5bc6510886b",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "White's d6 pawn requires containment. Nc3 and Rd2 retain access to e8 or e7 with active Black pieces, while Ra7 gives White more time for the outside pawn advance.",
+        "linesUci": [
+          [
+            "b1c3",
+            "h3f1",
+            "f8e8",
+            "f1d3",
+            "g7g5",
+            "d3f1",
+            "a2a1",
+            "e1f2",
+            "a1a8",
+            "f2e3"
+          ],
+          [
+            "a2d2",
+            "d6d7",
+            "f8e7",
+            "c5b7",
+            "d2d7",
+            "h3d7",
+            "e7d7",
+            "b7c5",
+            "d7d6",
+            "c5b7"
+          ],
+          [
+            "a2h2",
+            "h3f5",
+            "h2d2",
+            "c5b7",
+            "f8e8",
+            "g3g4",
+            "h5g4",
+            "f5g4",
+            "d2d4",
+            "d6d7"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "Nc3 keeps Black's rook available for activity on the second rank while the king can cover the d-pawn near e8. The independent replies preserve both resources.",
+        "uci": "b1c3",
+        "linesUci": [
+          [
+            "b1c3",
+            "h3f1",
+            "f8e8",
+            "f1d3",
+            "a2b2",
+            "e1f1",
+            "b2b4",
+            "f1f2",
+            "b4d4",
+            "d6d7"
+          ],
+          [
+            "b1c3",
+            "g3g4",
+            "a2e2",
+            "e1f1",
+            "e2d2",
+            "g4h5",
+            "d2d6",
+            "f1f2",
+            "f8e7",
+            "f2e3"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": null,
+        "positional": null,
+        "note": "Ra7 still leaves Black much better. The deeper branch chooses g4 rather than the earlier Nd7+ and the mechanism of the gap remains unclear.",
+        "uci": "a2a7",
+        "linesUci": [
+          [
+            "a2a7",
+            "g3g4",
+            "b1a3",
+            "g4h5",
+            "a3c4",
+            "d6d7",
+            "f8e7",
+            "e1d1",
+            "c4b6",
+            "h3f5"
+          ],
+          [
+            "a2a7",
+            "e1e2",
+            "b1a3",
+            "c5d7",
+            "a7d7",
+            "h3d7",
+            "b5b4",
+            "e2d3",
+            "b4b3",
+            "d3c3"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "002aece408caebec148e",
+      "position": {
+        "tactical": true,
+        "positional": null,
+        "note": "The exposed black king makes forcing White replies central. Rxc2 allows Be5+ followed by h4+ or Qxg7+, while Qd7 retains stronger ways to meet the attack.",
+        "linesUci": [
+          [
+            "e8d7",
+            "b7f3",
+            "f6g6",
+            "b8a7",
+            "c5g5",
+            "a7d4",
+            "e6h3",
+            "f3d3",
+            "h3f5",
+            "d3a6"
+          ],
+          [
+            "h7h6",
+            "b8d6",
+            "c5b5",
+            "b7a7",
+            "b5d5",
+            "d6b4",
+            "e8d7",
+            "a7e3",
+            "f6f7",
+            "a2a3"
+          ],
+          [
+            "e8d8",
+            "b7f3",
+            "e6f5",
+            "b8f4",
+            "f6g6",
+            "f3g3",
+            "g6f7",
+            "f4e5",
+            "g7g6",
+            "h2h3"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": null,
+        "note": "Qd7 yields a better defence against Qf3+ than the played line, but the finite lines do not isolate what the queen move prevents.",
+        "uci": "e8d7",
+        "linesUci": [
+          [
+            "e8d7",
+            "b7f3",
+            "f6g6",
+            "b8a7",
+            "c5d5",
+            "h2h3",
+            "h7h6",
+            "a7e3",
+            "g6h7",
+            "c2c4"
+          ],
+          [
+            "e8d7",
+            "b7e4",
+            "f6f7",
+            "e4h7",
+            "c5f5",
+            "h7h4",
+            "d7d2",
+            "f2f3",
+            "f5d5",
+            "h4e4"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": true,
+        "positional": null,
+        "note": "Rxc2 allows Be5+ Kg5 and h4+ Kh5 or Qxg7+. The separate Qe4 branch is far less dangerous for Black. The same attack does not appear after Qd7.",
+        "uci": "c5c2",
+        "linesUci": [
+          [
+            "c5c2",
+            "b8e5",
+            "f6g5",
+            "b7g7",
+            "e8g6",
+            "e5f4",
+            "g5h4",
+            "g7e7",
+            "h4g4",
+            "e1e6"
+          ],
+          [
+            "c5c2",
+            "b7e4",
+            "e8c6",
+            "b8e5",
+            "f6e7",
+            "e4e3",
+            "c2c4",
+            "h2h3",
+            "e7f8",
+            "b2b3"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "003c1c9e0bc1bbe29876",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "White's doubled c-pawns and Black's rook control of e-file give the development choices strategic weight. Nc6 followed by Bg4 or Bd7 exploits those features.",
+        "linesUci": [
+          [
+            "b8c6",
+            "e1d2",
+            "c8g4",
+            "a1e1",
+            "c6a5",
+            "d2c1",
+            "a8d8",
+            "a2a3",
+            "b7b6",
+            "h2h3"
+          ],
+          [
+            "g8f8",
+            "f3d4",
+            "c8d7",
+            "f2f3",
+            "c7c5",
+            "d4b3",
+            "d7b5",
+            "b3c1",
+            "b5a4",
+            "c1b3"
+          ],
+          [
+            "c8g4",
+            "e1c1",
+            "b8d7",
+            "h1e1",
+            "d7b6",
+            "h2h3",
+            "g4d7",
+            "e2f1",
+            "e8e1",
+            "d1e1"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "Nc6 develops before White can use Nd4 freely. It retains Na5 against c4 and allows Black to contest both open central files with rooks.",
+        "uci": "b8c6",
+        "linesUci": [
+          [
+            "b8c6",
+            "e1d2",
+            "c8g4",
+            "a1e1",
+            "a8d8",
+            "d2c1",
+            "c6a5",
+            "a2a3",
+            "g7g6",
+            "h2h3"
+          ],
+          [
+            "b8c6",
+            "f3d4",
+            "c8d7",
+            "a1d1",
+            "e8e7",
+            "e1g1",
+            "a8e8",
+            "e2d3",
+            "c6e5",
+            "c3c4"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Nc6 leads both budgets.",
+        "uci": "b8c6",
+        "linesUci": [
+          [
+            "b8c6",
+            "e1d2",
+            "c8g4",
+            "a1e1",
+            "a8d8",
+            "d2c1",
+            "c6a5",
+            "a2a3",
+            "g7g6",
+            "h2h3"
+          ],
+          [
+            "b8c6",
+            "f3d4",
+            "c8d7",
+            "a1d1",
+            "e8e7",
+            "e1g1",
+            "a8e8",
+            "e2d3",
+            "c6e5",
+            "c3c4"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "00c630063932a64e9bbe",
+      "position": {
+        "tactical": true,
+        "positional": false,
+        "note": "Black has a forced mating net using queen and rook. Both Kd7 and Ke7 are mated in four by different checked continuations. The checked paths are already a forced mate in four, so lasting positional advantages cannot determine this decision.",
+        "linesUci": [
+          [
+            "e8d7",
+            "a1a5",
+            "d7c6",
+            "a5a6",
+            "c6c7",
+            "b4b7",
+            "c7d8",
+            "a6a8"
+          ],
+          [
+            "e8e7",
+            "b4b7",
+            "e7d6",
+            "a1a5",
+            "d6c6",
+            "b7c7",
+            "c6d6",
+            "a5e5"
+          ],
+          [
+            "e8f7",
+            "b4b7",
+            "f7g6",
+            "a1b1",
+            "g6h5",
+            "b1f5",
+            "h5h4",
+            "f5g5"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": null,
+        "note": "Kd7 survives the same number of moves as Ke7. The position is tactical but no special justification for this exact king move is established.",
+        "uci": "e8d7",
+        "linesUci": [
+          [
+            "e8d7",
+            "a1a5",
+            "d7d6",
+            "b4b7",
+            "d6c6",
+            "b7c7",
+            "c6d6",
+            "a5e5"
+          ],
+          [
+            "e8d7",
+            "a1a7",
+            "d7d6",
+            "a7a5",
+            "g2g4",
+            "b4b7",
+            "d6c6",
+            "b7c7",
+            "c6d6",
+            "a5e5"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Both choices allow mate in four at both budgets.",
+        "uci": "e8e7",
+        "linesUci": [
+          [
+            "e8e7",
+            "a1d4",
+            "e7f7",
+            "b4b7",
+            "f7g6",
+            "d4e4",
+            "g6h5",
+            "b7b5"
+          ],
+          [
+            "e8e7",
+            "a1d1",
+            "e7f7",
+            "d1d7",
+            "f7g6",
+            "d7e8",
+            "g6f5",
+            "e8e4"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "0042ac6582679d475900",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "Black's queenside pawn front and bishop activity determine the ending. Bxg4 reduces the kingside pawns Black can use for a second breakthrough, while retaining a bishop route to d1.",
+        "linesUci": [
+          [
+            "d1g4",
+            "a6b7",
+            "g4d1",
+            "b7d5",
+            "e3d2",
+            "c5c4",
+            "b3c4",
+            "d5c4",
+            "h2h4",
+            "d6d5"
+          ],
+          [
+            "d1c2",
+            "a6c8",
+            "c2d3",
+            "c8d7",
+            "d3e2",
+            "d7e6",
+            "e3d2",
+            "h7h5",
+            "e2d3",
+            "e6b3"
+          ],
+          [
+            "e3d2",
+            "a6c8",
+            "d1e2",
+            "d6d5",
+            "d2e3",
+            "c8e6",
+            "e3d3",
+            "d5d6",
+            "e2d1",
+            "e6c8"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "Bxg4 removes the g-pawn before Black activates the bishop through b7 or b5. Both continuations keep White's bishop available to cover the queenside.",
+        "uci": "d1g4",
+        "linesUci": [
+          [
+            "d1g4",
+            "a6b7",
+            "g4d1",
+            "b7d5",
+            "e3d3",
+            "d6e6",
+            "d1g4",
+            "e6f6",
+            "g4d1",
+            "f6f5"
+          ],
+          [
+            "d1g4",
+            "a6b5",
+            "g4d1",
+            "b5c6",
+            "e3d3",
+            "c6b7",
+            "d1c2",
+            "b7d5",
+            "c2d1",
+            "d6e6"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Bxg4 leads both budgets.",
+        "uci": "d1g4",
+        "linesUci": [
+          [
+            "d1g4",
+            "a6b7",
+            "g4d1",
+            "b7d5",
+            "e3d3",
+            "d6e6",
+            "d1g4",
+            "e6f6",
+            "g4d1",
+            "f6f5"
+          ],
+          [
+            "d1g4",
+            "a6b5",
+            "g4d1",
+            "b5c6",
+            "e3d3",
+            "c6b7",
+            "d1c2",
+            "b7d5",
+            "c2d1",
+            "d6e6"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "0093e23904f50bd1e04e",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "White pressures the f7 and b4 pawns, and Black uses active rook play rather than passive defence. Rc7 and Rc2 lead to different forms of activity against the same pawn pressure.",
+        "linesUci": [
+          [
+            "c4c2",
+            "b8b4",
+            "f7f6",
+            "e5d3",
+            "c2h2",
+            "a2a4",
+            "h2h3",
+            "e3d2",
+            "h3h4",
+            "a4a5"
+          ],
+          [
+            "c4c7",
+            "b8b4",
+            "c7e7",
+            "b4c4",
+            "g7g5",
+            "h4g5",
+            "e6g5",
+            "e3d4",
+            "f7f6",
+            "e5d3"
+          ],
+          [
+            "c4c5",
+            "e5f7",
+            "h7g6",
+            "f7d8",
+            "c5e5",
+            "e3f2",
+            "e6d8",
+            "b8d8",
+            "b4b3",
+            "a2a3"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "Rc7 allows ...Ra7 against Rxb4 or Nd3 and keeps an active rook to compensate for the b-pawn's vulnerability.",
+        "uci": "c4c7",
+        "linesUci": [
+          [
+            "c4c7",
+            "b8b4",
+            "c7a7",
+            "a2a4",
+            "e6c5",
+            "b2b3",
+            "c5b3",
+            "b4b3",
+            "a7a4",
+            "e3f3"
+          ],
+          [
+            "c4c7",
+            "e5d3",
+            "c7a7",
+            "d3b4",
+            "a7a5",
+            "b8c8",
+            "g7g5",
+            "h4g5",
+            "h7g6",
+            "c8c4"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Rf4 stays close in the matched searches and also keeps the rook active.",
+        "uci": "c4f4",
+        "linesUci": [
+          [
+            "c4f4",
+            "b8e8",
+            "f4f6",
+            "e5f7",
+            "g7g6",
+            "f7e5",
+            "e6f4",
+            "e5d3",
+            "f4g2",
+            "e3d4"
+          ],
+          [
+            "c4f4",
+            "b8b6",
+            "f4f1",
+            "e5f7",
+            "h7g8",
+            "f7d6",
+            "f1e1",
+            "e3f2",
+            "e1a1",
+            "b6b8"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "00aa62121c2fecb25a1d",
+      "position": {
+        "tactical": true,
+        "positional": true,
+        "note": "The opposing advanced pawns require concrete exchange sequences. Bf2 can remove the e3 bishop before Rxb6. If Bg5 withdraws instead, Rxb6 Rxb6 Bxb6 still takes the b-pawn.",
+        "linesUci": [
+          [
+            "b2b5",
+            "d3c4",
+            "b5e5",
+            "h6h4",
+            "e5e3",
+            "h4h3",
+            "g3f2",
+            "h3e3",
+            "f2e3",
+            "c4b5"
+          ],
+          [
+            "g3f2",
+            "h6h5",
+            "f2e3",
+            "d3e3",
+            "b2b6",
+            "h5h4",
+            "g7f7",
+            "h4e4",
+            "b6d6",
+            "e4d4"
+          ],
+          [
+            "b2b3",
+            "d3c4",
+            "b3b1",
+            "h6h5",
+            "g7g6",
+            "h5g5",
+            "g6f6",
+            "g5g8",
+            "f6e6",
+            "e3c5"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": true,
+        "positional": true,
+        "note": "Bf2 attacks the bishop that guards b6 through d4 and c5. After Rh5, Bxe3 clears the route for Rxb6. After Bg5 the changed bishop alignment allows a different exchange. Both settle the queen-side passer.",
+        "uci": "g3f2",
+        "linesUci": [
+          [
+            "g3f2",
+            "h6h5",
+            "f2e3",
+            "d3e3",
+            "b2b6",
+            "h5h4",
+            "g7f7",
+            "e3d4",
+            "f7e7",
+            "d4c5"
+          ],
+          [
+            "g3f2",
+            "e3g5",
+            "b2b6",
+            "h6b6",
+            "f2b6",
+            "g5h4",
+            "g7f7",
+            "d3e4",
+            "f7e6",
+            "h4g3"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Bf2 leads the first frame and is within 8 centipawns of Rb5 in the deeper root.",
+        "uci": "g3f2",
+        "linesUci": [
+          [
+            "g3f2",
+            "h6h5",
+            "f2e3",
+            "d3e3",
+            "b2b6",
+            "h5h4",
+            "g7f7",
+            "e3d4",
+            "f7e7",
+            "d4c5"
+          ],
+          [
+            "g3f2",
+            "e3g5",
+            "b2b6",
+            "h6b6",
+            "f2b6",
+            "g5h4",
+            "g7f7",
+            "d3e4",
+            "f7e6",
+            "h4g3"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "00e0043d9d5f061afdb6",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "White's d-pawn and both rooks press along the d-file. The viable h6, a6 and Kg8 branches are different ways to regroup against that pressure.",
+        "linesUci": [
+          [
+            "h7h6",
+            "a1d1",
+            "d8g5",
+            "h5e2",
+            "e8d8",
+            "d4d5",
+            "c6e5",
+            "d5d6",
+            "a7a6",
+            "b5a4"
+          ],
+          [
+            "d8d4",
+            "a1d1",
+            "d4c5",
+            "h5h7",
+            "c5e7",
+            "f2f3",
+            "e4f3",
+            "f1f3",
+            "e7f6",
+            "f3h3"
+          ],
+          [
+            "a7a6",
+            "b5a4",
+            "h7h6",
+            "a1d1",
+            "d8g5",
+            "h5e2",
+            "c8d7",
+            "f2f3",
+            "e4f3",
+            "f1f3"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "h6 provides pawn support for Qg5, making the queen exchange on g5 available without dropping the pawn. Black uses the time to coordinate against White's d-file pressure.",
+        "uci": "h7h6",
+        "linesUci": [
+          [
+            "h7h6",
+            "a1d1",
+            "d8g5",
+            "h5e2",
+            "c8d7",
+            "f2f3",
+            "e4f3",
+            "f1f3",
+            "f8g8",
+            "b5c4"
+          ],
+          [
+            "h7h6",
+            "f1d1",
+            "d8g5",
+            "h5g5",
+            "h6g5",
+            "d1d2",
+            "e8d8",
+            "a1d1",
+            "g5g4",
+            "b5c4"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Kg8 is within 9 and 21 centipawns of the stronger choices through both root frames.",
+        "uci": "f8g8",
+        "linesUci": [
+          [
+            "f8g8",
+            "a1d1",
+            "e8f8",
+            "h5e2",
+            "g8h8",
+            "e2e3",
+            "a7a6",
+            "b5c4",
+            "d8f6",
+            "f2f3"
+          ],
+          [
+            "f8g8",
+            "f1d1",
+            "e8f8",
+            "d4d5",
+            "e6d5",
+            "c3d5",
+            "c8e6",
+            "d5b6",
+            "d8e8",
+            "h5e8"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "011ee7b47d52c0273595",
+      "position": {
+        "tactical": true,
+        "positional": null,
+        "note": "Bh4 exposes two minor pieces on the h-file to Qh7. Qc1 retains separate retreats and exchanges on f6 instead.",
+        "linesUci": [
+          [
+            "d1c1",
+            "e7c5",
+            "h5f6",
+            "d7f6",
+            "g5e3",
+            "c5f5",
+            "c4c5",
+            "b6c5",
+            "a1a3",
+            "g4g3"
+          ],
+          [
+            "d1g4",
+            "f6h5",
+            "g5e7",
+            "g8g4",
+            "e7d8",
+            "c8d8",
+            "g2g3",
+            "h8c3",
+            "b2c3",
+            "d8e7"
+          ],
+          [
+            "g5f6",
+            "h8f6",
+            "h5f6",
+            "e7f6",
+            "d1d3",
+            "d7c5",
+            "d3g3",
+            "g8g5",
+            "c3b5",
+            "f6g7"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": true,
+        "positional": null,
+        "note": "Qc1 avoids placing the bishop behind the h5 knight. When Qh7 arrives White can exchange on f6 and move the g5 bishop, preventing either h-file capture that is available after Bh4.",
+        "uci": "d1c1",
+        "linesUci": [
+          [
+            "d1c1",
+            "e7h7",
+            "h5f6",
+            "h8f6",
+            "g5f6",
+            "d7f6",
+            "c1e3",
+            "g8h8",
+            "e3g3",
+            "f6h5"
+          ],
+          [
+            "d1c1",
+            "e7c5",
+            "h5f6",
+            "d7f6",
+            "g5e3",
+            "c5f5",
+            "c4c5",
+            "b6c5",
+            "e1e2",
+            "f6d7"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": true,
+        "positional": null,
+        "note": "Bh4 Qh7 attacks the aligned h5 knight and h4 bishop. Nxf6 concedes Qxh4, while Qc1 concedes Qxh5. The same Qh7 reply after the stronger Qc1 permits the minor-piece exchanges.",
+        "uci": "g5h4",
+        "linesUci": [
+          [
+            "g5h4",
+            "e7h7",
+            "h5f6",
+            "d7f6",
+            "d1e2",
+            "h7h4",
+            "e2e6",
+            "c8b8",
+            "c4c5",
+            "f6d5"
+          ],
+          [
+            "g5h4",
+            "e7f7",
+            "h5f6",
+            "h8f6",
+            "h4g3",
+            "d7c5",
+            "d1c2",
+            "f7g6",
+            "c2g6",
+            "g8g6"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "001b89e6056db630cf8d",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "The advanced e6 wedge and White's outside a-pawn drive the advantage. Re1 retains those threats, while Qa3 permits Black's d-pawn to advance under queen cover.",
+        "linesUci": [
+          [
+            "b4d4",
+            "d3a6",
+            "d4d5",
+            "h7h5",
+            "a4a5",
+            "g6g5",
+            "d5d4",
+            "g5f4",
+            "e3f4",
+            "h5h4"
+          ],
+          [
+            "b4d2",
+            "d3f5",
+            "d2d5",
+            "g6g5",
+            "a1f1",
+            "g5f4",
+            "f1f4",
+            "f5b1",
+            "g1h2",
+            "f8c8"
+          ],
+          [
+            "a1e1",
+            "h7h5",
+            "b4e7",
+            "d3c3",
+            "e7h4",
+            "g6g5",
+            "h4f2",
+            "g5f4",
+            "e3d4",
+            "c3c4"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "Re1 supports the e-pawn structure and can coexist with a5 against Bh6. If Black tries d4 immediately, Qxd4 and a queen exchange retain good prospects.",
+        "uci": "a1e1",
+        "linesUci": [
+          [
+            "a1e1",
+            "g7h6",
+            "a4a5",
+            "f8e8",
+            "b4c5",
+            "e8f8",
+            "c5e7",
+            "d3c3",
+            "e3f2",
+            "h6f4"
+          ],
+          [
+            "a1e1",
+            "d5d4",
+            "b4d4",
+            "d3d4",
+            "e3d4",
+            "f8f4",
+            "e1d1",
+            "f4e4",
+            "a4a5",
+            "g7e5"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": null,
+        "positional": true,
+        "note": "Qa3 allows Qe4 and the d-pawn advance to d4 and d3 with the queen still on the board. Black gains sustained counterplay while White retains a large advantage.",
+        "uci": "b4a3",
+        "linesUci": [
+          [
+            "b4a3",
+            "d3e4",
+            "a1e1",
+            "d5d4",
+            "e3d2",
+            "e4c2",
+            "a3b4",
+            "c2d3",
+            "e1f1",
+            "g6g5"
+          ],
+          [
+            "b4a3",
+            "d3e2",
+            "a4a5",
+            "g6g5",
+            "a5a6",
+            "g5f4",
+            "e3f2",
+            "e2e5",
+            "a1e1",
+            "e5g5"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "002719621d794bcb0c4a",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "White balances Black's extra kingside pawn with active rook play against a7 and the b5 pawn. Several rook or king moves preserve that balance.",
+        "linesUci": [
+          [
+            "b4a4",
+            "b8b5",
+            "a4a7",
+            "f7g6",
+            "a7a3",
+            "h7h5",
+            "a3a4",
+            "b5b3",
+            "f2g2",
+            "b3c3"
+          ],
+          [
+            "b4c4",
+            "b8b5",
+            "c4c7",
+            "f7g6",
+            "c7a7",
+            "b5b3",
+            "a7a6",
+            "g6g5",
+            "a6a4",
+            "g5h6"
+          ],
+          [
+            "f2e3",
+            "b8b7",
+            "b4a4",
+            "f7e6",
+            "a4a5",
+            "b7e7",
+            "e3d4",
+            "e6f6",
+            "d4d3",
+            "g7g5"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": false,
+        "positional": true,
+        "note": "Ra4 keeps seventh-rank access against a7 even after Rxb5, preserving the active-rook defence. The alternative Rc4 gets similar activity by Rc7+. Rxb5 and Rb7 both preserve equality. The routine a7 compensation follows from an active file, with no forcing winning sequence in either branch.",
+        "uci": "b4a4",
+        "linesUci": [
+          [
+            "b4a4",
+            "b8b7",
+            "a4a6",
+            "b7b5",
+            "a6a7",
+            "f7f6",
+            "a7a6",
+            "f6g5",
+            "a6a7"
+          ],
+          [
+            "b4a4",
+            "b8b5",
+            "a4a7",
+            "f7f6",
+            "a7a6",
+            "f6g5",
+            "a6a7",
+            "g5f6"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Ke3 is within 3 and 13 centipawns and the independent replies remain equal.",
+        "uci": "f2e3",
+        "linesUci": [
+          [
+            "f2e3",
+            "f7e6",
+            "b4a4",
+            "b8b7",
+            "a4a5",
+            "b7e7",
+            "e3d4",
+            "e7d7",
+            "d4e3"
+          ],
+          [
+            "f2e3",
+            "b8b7",
+            "b4a4",
+            "f7e6",
+            "a4a5",
+            "b7e7",
+            "e3d4",
+            "e7d7",
+            "d4e3",
+            "e6d6"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "0049bf80a636df818277",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "White's active rook wins queenside pawns while Black's bishop can create counterplay on h4. Black never gets a fully adequate blockade here.",
+        "linesUci": [
+          [
+            "e5f6",
+            "b7b6",
+            "f6h4",
+            "a2a4",
+            "h4e1",
+            "b6e6",
+            "e1b4",
+            "e6g6",
+            "f8f7",
+            "g6h6"
+          ],
+          [
+            "f8e8",
+            "b7b6",
+            "e5c7",
+            "b6b5",
+            "c7d8",
+            "a2a4",
+            "e8f7",
+            "a4a5",
+            "d8a5",
+            "b5a5"
+          ],
+          [
+            "e5d4",
+            "b7b6",
+            "d4f2",
+            "a2a4",
+            "f2e1",
+            "b6g6",
+            "e1a5",
+            "c2d3",
+            "f8f7",
+            "g6c6"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "Bf6 gives the bishop direct access to h4 as White attacks b6. It gains a counterplay target earlier than the king retreat.",
+        "uci": "e5f6",
+        "linesUci": [
+          [
+            "e5f6",
+            "b7b6",
+            "f6h4",
+            "b6g6",
+            "f8e7",
+            "g6c6",
+            "h4f2",
+            "a2a4",
+            "e7d7",
+            "c6b6"
+          ],
+          [
+            "e5f6",
+            "a2a4",
+            "f6h4",
+            "b7b6",
+            "h4e1",
+            "b6g6",
+            "f8e7",
+            "c2d3",
+            "e7d7",
+            "g6b6"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Bf6 leads both budgets.",
+        "uci": "e5f6",
+        "linesUci": [
+          [
+            "e5f6",
+            "b7b6",
+            "f6h4",
+            "b6g6",
+            "f8e7",
+            "g6c6",
+            "h4f2",
+            "a2a4",
+            "e7d7",
+            "c6b6"
+          ],
+          [
+            "e5f6",
+            "a2a4",
+            "f6h4",
+            "b7b6",
+            "h4e1",
+            "b6g6",
+            "f8e7",
+            "c2d3",
+            "e7d7",
+            "g6b6"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "00a2386991fd2f65e1cf",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "The advanced centre and pressure around f4 coexist with Black's c4 or b5 breaks. White can take f4 immediately or delay it while keeping the rook active.",
+        "linesUci": [
+          [
+            "h4f4",
+            "f7d7",
+            "c2c3",
+            "b7b6",
+            "h3f3",
+            "a6b7",
+            "h2h4",
+            "d5d4",
+            "f3d3",
+            "d7d5"
+          ],
+          [
+            "h4g4",
+            "f7d7",
+            "c2c4",
+            "c8c7",
+            "e1d1",
+            "e6e8",
+            "g4f3",
+            "d5c4",
+            "d2c4",
+            "d7e6"
+          ],
+          [
+            "d2f3",
+            "b7b5",
+            "a4a5",
+            "b5b4",
+            "h4f4",
+            "d5d4",
+            "h3g3",
+            "d4d3",
+            "c2d3",
+            "a6d3"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "Qxf4 removes the advanced f-pawn and prevents its continued interference with White's rook plan. The resulting positions still turn on how White meets c4 or b5.",
+        "uci": "h4f4",
+        "linesUci": [
+          [
+            "h4f4",
+            "c5c4",
+            "d2f3",
+            "c4b3",
+            "c2b3",
+            "a6d3",
+            "f3d4",
+            "d3e4",
+            "e1c1",
+            "c8c1"
+          ],
+          [
+            "h4f4",
+            "b7b5",
+            "a4b5",
+            "a6b5",
+            "c2c4",
+            "d5c4",
+            "b3c4",
+            "b5c6",
+            "h3d3",
+            "c8c7"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Qxf4 leads both budgets.",
+        "uci": "h4f4",
+        "linesUci": [
+          [
+            "h4f4",
+            "c5c4",
+            "d2f3",
+            "c4b3",
+            "c2b3",
+            "a6d3",
+            "f3d4",
+            "d3e4",
+            "e1c1",
+            "c8c1"
+          ],
+          [
+            "h4f4",
+            "b7b5",
+            "a4b5",
+            "a6b5",
+            "c2c4",
+            "d5c4",
+            "b3c4",
+            "b5c6",
+            "h3d3",
+            "c8c7"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "00acd47041b0a54528ce",
+      "position": {
+        "tactical": true,
+        "positional": true,
+        "note": "Black's d2 passer demands the d-file blockade. The threat of Rc1 against the blockading rook is answered by Rff1 in the b3 line, while b4 leads to a less active bishop and different rook defence.",
+        "linesUci": [
+          [
+            "b2b3",
+            "a8d8",
+            "b5c4",
+            "a7a6",
+            "a3a4",
+            "c2c1",
+            "f6f1",
+            "c1c3",
+            "a4a5",
+            "d8d7"
+          ],
+          [
+            "b2b4",
+            "a8d8",
+            "g1f2",
+            "a7a6",
+            "b5e2",
+            "d8d4",
+            "f6f3",
+            "g8g7",
+            "f3b3",
+            "c2a2"
+          ],
+          [
+            "f6d6",
+            "c2b2",
+            "b5f1",
+            "b7b5",
+            "d1d2",
+            "b2d2",
+            "d6d2",
+            "a8b8",
+            "g1f2",
+            "g8g7"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "b3 gives Bc4 durable support and retains the rook blockade. Against both Rd8 and a6, White reaches Bc4 without losing the blockading d-rook.",
+        "uci": "b2b3",
+        "linesUci": [
+          [
+            "b2b3",
+            "a8d8",
+            "b5c4",
+            "a7a6",
+            "a3a4",
+            "c2c1",
+            "f6f1",
+            "c1c3",
+            "a4a5",
+            "d8d7"
+          ],
+          [
+            "b2b3",
+            "a7a6",
+            "b5d3",
+            "c2b2",
+            "d3c4",
+            "b7b5",
+            "c4f7",
+            "g8g7",
+            "f6f3",
+            "a8d8"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "b3 leads both budgets.",
+        "uci": "b2b3",
+        "linesUci": [
+          [
+            "b2b3",
+            "a8d8",
+            "b5c4",
+            "a7a6",
+            "a3a4",
+            "c2c1",
+            "f6f1",
+            "c1c3",
+            "a4a5",
+            "d8d7"
+          ],
+          [
+            "b2b3",
+            "a7a6",
+            "b5d3",
+            "c2b2",
+            "d3c4",
+            "b7b5",
+            "c4f7",
+            "g8g7",
+            "f6f3",
+            "a8d8"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "0006a9731694ef5af44b",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "Both Be7 and Nf6 develop and prepare castling. Bb5 gives White time to develop and challenge the moved bishop by Nc3, increasing queenside and a6 pressure.",
+        "linesUci": [
+          [
+            "g8f6",
+            "c4d4",
+            "a8c8",
+            "b1c3",
+            "f8e7",
+            "c1e3",
+            "e8g8",
+            "e1c1",
+            "d7e6",
+            "d4a7"
+          ],
+          [
+            "f8e7",
+            "c4d3",
+            "g8f6",
+            "c2c4",
+            "f6g4",
+            "b1c3",
+            "g4e5",
+            "d3e2",
+            "e8g8",
+            "e1g1"
+          ],
+          [
+            "d7e6",
+            "c4a4",
+            "d8d7",
+            "a4d7",
+            "e8d7",
+            "b1c3",
+            "a8b8",
+            "c1e3",
+            "b8b2",
+            "e1d2"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "Be7 develops the bishop and retains quick castling or a knight redeployment. Both independent White replies allow coherent development.",
+        "uci": "f8e7",
+        "linesUci": [
+          [
+            "f8e7",
+            "c4d3",
+            "g8f6",
+            "c2c4",
+            "f6g4",
+            "b1c3",
+            "g4e5",
+            "d3e2",
+            "e8g8",
+            "e1g1"
+          ],
+          [
+            "f8e7",
+            "c1e3",
+            "g8f6",
+            "b1c3",
+            "e8g8",
+            "c4d3",
+            "d7e6",
+            "e1c1",
+            "d8a5",
+            "e3d4"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": null,
+        "positional": true,
+        "note": "Bb5 puts the bishop where Nc3 or Qb3 can exploit it. White can force a pawn-structure change after Nxb5 axb5 or attack a6 after Bc6.",
+        "uci": "d7b5",
+        "linesUci": [
+          [
+            "d7b5",
+            "c4d4",
+            "a8c8",
+            "b1c3",
+            "g8f6",
+            "c3b5",
+            "a6b5",
+            "a2a4",
+            "b5a4",
+            "d4a4"
+          ],
+          [
+            "d7b5",
+            "c4b3",
+            "g8f6",
+            "b1c3",
+            "b5c6",
+            "b3c4",
+            "a8c8",
+            "c4a6",
+            "f8e7",
+            "f2f3"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "0007cc2e0b47a78a9190",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "Black can develop through f8 and e6 or seek c5 counterplay; White's f3 and central advance can change the resulting structure. The wings remain relatively stable during the manoeuvres.",
+        "linesUci": [
+          [
+            "d7f8",
+            "c2d2",
+            "c8d7",
+            "a2a3",
+            "h5f6",
+            "d3b1",
+            "a8d8",
+            "e2f4",
+            "f8e6",
+            "f2f3"
+          ],
+          [
+            "a7a5",
+            "c2d2",
+            "d7f8",
+            "c3a4",
+            "e7d8",
+            "f2f3",
+            "f8e6",
+            "e1c1",
+            "h5f6",
+            "a2a3"
+          ],
+          [
+            "d7b6",
+            "e2c1",
+            "c8d7",
+            "c1b3",
+            "a8d8",
+            "b3d2",
+            "d7e6",
+            "d2f3",
+            "b6c4",
+            "b2b3"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": false,
+        "positional": true,
+        "note": "Nf8 preserves Ne6 or Nf6 options and allows Bd7, maintaining the coordination of both knights. The immediate Ndf6 more often returns the knight to d7 against White's f3. The two independent answers to Nf8 lead to the same quiet regrouping near equality; the alternative a5 allows similar setups without a forcing concession.",
+        "uci": "d7f8",
+        "linesUci": [
+          [
+            "d7f8",
+            "a2a3",
+            "c8d7",
+            "b2b4",
+            "f8e6",
+            "e1b1",
+            "h5f6",
+            "c2d2",
+            "a8d8",
+            "a3a4"
+          ],
+          [
+            "d7f8",
+            "c2d2",
+            "h5f6",
+            "e1b1",
+            "a7a5",
+            "b1c1",
+            "f8e6",
+            "f2f3",
+            "e6g5",
+            "h2h4"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Ndf6 remains within 25 and 15 centipawns, with no established separate loss.",
+        "uci": "d7f6",
+        "linesUci": [
+          [
+            "d7f6",
+            "c3d1",
+            "f6d7",
+            "f2f3",
+            "c6c5",
+            "e2f4",
+            "h5f6",
+            "d1c3",
+            "e7d6",
+            "g2g4"
+          ],
+          [
+            "d7f6",
+            "e2c1",
+            "f6g4",
+            "h2h3",
+            "g4f6",
+            "c2e2",
+            "e7d6",
+            "e2f3",
+            "g7g6",
+            "g2g4"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "00119961bc2c688880e1",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "Escape squares against an active checking rook and White's knight mobility govern the ending. Kc2 or Kc3 stabilizes the king while Nf5 keeps central counterplay.",
+        "linesUci": [
+          [
+            "d4f5",
+            "a1b1",
+            "b3c3",
+            "b1c1",
+            "c3b2",
+            "c1g1",
+            "b2c2",
+            "g1a1",
+            "e2d1",
+            "a6a5"
+          ],
+          [
+            "b3c3",
+            "a1a3",
+            "c3c2",
+            "a3e3",
+            "e2f3",
+            "e3e1",
+            "h4h5",
+            "f8e8",
+            "c2d2",
+            "e1b1"
+          ],
+          [
+            "b3c2",
+            "a1a3",
+            "e2d3",
+            "a3a1",
+            "d4f5",
+            "a1a2",
+            "c2b3",
+            "a2g2",
+            "f5h6",
+            "f8g7"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "Kc2 brings the king towards bishop support and permits Bd1 or Bd3 against the active rook. The deeper search prefers Nf5 while keeping this defensive plan available.",
+        "uci": "b3c2",
+        "linesUci": [
+          [
+            "b3c2",
+            "a1a3",
+            "e2d1",
+            "a3e3",
+            "d1f3",
+            "e3a3",
+            "h4h5",
+            "f8g8",
+            "f3e2",
+            "g8f8"
+          ],
+          [
+            "b3c2",
+            "h6h5",
+            "g4h5",
+            "a1a3",
+            "c2d2",
+            "a3h3",
+            "d4f3",
+            "h3h1",
+            "e2d3",
+            "f8g8"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": null,
+        "positional": null,
+        "note": "Kc2 leads the first frame but trails Nf5 in the deeper one. The position still has multiple viable bishop and king routes and an exact mechanism for the difference is unclear.",
+        "uci": "b3c2",
+        "linesUci": [
+          [
+            "b3c2",
+            "a1a3",
+            "e2d1",
+            "a3e3",
+            "d1f3",
+            "e3a3",
+            "h4h5",
+            "f8g8",
+            "f3e2",
+            "g8f8"
+          ],
+          [
+            "b3c2",
+            "h6h5",
+            "g4h5",
+            "a1a3",
+            "c2d2",
+            "a3h3",
+            "d4f3",
+            "h3h1",
+            "e2d3",
+            "f8g8"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "00204d00b16bab587de1",
+      "position": {
+        "tactical": true,
+        "positional": null,
+        "note": "Rc5 after Nd6 requires calculating the balanced Nxf5 Rxd8+ Bxd8 Rxe5 Bxc7 Rxf5 sequence. The seemingly forcing Ne6+ after the actual move fails to fxe6 and the pawn recapture.",
+        "linesUci": [
+          [
+            "c8d6",
+            "c1c5",
+            "d6f5",
+            "d1d8",
+            "e7d8",
+            "c5e5",
+            "d8c7",
+            "e5f5",
+            "h8h6",
+            "h3h4"
+          ],
+          [
+            "h8h6",
+            "d1d8",
+            "e7d8",
+            "c7b5",
+            "c8e7",
+            "g3g4",
+            "h5g4",
+            "h3g4",
+            "d8b6",
+            "b5c3"
+          ],
+          [
+            "d8d1",
+            "c1d1",
+            "h8h6",
+            "c7d5",
+            "h6a6",
+            "e2c3",
+            "c8d6",
+            "g3g4",
+            "a6c6",
+            "d1e1"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": true,
+        "positional": null,
+        "note": "Nd6 attacks f5 and makes the long Rc5 capture sequence work. The independent g4 reply instead yields a different attack on the h-file.",
+        "motifs": {
+          "fork": false
+        },
+        "uci": "c8d6",
+        "linesUci": [
+          [
+            "c8d6",
+            "c1c5",
+            "d6f5",
+            "d1d8",
+            "e7d8",
+            "c5e5",
+            "d8c7",
+            "e5f5",
+            "h8h6",
+            "f5c5"
+          ],
+          [
+            "c8d6",
+            "g3g4",
+            "h5g4",
+            "h3g4",
+            "h8h4",
+            "g2f3",
+            "h4h2",
+            "d1h1",
+            "e5e4",
+            "f3g3"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Rxd1 scores within 11 and 9 centipawns. Ne6+ is a losing reply, rather than a refutation of Rxd1.",
+        "uci": "d8d1",
+        "linesUci": [
+          [
+            "d8d1",
+            "c1d1",
+            "h8h6",
+            "g3g4",
+            "h5g4",
+            "h3g4",
+            "g7g6",
+            "c7d5",
+            "g6f5",
+            "e2g3"
+          ],
+          [
+            "d8d1",
+            "c7e6",
+            "f7e6",
+            "c1d1",
+            "e6f5",
+            "d1d5",
+            "e7d6",
+            "h3h4",
+            "f8e7",
+            "d5b5"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "0dc9a0af698ebf750c12",
+      "position": {
+        "tactical": true,
+        "positional": true,
+        "note": "White can gain kingside space with g4 g5 or break centrally with e4. Trying to ignore the pawn attack with Qg5 after g4 allows Bxg6 Qxg6 gxh5, winning a minor piece for a pawn in the tested exchange.",
+        "linesUci": [
+          [
+            "g2g4",
+            "h5f6",
+            "g4g5",
+            "f6g8",
+            "f3f4",
+            "g6f8",
+            "f5d3",
+            "g7g6",
+            "h2h4",
+            "f7f6"
+          ],
+          [
+            "e3e4",
+            "e7f6",
+            "f5g6",
+            "f6g6",
+            "e4d5",
+            "e8e1",
+            "f1e1",
+            "c6d5",
+            "c3d5",
+            "h7h6"
+          ],
+          [
+            "a2a3",
+            "e7g5",
+            "f5c2",
+            "h5f6",
+            "g2g3",
+            "f6g8",
+            "f3f4",
+            "g5h5",
+            "c2d1",
+            "h5f5"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": true,
+        "positional": true,
+        "note": "g4 dislodges the h5 knight and prepares g5 and f4. The apparent Qg5 counterplay fails to Bxg6 and gxh5 instead of the safe retreat Nf6.",
+        "motifs": {
+          "fork": false
+        },
+        "uci": "g2g4",
+        "linesUci": [
+          [
+            "g2g4",
+            "h5f6",
+            "g4g5",
+            "f6d7",
+            "f3f4",
+            "e7f8",
+            "f2g3",
+            "g6e7",
+            "f5h7",
+            "h8h7"
+          ],
+          [
+            "g2g4",
+            "e7g5",
+            "f5g6",
+            "g5g6",
+            "g4h5",
+            "g6h5",
+            "e3e4",
+            "f7f6",
+            "a2a3",
+            "d5e4"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "g4 leads both budgets.",
+        "uci": "g2g4",
+        "linesUci": [
+          [
+            "g2g4",
+            "h5f6",
+            "g4g5",
+            "f6d7",
+            "f3f4",
+            "e7f8",
+            "f2g3",
+            "g6e7",
+            "f5h7",
+            "h8h7"
+          ],
+          [
+            "g2g4",
+            "e7g5",
+            "f5g6",
+            "g5g6",
+            "g4h5",
+            "g6h5",
+            "e3e4",
+            "f7f6",
+            "a2a3",
+            "d5e4"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "0002472cffe0d7d148f5",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "Black needs active queen and rook play against b5 and the e-pawn. The checking entries Qa2+ and Qa1+ leave White's structure largely intact but delay the advance while the rook activates.",
+        "linesUci": [
+          [
+            "a6a2",
+            "b1c2",
+            "a8d8",
+            "b4b5",
+            "a2a8",
+            "c2b1",
+            "g7h6",
+            "c4c6",
+            "h6e3",
+            "c6a8"
+          ],
+          [
+            "a6a1",
+            "b1c2",
+            "a1a7",
+            "c2d3",
+            "g7h6",
+            "f3d4",
+            "a7a2",
+            "c4c3",
+            "e7e6",
+            "d4c6"
+          ],
+          [
+            "a6a7",
+            "c4c5",
+            "a7a2",
+            "b1c2",
+            "e7e6",
+            "f3d4",
+            "g7f8",
+            "c5c4",
+            "a2a7",
+            "b4b5"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "Qa2+ permits Rd8 after Kc2, placing the rook actively before White pushes b5. The exact check offers no established forced gain.",
+        "uci": "a6a2",
+        "linesUci": [
+          [
+            "a6a2",
+            "b1c2",
+            "a8d8",
+            "b4b5",
+            "a2a8",
+            "c2b1",
+            "g7h6",
+            "c4c6",
+            "h6e3",
+            "c6a8"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Qa7 is within 8 and 25 centipawns of the leader and still has active queen resources.",
+        "uci": "a6a7",
+        "linesUci": [
+          [
+            "a6a7",
+            "c4c5",
+            "a7b7",
+            "c1c4",
+            "e7e6",
+            "b4b5",
+            "a8b8",
+            "b1c2",
+            "g7h6",
+            "c5c6"
+          ],
+          [
+            "a6a7",
+            "c4c6",
+            "g7h6",
+            "e5e6",
+            "f7f5",
+            "c1d1",
+            "h6g7",
+            "b1c2",
+            "g7f6",
+            "b4b5"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "000c6cfcd0cac5d0df52",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "King safety and rook coordination govern the choices. O-O reaches an active e-file rook after the exchange on d4, while Rc1 leaves the king in the centre longer against Bd3.",
+        "linesUci": [
+          [
+            "e1g1",
+            "c8b8",
+            "e2b5",
+            "c6d4",
+            "f3d4",
+            "d6d4",
+            "f1e1",
+            "c2f5",
+            "b5f1",
+            "b6d5"
+          ],
+          [
+            "a1c1",
+            "c2d3",
+            "c1d1",
+            "c6b4",
+            "e1g1",
+            "d6f6",
+            "d1d2",
+            "b6c4",
+            "f1c1",
+            "c8b8"
+          ],
+          [
+            "h2h3",
+            "f7f6",
+            "e1g1",
+            "c8b8",
+            "a1c1",
+            "c2f5",
+            "e2b5",
+            "e7e5",
+            "f1d1",
+            "d6f8"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "Castling moves the king out of the centre and activates the rook for Rfe1 after the d4 exchange. The Bf5 reply also leaves access to the c-file.",
+        "uci": "e1g1",
+        "linesUci": [
+          [
+            "e1g1",
+            "c8b8",
+            "e2b5",
+            "c6d4",
+            "f3d4",
+            "d6d4",
+            "f1e1",
+            "c2f5",
+            "b5f1",
+            "b6d5"
+          ],
+          [
+            "e1g1",
+            "c2f5",
+            "a2a4",
+            "b6d5",
+            "c3d5",
+            "d6d5",
+            "a1c1",
+            "c8b8",
+            "f1e1",
+            "d5d6"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "O-O leads both budgets.",
+        "uci": "e1g1",
+        "linesUci": [
+          [
+            "e1g1",
+            "c8b8",
+            "e2b5",
+            "c6d4",
+            "f3d4",
+            "d6d4",
+            "f1e1",
+            "c2f5",
+            "b5f1",
+            "b6d5"
+          ],
+          [
+            "e1g1",
+            "c2f5",
+            "a2a4",
+            "b6d5",
+            "c3d5",
+            "d6d5",
+            "a1c1",
+            "c8b8",
+            "f1e1",
+            "d5d6"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "002c996c0db9f61d5b55",
+      "position": {
+        "tactical": true,
+        "positional": null,
+        "note": "Rg8 attacks the queen and keeps g8 defended by the e7 knight. Rf8 instead allows Rd1 with tempo against Black's queen and loses the opportunity.",
+        "linesUci": [
+          [
+            "h8g8",
+            "g7h7",
+            "d2c3",
+            "e4e5",
+            "a7a6",
+            "b5f1",
+            "b7b5",
+            "b1c1",
+            "c3e5",
+            "c1e1"
+          ],
+          [
+            "h8f8",
+            "b1d1",
+            "d2f4",
+            "g2g3",
+            "f4c7",
+            "d1d4",
+            "a7a6",
+            "b5e2",
+            "c7c3",
+            "a1d1"
+          ],
+          [
+            "e7g6",
+            "b1d1",
+            "d2g5",
+            "d1d5",
+            "g5e7",
+            "a1d1",
+            "a7a6",
+            "b5d7",
+            "c8d7",
+            "d5d7"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": true,
+        "positional": null,
+        "note": "The defensive ...Rg8 works because Qxg8+ permits Nxg8. Qxh7 or Qd4 instead lets Black keep an active queen or trade queens while retaining the advantage.",
+        "motifs": {
+          "fork": false
+        },
+        "uci": "h8g8",
+        "linesUci": [
+          [
+            "h8g8",
+            "g7h7",
+            "d2c3",
+            "e4e5",
+            "a7a6",
+            "b5a4",
+            "c3e5",
+            "b1e1",
+            "e5g5",
+            "g2g3"
+          ],
+          [
+            "h8g8",
+            "g7d4",
+            "d2d4",
+            "c3d4",
+            "a7a6",
+            "b5d3",
+            "d7d5",
+            "e4d5",
+            "g8g4",
+            "b1e1"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Rg8 leads both budgets.",
+        "uci": "h8g8",
+        "linesUci": [
+          [
+            "h8g8",
+            "g7h7",
+            "d2c3",
+            "e4e5",
+            "a7a6",
+            "b5a4",
+            "c3e5",
+            "b1e1",
+            "e5g5",
+            "g2g3"
+          ],
+          [
+            "h8g8",
+            "g7d4",
+            "d2d4",
+            "c3d4",
+            "a7a6",
+            "b5d3",
+            "d7d5",
+            "e4d5",
+            "g8g4",
+            "b1e1"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "009dfd0e1f0a76a4b4c4",
+      "position": {
+        "tactical": null,
+        "positional": true,
+        "note": "Black must balance kingside pawn restraint against White's queenside and d-pawn gains. f4 and Kd7 can reach a similar blockading structure, while b6 opens a more costly central race.",
+        "linesUci": [
+          [
+            "c7d7",
+            "g2g3",
+            "d7c7",
+            "c4b5",
+            "c7d7",
+            "b5c5",
+            "h7h5",
+            "f7h8",
+            "f5f4",
+            "g3f4"
+          ],
+          [
+            "b7b6",
+            "a5b6",
+            "c7b6",
+            "d5d6",
+            "e7d6",
+            "f7h6",
+            "e8c7",
+            "h6f5",
+            "d6d5",
+            "c4c3"
+          ],
+          [
+            "f5f4",
+            "c4d3",
+            "c7d7",
+            "d5d6",
+            "e8d6",
+            "f7d6",
+            "d7d6",
+            "d3e4",
+            "e7e5",
+            "d4e5"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": null,
+        "positional": true,
+        "note": "f4 fixes the white f3 pawn and restrains g3. Kd3 Kd7 Ke4 allows the long knight reroute from e8 to c7 and b5.",
+        "uci": "f5f4",
+        "linesUci": [
+          [
+            "f5f4",
+            "c4d3",
+            "c7d7",
+            "d3e4",
+            "e8c7",
+            "f7h6",
+            "c7b5",
+            "h6f5",
+            "b5c3",
+            "e4f4"
+          ],
+          [
+            "f5f4",
+            "f7h6",
+            "e8d6",
+            "c4d3",
+            "b7b6",
+            "a5b6",
+            "a7b6",
+            "h6g4",
+            "d6f5",
+            "d3e4"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Kd7 is a comparable choice at the first budget and leads the deeper frame.",
+        "uci": "c7d7",
+        "linesUci": [
+          [
+            "c7d7",
+            "g2g3",
+            "d7c7",
+            "c4d3",
+            "c7d7",
+            "f7h6",
+            "f5f4",
+            "g3g4",
+            "e8d6",
+            "h6f5"
+          ],
+          [
+            "c7d7",
+            "h2h4",
+            "f5f4",
+            "c4d3",
+            "e8c7",
+            "d3e4",
+            "c7b5",
+            "f7h6",
+            "b5c3",
+            "e4f4"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "0290a88d409399ad8996",
+      "position": {
+        "tactical": true,
+        "positional": true,
+        "note": "There is an exact forcing defence after Ne6 with Nxf3+ and Ne1+. Simultaneously, the best exchange on f3 preserves a different strategic plan with Be6 and active king play opposing the d-file rook.",
+        "linesUci": [
+          [
+            "d4f3",
+            "g2f3",
+            "c8e6",
+            "f3e2",
+            "g7f7",
+            "g1g2",
+            "f7e7",
+            "d6d1",
+            "e8d8",
+            "d1d8"
+          ],
+          [
+            "d4e6",
+            "g2h3",
+            "e6d4",
+            "h3c8",
+            "d4f3",
+            "g1g2",
+            "f3e1",
+            "g2f1",
+            "e1c2",
+            "c8b7"
+          ],
+          [
+            "b8a6",
+            "a2a3",
+            "g6h5",
+            "f3d4",
+            "e5d4",
+            "d6d4",
+            "c6c5",
+            "b4c5",
+            "a6c5",
+            "c3b5"
+          ]
+        ]
+      },
+      "move": {
+        "tactical": true,
+        "positional": true,
+        "note": "Nxf3+ forces White's recapture in the meaningful line. Kf1 instead leaves Black the knight and wins time for Nd4. Bxf3 Be6 changes the minor-piece balance and gives Black time to activate the king.",
+        "uci": "d4f3",
+        "linesUci": [
+          [
+            "d4f3",
+            "g2f3",
+            "c8e6",
+            "f3e2",
+            "g7f7",
+            "d6d1",
+            "f7e7",
+            "g1g2",
+            "b8d7",
+            "h5g6"
+          ],
+          [
+            "d4f3",
+            "g1f1",
+            "f3d4",
+            "f1g1",
+            "g6h5",
+            "b4b5",
+            "g7f7",
+            "b5c6",
+            "b8c6",
+            "f2f4"
+          ]
+        ]
+      },
+      "mistake": {
+        "tactical": false,
+        "positional": false,
+        "note": "Ne6 stays within 13 and 11 centipawns using its own concrete tactical resource.",
+        "uci": "d4e6",
+        "linesUci": [
+          [
+            "d4e6",
+            "g2h3",
+            "e6d4",
+            "h3c8",
+            "d4f3",
+            "g1g2",
+            "f3e1",
+            "g2f1",
+            "e1c2",
+            "c8b7"
+          ],
+          [
+            "d4e6",
+            "h5g6",
+            "h7g6",
+            "g2h3",
+            "e6d4",
+            "h3c8",
+            "d4f3",
+            "g1g2",
+            "f3d4",
+            "c8h3"
+          ]
+        ]
+      }
+    }
+  ]
+}
