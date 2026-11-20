@@ -1,0 +1,523 @@
+{
+  "counts": {
+    "exchange": 17,
+    "move-away": 36
+  },
+  "groups": [
+    "10th-annual-new-york-state-girls-championship-2026",
+    "11th-anogia-international-idaion-antro-2026",
+    "12th-cesme-international-open-chess-tournament",
+    "14th-new-york-international-super-swiss",
+    "17th-kiit-international-chess-festival-2026-cat-a",
+    "19-international-tournament-paracin-2026-open-a",
+    "19th-arad-open-grand-prix-classic-2026-open-a",
+    "19th-paleochora-international-tournament-2026",
+    "19th-poti-international-chess-festival-nana-aleksandria-cup-2026",
+    "1er-open-international-de-lecci",
+    "1st-gazi-international-open-chess-tournament-category-a",
+    "2026-belt-and-road-international-chess-open-kuqa-xinjiang-group-b",
+    "2026-chinese-chess-league-division-a-round-robin-r7-11",
+    "2026-marshall-chess-club-senior-championship",
+    "2026-marshall-premier-fide-november",
+    "2026-mona-karff-memorial-marshall-chess-club-womens-championship",
+    "2026-turkiye-satranc-ligi-turkish-league-super-lig",
+    "2nd-rungta-cement-international-open-fide-rating-chess-tournament-2026",
+    "35th-drogheda-chess-congress-thomson",
+    "40e-open-international-davoine",
+    "48th-international-chess-open-citta-di-arco-grupo-b",
+    "aktobe-open-2026-vladimir-dvorkovich-memorial",
+    "asian-nations-chess-cup-2026-men",
+    "buongoma-open-chess-championship-grand-prix-circuit",
+    "czech-youth-championship-2026-u10",
+    "fide-world-amateur-chess-championships-2026-u2300",
+    "fide-world-junior-chess-championship-2026",
+    "fide-world-senior-chess-championships-2026-open-50",
+    "polish-team-championship-2026-division-1-druzynowe-mistrzostwa-polski-i-liga",
+    "xiv-torneo-internacional-y-nacional-de-ajedrez-copa-revolucion-2026-abierta"
+  ],
+  "sources": {
+    "arad-6SJEilNL.pgn": {
+      "sha256": "62a0905dd58cd5f08e03e8f3dea6bbc0cb922bb7f9d632ebccea23afa0acc59e",
+      "nominations": {
+        "move-away": 1
+      }
+    },
+    "arad-AmuVNKCj.pgn": {
+      "sha256": "462dfd1273d238de38384239737a8e862410488316daeac950fbba80ca714c5c",
+      "nominations": {
+        "move-away": 1
+      }
+    },
+    "arad-dFgK7wL9.pgn": {
+      "sha256": "44b59190c33b39c39a995073d570baab8622f51b32726dea4a0f09077c343559",
+      "nominations": {
+        "move-away": 3
+      }
+    },
+    "arad-KuVy4Gsx.pgn": {
+      "sha256": "5bf1134db69e007d61c1bf0a9ad403b34a14aeed0493b3dfeba82c02033a1b5d",
+      "nominations": {
+        "move-away": 5
+      }
+    },
+    "czech-54vvY1tE.pgn": {
+      "sha256": "27909ff5747bde36e42765722e5350fff87c55309b0734a32e08019a8df7ff19",
+      "nominations": {}
+    },
+    "czech-7SQh1n2M.pgn": {
+      "sha256": "c6acd1a6492f22af5cea9853ef65d52440348fcd4dbc4ce0aec0e4e37eddcbc8",
+      "nominations": {}
+    },
+    "czech-hQhZs0v1.pgn": {
+      "sha256": "84824095aa505b28d9a5d9cadcaf1769b28203036b440496ea5659e4f4d62710",
+      "nominations": {}
+    },
+    "czech-rIbHX8Zn.pgn": {
+      "sha256": "ff46206ffab9e2fb200a275f5e4c58bc72ebf9f1ad583896fb26ec479256abe7",
+      "nominations": {}
+    },
+    "olympiad-oQds2Dcv.pgn": {
+      "sha256": "31a48996f8fbedc7a85e9e4a47960b3a9d2f32b6b10ab11a725a7a7d1e122eae",
+      "nominations": {}
+    },
+    "olympiad-QJSVWmNu.pgn": {
+      "sha256": "69e9d5380c8f5da1f40b688a7f5fe0260ac2849e17499d21229b74258862237a",
+      "nominations": {}
+    },
+    "olympiad-WCYaLfnP.pgn": {
+      "sha256": "c4dc2b9b54a50aff114d8cc89683bfa74d12db077b34deb3715b145f735fabee",
+      "nominations": {}
+    },
+    "poland-0F78yJIi.pgn": {
+      "sha256": "f5c34a157d7a5d2c6c42a6b580524e2bf8c1c72824e4801c95fac3e19f1873c7",
+      "nominations": {
+        "move-away": 7
+      }
+    },
+    "poland-9eyzPy9m.pgn": {
+      "sha256": "0701bffc29d0c43f61c53beb6f44f02046d28626741418747e41c28557f258ea",
+      "nominations": {
+        "move-away": 2
+      }
+    },
+    "poland-bLaUj5vJ.pgn": {
+      "sha256": "acf4acfed455894871aad12536f0eb87afaa3e8d1cac8d793ea58c3ff155993b",
+      "nominations": {
+        "move-away": 7
+      }
+    },
+    "poland-vcIdhifR.pgn": {
+      "sha256": "75ab74109fb15f71fc5522482e3f531e99ab4b4921424c7a441f208db371eb26",
+      "nominations": {
+        "move-away": 10
+      }
+    },
+    "poland-wwrkku5B.pgn": {
+      "sha256": "6dc90271779ede2902e73dd0091baec53551d447a79818610ee9f4e38de63a21",
+      "nominations": {
+        "move-away": 11
+      }
+    },
+    "turkey-A84qp8J6.pgn": {
+      "sha256": "6450af0b66200e43cbe416f22211d40ccb9fa4fd58e70f6616ff6fafd7721a57",
+      "nominations": {
+        "move-away": 8,
+        "exchange": 2
+      }
+    },
+    "turkey-loIX5V6A.pgn": {
+      "sha256": "6e151fb70b4fd577220fd7ca7bc3a045bb10e726306f93add7895039cf63027e",
+      "nominations": {
+        "move-away": 7,
+        "exchange": 1
+      }
+    },
+    "turkey-ndTfO720.pgn": {
+      "sha256": "3bd584eb60fc06381f5b5e83caebcfe242054d4d8a29dfbe1814a10b0e4fbd7f",
+      "nominations": {
+        "move-away": 7
+      }
+    },
+    "turkey-uxB0wfNi.pgn": {
+      "sha256": "743dd62998c2a9e1b731c0704d8858f32fe9613972e77f9b6728457310d6db5d",
+      "nominations": {
+        "move-away": 5,
+        "exchange": 1
+      }
+    },
+    "turkey-zbeM6PPX.pgn": {
+      "sha256": "82ebd4d5a45570a474382a2c4373b99f2bea8f4358c62e3ea47d770dbb59d995",
+      "nominations": {
+        "move-away": 4
+      }
+    },
+    "buongoma.pgn": {
+      "sha256": "7c38efe6490a20f003a3efe8d2220eb139a9761221b811f79bf3b4bce79c3ec1",
+      "nominations": {
+        "move-away": 5
+      }
+    },
+    "korea.pgn": {
+      "sha256": "05244bcdd6654631050b703eb221f6683d67de73a82c5b081be608773c9ff544",
+      "nominations": {
+        "move-away": 3
+      }
+    },
+    "kovin.pgn": {
+      "sha256": "37ef02c01598a22206184ee57f5f97baa42bba522f4aeb275d2638a41b86dae7",
+      "nominations": {}
+    },
+    "marshall-premier.pgn": {
+      "sha256": "f2b4933db90a224997f18aacded255556004f04bdf6e7aa5bc3b826005e7b473",
+      "nominations": {
+        "move-away": 7
+      }
+    },
+    "marshall-round1.pgn": {
+      "sha256": "ee44c1b28d66fad545fb90989406394baa9f1a58626b80b560191069efc9ef70",
+      "nominations": {
+        "move-away": 2
+      }
+    },
+    "rudar-round1.pgn": {
+      "sha256": "531d2a8c6a88148283acddf04e5b0c17d4c84bcf2d1528c53eeaf2e35559ac5d",
+      "nominations": {}
+    },
+    "rudar.pgn": {
+      "sha256": "be9a681991b13bb72b41f39d643a01f56a84522324f39144c25b46a0e4dc6dd9",
+      "nominations": {
+        "move-away": 2
+      }
+    },
+    "serbia-round1.pgn": {
+      "sha256": "826d5d7e60d9353207631ed535d2ecf9401d1e0679158e7e27539e645e95650d",
+      "nominations": {
+        "move-away": 1
+      }
+    },
+    "serbia-women.pgn": {
+      "sha256": "d60972f69f9e543d00ec35bd33bba1c2efee8a3592c42b3b5f531b4d40eba4b3",
+      "nominations": {
+        "move-away": 2
+      }
+    },
+    "team-open.pgn": {
+      "sha256": "87aef029eba9cf8d2f4866759bb7041a909a0f51809156752c10a8ced54ea75e",
+      "nominations": {
+        "move-away": 10
+      }
+    },
+    "turkey-round1.pgn": {
+      "sha256": "aa554daab3eb10d84a0f0d3b5d0200dc952b5cbfee4d61b1e57e8162c44e02e8",
+      "nominations": {
+        "move-away": 2
+      }
+    },
+    "world-junior.pgn": {
+      "sha256": "248ced5e2f7389fa6a4e73a3fb46f8f62bc1d68d5004a2ef91df763ebc00b19e",
+      "nominations": {
+        "exchange": 1,
+        "move-away": 3
+      }
+    },
+    "2aIC5tgQ.pgn": {
+      "sha256": "97ad83cbd136c9ac1de55cb6ca78e3bc5c3a12fcba0c358c9b111d9894528c80",
+      "nominations": {}
+    },
+    "5NwTVznc.pgn": {
+      "sha256": "8c2a4711e4855a0de8c8a003934af160abcf49657ee4571cef6c664d7b4ddffb",
+      "nominations": {}
+    },
+    "6BSUOsCx.pgn": {
+      "sha256": "590dc56b22afee7686c3442968118a2fc85dfe359fda7823af3cf881b3a81dc4",
+      "nominations": {
+        "exchange": 1,
+        "move-away": 11
+      }
+    },
+    "6dOSu5WZ.pgn": {
+      "sha256": "f1ad688c518b2d16566a248e12f1c783ea0a9a0fc791a1288c12e6b913462209",
+      "nominations": {
+        "move-away": 81,
+        "exchange": 2
+      }
+    },
+    "6rWaPxxy.pgn": {
+      "sha256": "fa7a99da2900c678077f5b421ecb60aa59cac8fdeb8e1c5c8b49ca911c30242a",
+      "nominations": {
+        "move-away": 35,
+        "exchange": 1
+      }
+    },
+    "6UkdBX8x.pgn": {
+      "sha256": "7b44cab5ebc32da31278d2ad9f69f62ef2c2acf79457753efc65d6c29c8b181d",
+      "nominations": {}
+    },
+    "cCwCXzSM.pgn": {
+      "sha256": "2eb1afb19994a20ab6f3e969fd1f482b6c03b537e01a83d144ce0ba03b153c67",
+      "nominations": {
+        "move-away": 17
+      }
+    },
+    "E6k5kqos.pgn": {
+      "sha256": "879abe9fcddc2feeb3cdb56200ad2d42c9fc8961c5887796995c98534ed77a5a",
+      "nominations": {
+        "move-away": 8
+      }
+    },
+    "eiKzYeC5.pgn": {
+      "sha256": "b8633b57a43c0a02b7988ac4461beee9dfd528130e427907212175bc296dac6d",
+      "nominations": {
+        "move-away": 14
+      }
+    },
+    "FHPq8jsd.pgn": {
+      "sha256": "c3d9a5ddefdbe7f6ca2e690d722ac0a28ff9cea7476e1876b0f7ac0f22e72329",
+      "nominations": {
+        "move-away": 18
+      }
+    },
+    "fUYhje9u.pgn": {
+      "sha256": "97989e7a556078b95873d0470b2b590246e55a0a6509ce10b5619872a9d596d5",
+      "nominations": {}
+    },
+    "gkMsc2DD.pgn": {
+      "sha256": "b2c82d35a0edeb93a5280873c991afe0a1b1d063ce796e96290316cd47d33d4d",
+      "nominations": {}
+    },
+    "jpfHrDBv.pgn": {
+      "sha256": "e34a7d11449b0b23fcfbc12d9f0fe5d126f8e3b796a9e0e02743c04e5e06fa22",
+      "nominations": {
+        "move-away": 12
+      }
+    },
+    "kt4oZbYm.pgn": {
+      "sha256": "44cacc9063ad5a46bba69662bc21361e1a86c650389babece70fff16fba61fbb",
+      "nominations": {
+        "move-away": 8
+      }
+    },
+    "o67G1mBt.pgn": {
+      "sha256": "b7fa7ed5260be86e98037578562d4815365ab4b31017e5120d1622fc60a7314b",
+      "nominations": {
+        "move-away": 6
+      }
+    },
+    "og77lxCx.pgn": {
+      "sha256": "28690746d799c32b01f4f86048e0799a5a9b8954404371e4d9fd5783444adedd",
+      "nominations": {
+        "move-away": 19
+      }
+    },
+    "OgL8Xkik.pgn": {
+      "sha256": "d64436c2350c0fb886d2eff2f1945a421aba68394bbc7b2e50882e86ec2c7f59",
+      "nominations": {
+        "move-away": 20,
+        "exchange": 1
+      }
+    },
+    "P7HNlBWF.pgn": {
+      "sha256": "f6e1dd955f60bf4b79daa4ccbcaccf592d4d17c07fc3c221bccf1a8646cb126e",
+      "nominations": {
+        "move-away": 15
+      }
+    },
+    "SrkbhcSW.pgn": {
+      "sha256": "cc9d5f465f8c391beee2f8f73d65170f9e25f8f74d7bce0d5672ca1952674bff",
+      "nominations": {
+        "move-away": 51,
+        "exchange": 2
+      }
+    },
+    "srSmnc4O.pgn": {
+      "sha256": "a07d5eb11eb79cab8e4242f144b5547a9c20b138fe9d0d19bef51031a6c0735b",
+      "nominations": {
+        "move-away": 15,
+        "exchange": 1
+      }
+    },
+    "Tlwwk7ig.pgn": {
+      "sha256": "62a17830796b135d1116d7cf63b4a9a1a80b258fa705bd8380c96b2b3f5f33dc",
+      "nominations": {
+        "move-away": 4
+      }
+    },
+    "wfW8ajMV.pgn": {
+      "sha256": "ba975c097c0b92f9d183fca6e00e5a9e838e7fd3a7d8c675a3fcabf91c282c18",
+      "nominations": {
+        "move-away": 9
+      }
+    },
+    "xmfzSPiu.pgn": {
+      "sha256": "89b984e8030016f95fe158da703bca7196303de8d02f61d14595396aaedf8609",
+      "nominations": {
+        "move-away": 12
+      }
+    },
+    "ysPKR44Z.pgn": {
+      "sha256": "c6b4be04cbdbeb3e3b7d42207f58800b07e14e7710f862fef11c85aad7362c2d",
+      "nominations": {
+        "move-away": 30,
+        "exchange": 1
+      }
+    },
+    "1ts5JuHv.pgn": {
+      "sha256": "dbfc5d9770ccc119125fad14c5855510d75419363ace881780ceca32bd5689de",
+      "nominations": {}
+    },
+    "4jZflFpE.pgn": {
+      "sha256": "cf99a2de8e4cd6d1603637efeceb5a697e41918bae8e51be8d20edd01eb9e2d7",
+      "nominations": {
+        "move-away": 29
+      }
+    },
+    "4YTdiRuu.pgn": {
+      "sha256": "751dcfbd38e8c9474ff4791c530cf3363d25f05e69a5b216a86a35d27ba52fb6",
+      "nominations": {
+        "move-away": 1
+      }
+    },
+    "7F3ah4OO.pgn": {
+      "sha256": "c4ca27890fc2858a2b8e4d2135d96c0c3453c2d8399e7a7c5c8287da1b42eb63",
+      "nominations": {}
+    },
+    "9eVM8WKe.pgn": {
+      "sha256": "f2b4933db90a224997f18aacded255556004f04bdf6e7aa5bc3b826005e7b473",
+      "nominations": {
+        "move-away": 7
+      }
+    },
+    "9NE16qcS.pgn": {
+      "sha256": "97ef90c2e4836633461fa139a9a467484ecc92fefa78435e4623c3a3908e888a",
+      "nominations": {
+        "move-away": 2
+      }
+    },
+    "BTL09rxi.pgn": {
+      "sha256": "f18d2467c671ff678be04609bbeb29ef0a1e2459cc5447da71644e8ad607cacc",
+      "nominations": {
+        "move-away": 5
+      }
+    },
+    "dlKwJPL0.pgn": {
+      "sha256": "cdc49ebd994f9da954842fa583f9b72c7844757ce1d928786f4bd597e62b5bcf",
+      "nominations": {
+        "move-away": 11,
+        "exchange": 1
+      }
+    },
+    "E0VS3bEI.pgn": {
+      "sha256": "8adfb54573a9da613bdae793ca8f8a443010274acf60cb237922cd1f4efa51df",
+      "nominations": {
+        "move-away": 15
+      }
+    },
+    "E2Ux0N0V.pgn": {
+      "sha256": "880fb4d2db907add3ba7a6d3ac0ea78165a9473f91f16d08effa34a631b0d10a",
+      "nominations": {
+        "move-away": 42,
+        "exchange": 1
+      }
+    },
+    "F5k4bmbs.pgn": {
+      "sha256": "9d450e312f9e0742d9bbad70961cc8708e21143b437614ff1a619cf574d06182",
+      "nominations": {}
+    },
+    "IAUjsYGc.pgn": {
+      "sha256": "e984d0c448c26de716c30ffe392d6bcfc41f7bf8f1530ad2f865f5022eb62bf2",
+      "nominations": {
+        "move-away": 14
+      }
+    },
+    "JkAJY6gT.pgn": {
+      "sha256": "fc0b8ffb59a99fed7e6561f5861945460bb9f20105df7531fd45431a48bcd530",
+      "nominations": {}
+    },
+    "kRFjynRr.pgn": {
+      "sha256": "0e28c0b45e9e32184027906597f6181d5642343c342e08fae8f45e6ae6774605",
+      "nominations": {}
+    },
+    "n6gSt9Lm.pgn": {
+      "sha256": "7fa631a108b2c3aed6de441d34432ccc593564832c466e9ccdd5de8d0a62a50e",
+      "nominations": {
+        "move-away": 7
+      }
+    },
+    "qTngZ3OS.pgn": {
+      "sha256": "70b16a11e9113288abe47d39e0584482b48b8ee8fd7e810d882b891d4f1818a3",
+      "nominations": {}
+    },
+    "rP1d4Wv7.pgn": {
+      "sha256": "aa403d73b80211cb569b233075490fdaba27453aeeef23a5972b6b6362ae4943",
+      "nominations": {
+        "move-away": 9
+      }
+    },
+    "tfdX0l3e.pgn": {
+      "sha256": "416565b2f18c719f347d918c6fa34a9490cdc1e35af2916a7ecbc2e3b83655cb",
+      "nominations": {}
+    },
+    "tGKQocRe.pgn": {
+      "sha256": "f465b520b89878adec0ce576382e595ebb9052c8d8064d3de2d1a10ab3d52853",
+      "nominations": {
+        "move-away": 5
+      }
+    },
+    "tR7JHFIy.pgn": {
+      "sha256": "471078ad6ba095d368443e638d3f0d5794b397cc286dba83f5e3d51d80800cf1",
+      "nominations": {
+        "move-away": 4
+      }
+    },
+    "uxynWlhv.pgn": {
+      "sha256": "ee9617348c42a804e1f06b00e259eb0d4a643ab6bad13be1d4775451b413059b",
+      "nominations": {
+        "move-away": 5
+      }
+    },
+    "WENBxvoS.pgn": {
+      "sha256": "6c05da05de7270de21d7d501e532e03a424ae0259c73c13eb5ad698306212b4c",
+      "nominations": {
+        "move-away": 5
+      }
+    },
+    "WZKk0fhf.pgn": {
+      "sha256": "58f2a7c40953c7de267266a5d5c2e521036ca5684748747c4d0103703f28999a",
+      "nominations": {
+        "move-away": 4,
+        "exchange": 1
+      }
+    },
+    "Xe62pluc.pgn": {
+      "sha256": "f7cbdbcb955bb276127887e0fb3c288017044770a16a840fb8ee0f86adc41ccf",
+      "nominations": {
+        "move-away": 7
+      }
+    },
+    "xMYJnmR6.pgn": {
+      "sha256": "d4187335a641fd6e196845f3e05ca9aae464fa50af68873c51fdba44adff83c8",
+      "nominations": {
+        "move-away": 2
+      }
+    },
+    "yVOLKime.pgn": {
+      "sha256": "1fe0284725ab655accd566ca5776eeb299118d3bd78bcf84ddb6d4358769cfaf",
+      "nominations": {
+        "move-away": 16
+      }
+    },
+    "ZPONzjmY.pgn": {
+      "sha256": "7fd0982cd73dd27687b5fde61275a623d10cbde845d8adf500830fe0a18088dc",
+      "nominations": {
+        "move-away": 6
+      }
+    }
+  },
+  "exclusions": {
+    "matched-input.json": "d42b362e50437fcad4f3e98b163aeabc9af900f4f1039796c82a2c1667cea4c4",
+    "reserve.json": "ada806088dec957f604e002e3bb14171800decf0641d82de722caa8a2dfd8ad5"
+  },
+  "excludedGroups": [
+    "44th-bangladesh-national-womens-chess-championship-2026-championship"
+  ]
+}
