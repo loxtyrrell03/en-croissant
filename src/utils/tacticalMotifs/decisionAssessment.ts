@@ -129,9 +129,12 @@ import {
     type QuietReplyProbe,
 } from "./quietReplyEvidence";
 
-const QUIET_REPLY_SCOPE = "The resource applies to this reply. Other defences can change the continuation.";
+import { availableCaptureOrders, confirmCaptureOrder, type CaptureOrderEvidence, type CaptureOrderProbe } from "./captureOrderEvidence";
 
-export const DECISION_ASSESSMENT_VERSION = 58;
+const QUIET_REPLY_SCOPE = "The resource applies to this reply. Other defences can change the continuation.";
+const CAPTURE_ORDER_SCOPE = "This capture order applies to the reply shown. Other defences can change the continuation.";
+
+export const DECISION_ASSESSMENT_VERSION = 59;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -148,6 +151,7 @@ export type DecisionAssessment = {
     episodeOutcomes: TacticalEpisodeOutcome[];
     conditionalResources: ConditionalTacticalResource[];
     quietReply?: QuietReplyEvidence;
+    captureOrder?: CaptureOrderEvidence;
     conditionalFork?: ConditionalForkEvidence;
     conditionalMate?: DecisionConditionalMate;
     matingLines?: ConfirmedMatingLines;
@@ -179,6 +183,7 @@ export type DecisionAssessmentInput = {
     siblingRefutation?: SiblingRefutationFrames;
     checkingOrder?: CheckingOrderProbe;
     quietReply?: QuietReplyProbe;
+    captureOrder?: CaptureOrderProbe;
     sharedReply?: DecisionSharedReplyProbe;
     passerFlight?: PasserFlightProbe;
     checkingDefence?: CheckingDefenceProbe;
@@ -744,6 +749,20 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                 }
             }
         }
+        const captureOrder = input.captureOrder;
+        if (captureOrder?.moveUci === line.pvUci[0] && assessment.tactical.support !== "supported") {
+            const choices = availableCaptureOrders(input, new Set([captureOrder.moveUci]));
+            for (const choice of choices) {
+                if (choice.reply.uci !== captureOrder.replyUci) continue;
+                const proof = confirmCaptureOrder(choice, captureOrder.lines, input.history);
+                if (!proof) continue;
+                assessment.captureOrder = proof;
+                assessment.tactical = { support: "supported", basis: "engine-supported", reasons: [proof.explanation] };
+                assessment.category = category(assessment.tactical, assessment.positional);
+                assessment.limitations.push(CAPTURE_ORDER_SCOPE);
+                break;
+            }
+        }
         return { ...assessment, moveUci: line.pvUci[0], evaluationCp: line.cp, depth: line.depth };
     });
     const first = input.candidates[0];
@@ -772,6 +791,7 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                 move.tactical.basis === "bounded-proof" ||
                 move.conditionalResources.length > 0 ||
                 move.quietReply ||
+                move.captureOrder ||
                 move.mechanisms.length === 0 ||
                 move.mechanisms.some(
                     (witness) =>
@@ -785,6 +805,7 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
     position.episodeOutcomes = tactical?.episodeOutcomes ?? [];
     position.conditionalResources = tactical?.conditionalResources ?? [];
     if (tactical?.quietReply) position.quietReply = tactical.quietReply;
+    if (tactical?.captureOrder) position.captureOrder = tactical.captureOrder;
     if (tactical?.conditionalFork) position.conditionalFork = tactical.conditionalFork;
     if (tactical?.conditionalMate) position.conditionalMate = tactical.conditionalMate;
     if (tactical?.matingLines) position.matingLines = tactical.matingLines;
@@ -1009,6 +1030,7 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
     position.limitations = [
         "The position assessment covers the candidate moves and replies examined in this search.",
         ...(position.quietReply ? [QUIET_REPLY_SCOPE] : []),
+        ...(position.captureOrder ? [CAPTURE_ORDER_SCOPE] : []),
         ...(rejectedChoices
             ? [
                   `${rejectedChoices} alternative continuation(s) could not be validated. Their scores and motifs were not used; the gap between choices is unavailable.`,

@@ -20,6 +20,7 @@ import {
   gatherCheckingDefence,
   gatherCheckingOrder,
   gatherQuietReply,
+  gatherCaptureOrder,
   gatherDecisionEvidence,
   gatherExtraPositionChoice,
   gatherPassedAdvance,
@@ -179,6 +180,18 @@ function EvidenceSummary({
                 {lineSan(assessment.quietReply.fen, assessment.quietReply.otherLineUci)}
               </Text>
             )}
+          </Stack>
+        )}
+        {expanded && assessment.captureOrder && (
+          <Stack gap={4}>
+            <Text size="xs" style={{ overflowWrap: "anywhere" }}>
+              <Text component="span" fw={600} size="xs">Defender first.{" "}</Text>
+              {lineSan(assessment.captureOrder.fen, assessment.captureOrder.lineUci)}
+            </Text>
+            <Text size="xs" style={{ overflowWrap: "anywhere" }}>
+              <Text component="span" fw={600} size="xs">Taking too early.{" "}</Text>
+              {lineSan(assessment.captureOrder.fen, assessment.captureOrder.otherLineUci)}
+            </Text>
           </Stack>
         )}
         {expanded &&
@@ -750,6 +763,17 @@ export function DecisionEvidencePanel({
           report = await classifyDecisionInWorker(
             { input, engineName: engine.name, history: target.history },
             owned.signal,
+          ).catch(() => report);
+        }
+      }
+      if (active() && Date.now() < deadline) {
+        const unproved = new Set(report.moves
+          .filter(move => move.tactical.support !== "supported").map(move => move.moveUci));
+        const captureOrder = await gatherCaptureOrder(engine, target, input, unproved, owned.signal, deadline, progress);
+        if (active() && captureOrder) {
+          input = { ...input, captureOrder };
+          report = await classifyDecisionInWorker(
+            { input, engineName: engine.name, history: target.history }, owned.signal,
           ).catch(() => report);
         }
       }

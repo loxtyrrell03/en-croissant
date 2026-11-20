@@ -242,4 +242,25 @@ if (wanted.has("Quiet Counterattack")) {
   });
 }
 
+for (const [name, reply, capture, early, punishment] of [
+  ["Amager Defender Capture", "bxc3", "Qxc5", "Rxc3", "Qxd4"],
+  ["Ganja Defender Capture", "Rb8", "Bxb3", "Rxc5", "Nxc5"],
+]) {
+  if (!wanted.has(name)) continue;
+  await run(name, async page => {
+    await button(page, "End").click();
+    await openTactics(page);
+    await analyse(page, "Analyse last move");
+    const position = await (await expandPosition(page)).innerText();
+    const move = page.getByText("What the move achieves", { exact: true }).locator("../..");
+    await move.getByRole("button", { name: "Show evidence", exact: true }).click({ timeout: 6000 });
+    const evidence = await move.innerText();
+    assert(position.includes(`After ${reply}, ${capture}`), position);
+    assert.match(position, /Other defences can change the continuation/);
+    assert.match(evidence, /Defender first\..*Taking too early\./s);
+    assert(evidence.includes(early) && evidence.includes(punishment), evidence);
+    return { position, move: evidence };
+  });
+}
+
 if (Object.values(results.scenarios).some(result => !result.passed)) process.exitCode = 1;

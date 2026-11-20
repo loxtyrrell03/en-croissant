@@ -78,6 +78,9 @@ for folder, scenarios in (
         ("sameReply", "Berjaya Checking Defence"), ("removeAttacker", "La Roda Checking Defence"),
     )),
     ("quiet-reply-counterplay", (("heldout", "Quiet Counterattack"),)),
+    ("cached-capture-selection", (
+        ("amager", "Amager Defender Capture"), ("ganja", "Ganja Defender Capture"),
+    )),
 ):
     if not (fixtures / folder / "fixture.json").is_file():
         continue

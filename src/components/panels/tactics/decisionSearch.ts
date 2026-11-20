@@ -58,6 +58,11 @@ import {
     nominateUnsearchedQuietReply,
     type QuietReplyProbe,
 } from "@/utils/tacticalMotifs/quietReplyEvidence";
+import {
+    availableCaptureOrders,
+    confirmCaptureOrder,
+    type CaptureOrderProbe,
+} from "@/utils/tacticalMotifs/captureOrderEvidence";
 
 export type DecisionSearchTarget = {
     fen: string;
@@ -126,6 +131,32 @@ const PIECE_VALUE: Record<Role, number> = {
     queen: 900,
     king: 20000,
 };
+
+export async function gatherCaptureOrder(
+    engine: LocalEngine,
+    target: DecisionSearchTarget,
+    input: DecisionAssessmentInput,
+    allowed: ReadonlySet<string>,
+    signal: AbortSignal,
+    deadline: number,
+    progress: (phase: string) => void,
+): Promise<CaptureOrderProbe | undefined> {
+    const [proposal] = availableCaptureOrders(input, allowed);
+    if (!proposal || Date.now() >= deadline) return;
+    const { root, reply, checkpoint, remove, take } = proposal;
+    progress("Comparing the two capture orders…");
+    try {
+        const lines = await searchDecisionCheckpoint(
+            engine, { fen: checkpoint, prefix: [root.uci, reply.uci] },
+            signal, deadline, target.history, [remove.uci, take.uci], 1_400_000, 2,
+        );
+        if (confirmCaptureOrder(proposal, lines, target.history)) {
+            return { moveUci: root.uci, replyUci: reply.uci, lines };
+        }
+    } catch {
+        signal.throwIfAborted();
+    }
+}
 
 export async function gatherQuietReply(
     engine: LocalEngine,

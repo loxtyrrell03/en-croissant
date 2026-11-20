@@ -1,0 +1,584 @@
+[
+  {
+    "id": "2c25a1848e6d300b1a8d",
+    "proposal": {
+      "root": "c2a4",
+      "reply": "d8c7",
+      "remove": "a4c6",
+      "take": "f3e5",
+      "guard": 42,
+      "target": 36,
+      "preparer": 24
+    },
+    "position": "unclear",
+    "move": "unclear",
+    "oldPosition": "unclear",
+    "oldMove": "unclear"
+  },
+  {
+    "id": "1acc297e4a37edb25910",
+    "proposal": {
+      "root": "e6f5",
+      "reply": "e2e4",
+      "remove": "f5e4",
+      "take": "f6e5",
+      "guard": 28,
+      "target": 36,
+      "preparer": 37
+    },
+    "position": "tactical",
+    "move": "tactical",
+    "oldPosition": "unclear",
+    "oldMove": "unclear",
+    "positionEvidence": {
+      "fen": "3r2k1/2p3p1/5p2/1r2Pq1p/p1N1Qp2/2P5/PP3N1K/6R1 b - - 3 38",
+      "moveUci": "e6f5",
+      "replySan": "Qe4",
+      "lineUci": [
+        "f5e4",
+        "f2e4",
+        "f6e5",
+        "b2b4",
+        "d8f8"
+      ],
+      "otherLineUci": [
+        "f6e5",
+        "e4f5",
+        "d8f8",
+        "f5e6"
+      ],
+      "explanation": "After Qe4, Qxe4 removes the defender before taking on e5. If fxe5 comes first, the defender takes the piece that was about to remove it with Qxf5."
+    },
+    "moveEvidence": {
+      "fen": "3r2k1/2p3p1/5p2/1r2Pq1p/p1N1Qp2/2P5/PP3N1K/6R1 b - - 3 38",
+      "moveUci": "e6f5",
+      "replySan": "Qe4",
+      "lineUci": [
+        "f5e4",
+        "f2e4",
+        "f6e5",
+        "b2b4",
+        "d8f8"
+      ],
+      "otherLineUci": [
+        "f6e5",
+        "e4f5",
+        "d8f8",
+        "f5e6"
+      ],
+      "explanation": "After Qe4, Qxe4 removes the defender before taking on e5. If fxe5 comes first, the defender takes the piece that was about to remove it with Qxf5."
+    }
+  },
+  {
+    "id": "9ed355c65b3329d53458",
+    "proposal": {
+      "root": "d7d4",
+      "reply": "b4c3",
+      "remove": "d4c5",
+      "take": "d3c3",
+      "guard": 34,
+      "target": 18,
+      "preparer": 27
+    },
+    "position": "tactical",
+    "move": "tactical",
+    "oldPosition": "unclear",
+    "oldMove": "unclear",
+    "positionEvidence": {
+      "fen": "2r2bk1/5p1p/p3p1p1/2q1P3/3Q4/2pR2P1/2P4P/1K1R4 w - - 0 33",
+      "moveUci": "d7d4",
+      "replySan": "bxc3",
+      "lineUci": [
+        "d4c5",
+        "c8c5",
+        "b1a2",
+        "c5e5",
+        "d3c3"
+      ],
+      "otherLineUci": [
+        "d3c3",
+        "c5d4",
+        "d1d4",
+        "c8c3"
+      ],
+      "explanation": "After bxc3, Qxc5 removes the defender before taking on c3. If Rxc3 comes first, the defender takes the piece that was about to remove it with Qxd4."
+    },
+    "moveEvidence": {
+      "fen": "2r2bk1/5p1p/p3p1p1/2q1P3/3Q4/2pR2P1/2P4P/1K1R4 w - - 0 33",
+      "moveUci": "d7d4",
+      "replySan": "bxc3",
+      "lineUci": [
+        "d4c5",
+        "c8c5",
+        "b1a2",
+        "c5e5",
+        "d3c3"
+      ],
+      "otherLineUci": [
+        "d3c3",
+        "c5d4",
+        "d1d4",
+        "c8c3"
+      ],
+      "explanation": "After bxc3, Qxc5 removes the defender before taking on c3. If Rxc3 comes first, the defender takes the piece that was about to remove it with Qxd4."
+    }
+  },
+  {
+    "id": "12f3cf8baf12813f406b",
+    "proposal": {
+      "root": "d3c2",
+      "reply": "e8b8",
+      "remove": "c2b3",
+      "take": "c7c5",
+      "guard": 17,
+      "target": 34,
+      "preparer": 10
+    },
+    "position": "tactical",
+    "move": "tactical",
+    "oldPosition": "unclear",
+    "oldMove": "unclear",
+    "positionEvidence": {
+      "fen": "1r4k1/2R2p2/6p1/p1pP2p1/2P5/Pn3P2/2B2KPP/8 w - - 4 30",
+      "moveUci": "d3c2",
+      "replySan": "Rb8",
+      "lineUci": [
+        "c2b3",
+        "b8b3",
+        "c7c5",
+        "g8g7",
+        "c5a5"
+      ],
+      "otherLineUci": [
+        "c7c5",
+        "b3c5",
+        "f2e3",
+        "a5a4"
+      ],
+      "explanation": "After Rb8, Bxb3 removes the defender before taking on c5. If Rxc5 comes first, the defender on b3 recaptures with Nxc5."
+    },
+    "moveEvidence": {
+      "fen": "1r4k1/2R2p2/6p1/p1pP2p1/2P5/Pn3P2/2B2KPP/8 w - - 4 30",
+      "moveUci": "d3c2",
+      "replySan": "Rb8",
+      "lineUci": [
+        "c2b3",
+        "b8b3",
+        "c7c5",
+        "g8g7",
+        "c5a5"
+      ],
+      "otherLineUci": [
+        "c7c5",
+        "b3c5",
+        "f2e3",
+        "a5a4"
+      ],
+      "explanation": "After Rb8, Bxb3 removes the defender before taking on c5. If Rxc5 comes first, the defender on b3 recaptures with Nxc5."
+    }
+  },
+  {
+    "id": "83217a7045a84ed02203",
+    "proposal": {
+      "root": "a2c3",
+      "reply": "e2e1",
+      "remove": "c3b1",
+      "take": "a8a3",
+      "guard": 1,
+      "target": 16,
+      "preparer": 18
+    },
+    "position": "tactical",
+    "move": "tactical",
+    "oldPosition": "unclear",
+    "oldMove": "unclear",
+    "positionEvidence": {
+      "fen": "r2r2k1/1p3p1p/1Rp2qp1/2n5/2P5/P1n1P2P/2B2PP1/1N2QRK1 b - - 6 29",
+      "moveUci": "a2c3",
+      "replySan": "Qe1",
+      "lineUci": [
+        "c3b1",
+        "b6b1",
+        "a8a3",
+        "e1b4",
+        "a3a2"
+      ],
+      "otherLineUci": [
+        "a8a3",
+        "b1a3",
+        "d8a8",
+        "a3b1"
+      ],
+      "explanation": "After Qe1, Nxb1 removes the defender before taking on a3. If Rxa3 comes first, the defender on b1 recaptures with Nxa3."
+    },
+    "moveEvidence": {
+      "fen": "r2r2k1/1p3p1p/1Rp2qp1/2n5/2P5/P1n1P2P/2B2PP1/1N2QRK1 b - - 6 29",
+      "moveUci": "a2c3",
+      "replySan": "Qe1",
+      "lineUci": [
+        "c3b1",
+        "b6b1",
+        "a8a3",
+        "e1b4",
+        "a3a2"
+      ],
+      "otherLineUci": [
+        "a8a3",
+        "b1a3",
+        "d8a8",
+        "a3b1"
+      ],
+      "explanation": "After Qe1, Nxb1 removes the defender before taking on a3. If Rxa3 comes first, the defender on b1 recaptures with Nxa3."
+    }
+  },
+  {
+    "id": "34974d43c68195ca9dc9",
+    "proposal": {
+      "root": "c6c5",
+      "reply": "g3e5",
+      "remove": "c5d4",
+      "take": "f6e5",
+      "guard": 27,
+      "target": 36,
+      "preparer": 34
+    },
+    "position": "unclear",
+    "move": "positional",
+    "oldPosition": "unclear",
+    "oldMove": "positional"
+  },
+  {
+    "id": "9032859709b49021bb65",
+    "proposal": {
+      "root": "e6c7",
+      "reply": "h2h3",
+      "remove": "c7b5",
+      "take": "c3b3",
+      "guard": 33,
+      "target": 17,
+      "preparer": 50
+    },
+    "position": "tactical",
+    "move": "tactical",
+    "oldPosition": "unclear",
+    "oldMove": "unclear",
+    "positionEvidence": {
+      "fen": "r5k1/2n2p1p/1p3p2/pQ6/P3P2P/1Pr2PPR/8/3R1NK1 b - - 0 30",
+      "moveUci": "e6c7",
+      "replySan": "Rxh3",
+      "lineUci": [
+        "c7b5",
+        "a4b5",
+        "c3b3",
+        "h3h2",
+        "b3b5"
+      ],
+      "otherLineUci": [
+        "c3b3",
+        "b5b3",
+        "a8b8",
+        "h3h2"
+      ],
+      "explanation": "After Rxh3, Nxb5 removes the defender before taking on b3. If Rxb3 comes first, the defender on b5 recaptures with Qxb3."
+    },
+    "moveEvidence": {
+      "fen": "r5k1/2n2p1p/1p3p2/pQ6/P3P2P/1Pr2PPR/8/3R1NK1 b - - 0 30",
+      "moveUci": "e6c7",
+      "replySan": "Rxh3",
+      "lineUci": [
+        "c7b5",
+        "a4b5",
+        "c3b3",
+        "h3h2",
+        "b3b5"
+      ],
+      "otherLineUci": [
+        "c3b3",
+        "b5b3",
+        "a8b8",
+        "h3h2"
+      ],
+      "explanation": "After Rxh3, Nxb5 removes the defender before taking on b3. If Rxb3 comes first, the defender on b5 recaptures with Qxb3."
+    }
+  },
+  {
+    "id": "a2aa3f15c982d7751324",
+    "proposal": {
+      "root": "g2f3",
+      "reply": "b8b3",
+      "remove": "f3h5",
+      "take": "e2f4",
+      "guard": 39,
+      "target": 29,
+      "preparer": 21
+    },
+    "position": "unclear",
+    "move": "unclear",
+    "oldPosition": "unclear",
+    "oldMove": "unclear"
+  },
+  {
+    "id": "9ba402e1c87f4b12d937",
+    "proposal": {
+      "root": "a3c3",
+      "reply": "d7e6",
+      "remove": "c3f6",
+      "take": "d5e6",
+      "guard": 45,
+      "target": 44,
+      "preparer": 18
+    },
+    "position": "unclear",
+    "move": "unclear",
+    "oldPosition": "unclear",
+    "oldMove": "unclear"
+  },
+  {
+    "id": "9a8f4322b8b91f0c94fd",
+    "proposal": {
+      "root": "c3b4",
+      "reply": "c7b5",
+      "remove": "b4c5",
+      "take": "c4b6",
+      "guard": 34,
+      "target": 41,
+      "preparer": 25
+    },
+    "position": "tactical",
+    "move": "tactical",
+    "oldPosition": "unclear",
+    "oldMove": "unclear",
+    "positionEvidence": {
+      "fen": "2r3k1/3r1pp1/1p2p3/1nb1P2p/1BN4P/1Q4P1/5P2/6K1 w - - 0 33",
+      "moveUci": "c3b4",
+      "replySan": "Nxb5",
+      "lineUci": [
+        "b4c5",
+        "c8c5",
+        "c4b6",
+        "d7d2",
+        "b6c4"
+      ],
+      "otherLineUci": [
+        "c4b6",
+        "c5b6",
+        "b3f3",
+        "b6d4"
+      ],
+      "explanation": "After Nxb5, Bxc5 removes the defender before taking on b6. If Nxb6 comes first, the defender on c5 recaptures with Bxb6."
+    },
+    "moveEvidence": {
+      "fen": "2r3k1/3r1pp1/1p2p3/1nb1P2p/1BN4P/1Q4P1/5P2/6K1 w - - 0 33",
+      "moveUci": "c3b4",
+      "replySan": "Nxb5",
+      "lineUci": [
+        "b4c5",
+        "c8c5",
+        "c4b6",
+        "d7d2",
+        "b6c4"
+      ],
+      "otherLineUci": [
+        "c4b6",
+        "c5b6",
+        "b3f3",
+        "b6d4"
+      ],
+      "explanation": "After Nxb5, Bxc5 removes the defender before taking on b6. If Nxb6 comes first, the defender on c5 recaptures with Bxb6."
+    }
+  },
+  {
+    "id": "a2e3b439b6b20fd95d8b",
+    "proposal": {
+      "root": "c5c4",
+      "reply": "b3c2",
+      "remove": "c4d3",
+      "take": "d6e4",
+      "guard": 19,
+      "target": 28,
+      "preparer": 26
+    },
+    "position": "tactical",
+    "move": "tactical",
+    "oldPosition": "unclear",
+    "oldMove": "unclear",
+    "positionEvidence": {
+      "fen": "r5k1/1b2bpp1/2qnp1p1/1p6/2p1N3/N1PP1P1P/1PQ3P1/2B1R1K1 b - - 1 23",
+      "moveUci": "c5c4",
+      "replySan": "Qc2",
+      "lineUci": [
+        "c4d3",
+        "c2d3",
+        "d6e4",
+        "d3e4",
+        "c6e4"
+      ],
+      "otherLineUci": [
+        "d6e4",
+        "d3e4",
+        "a8d8",
+        "e1d1"
+      ],
+      "explanation": "After Qc2, cxd3 removes the defender before taking on e4. If Nxe4 comes first, the defender on d3 recaptures with dxe4."
+    },
+    "moveEvidence": {
+      "fen": "r5k1/1b2bpp1/2qnp1p1/1p6/2p1N3/N1PP1P1P/1PQ3P1/2B1R1K1 b - - 1 23",
+      "moveUci": "c5c4",
+      "replySan": "Qc2",
+      "lineUci": [
+        "c4d3",
+        "c2d3",
+        "d6e4",
+        "d3e4",
+        "c6e4"
+      ],
+      "otherLineUci": [
+        "d6e4",
+        "d3e4",
+        "a8d8",
+        "e1d1"
+      ],
+      "explanation": "After Qc2, cxd3 removes the defender before taking on e4. If Nxe4 comes first, the defender on d3 recaptures with dxe4."
+    }
+  },
+  {
+    "id": "a7beef74529e28fd18c1",
+    "proposal": {
+      "root": "f8g7",
+      "reply": "g4e5",
+      "remove": "g7e5",
+      "take": "c6f3",
+      "guard": 36,
+      "target": 21,
+      "preparer": 54
+    },
+    "position": "unclear",
+    "move": "unclear",
+    "oldPosition": "unclear",
+    "oldMove": "unclear"
+  },
+  {
+    "id": "9a7d6acc1aa495b4c261",
+    "proposal": {
+      "root": "f2d3",
+      "reply": "d6g3",
+      "remove": "d3b4",
+      "take": "c7d5",
+      "guard": 25,
+      "target": 35,
+      "preparer": 19
+    },
+    "position": "tactical",
+    "move": "tactical",
+    "oldPosition": "unclear",
+    "oldMove": "unclear",
+    "positionEvidence": {
+      "fen": "2b2rk1/2N1bn2/1p3p1p/p2p1PpP/Pn1P2P1/3NB1q1/1P1Q2B1/2R3K1 w - - 3 30",
+      "moveUci": "f2d3",
+      "replySan": "Qg3",
+      "lineUci": [
+        "d3b4",
+        "e7b4",
+        "d2f2",
+        "g3g4",
+        "c7d5"
+      ],
+      "otherLineUci": [
+        "c7d5",
+        "b4d5",
+        "e3f2",
+        "g3g4"
+      ],
+      "explanation": "After Qg3, Nxb4 removes the defender before taking on d5. If Nxd5 comes first, the defender on b4 recaptures with Nxd5."
+    },
+    "moveEvidence": {
+      "fen": "2b2rk1/2N1bn2/1p3p1p/p2p1PpP/Pn1P2P1/3NB1q1/1P1Q2B1/2R3K1 w - - 3 30",
+      "moveUci": "f2d3",
+      "replySan": "Qg3",
+      "lineUci": [
+        "d3b4",
+        "e7b4",
+        "d2f2",
+        "g3g4",
+        "c7d5"
+      ],
+      "otherLineUci": [
+        "c7d5",
+        "b4d5",
+        "e3f2",
+        "g3g4"
+      ],
+      "explanation": "After Qg3, Nxb4 removes the defender before taking on d5. If Nxd5 comes first, the defender on b4 recaptures with Nxd5."
+    }
+  },
+  {
+    "id": "cfd06f38d9c6e807da76",
+    "proposal": {
+      "root": "d4d5",
+      "reply": "g7e5",
+      "remove": "d5c6",
+      "take": "c5b5",
+      "guard": 42,
+      "target": 33,
+      "preparer": 35
+    },
+    "position": "unclear",
+    "move": "unclear",
+    "oldPosition": "unclear",
+    "oldMove": "unclear"
+  },
+  {
+    "id": "b77fef7a124502a85a61",
+    "proposal": {
+      "root": "c6c2",
+      "reply": "d2b4",
+      "remove": "c2b3",
+      "take": "a5b4",
+      "guard": 17,
+      "target": 25,
+      "preparer": 10
+    },
+    "position": "tactical",
+    "move": "tactical",
+    "oldPosition": "unclear",
+    "oldMove": "unclear",
+    "positionEvidence": {
+      "fen": "r4rk1/1pp2pbp/3p1np1/p7/1B1PP3/1Q3N1P/PPq2PP1/R3RNK1 b - - 0 16",
+      "moveUci": "c6c2",
+      "replySan": "Bxb4",
+      "lineUci": [
+        "c2b3",
+        "a2b3",
+        "a5b4",
+        "a1d1",
+        "c7c6"
+      ],
+      "otherLineUci": [
+        "a5b4",
+        "b3c2",
+        "c7c5",
+        "d4c5"
+      ],
+      "explanation": "After Bxb4, Qxb3 removes the defender before taking on b4. If axb4 comes first, the defender takes the piece that was about to remove it with Qxc2."
+    },
+    "moveEvidence": {
+      "fen": "r4rk1/1pp2pbp/3p1np1/p7/1B1PP3/1Q3N1P/PPq2PP1/R3RNK1 b - - 0 16",
+      "moveUci": "c6c2",
+      "replySan": "Bxb4",
+      "lineUci": [
+        "c2b3",
+        "a2b3",
+        "a5b4",
+        "a1d1",
+        "c7c6"
+      ],
+      "otherLineUci": [
+        "a5b4",
+        "b3c2",
+        "c7c5",
+        "d4c5"
+      ],
+      "explanation": "After Bxb4, Qxb3 removes the defender before taking on b4. If axb4 comes first, the defender takes the piece that was about to remove it with Qxc2."
+    }
+  }
+]
