@@ -1,0 +1,88 @@
+{
+  "baselineCommit": "18738d623c05de9f51e6a035a9fb075720b225bd",
+  "engineSha256": "45bc8e4969147db9c2eb533810637994619bff0eacc81ccfd9854394901bcbd0",
+  "historical": {
+    "geometryNominations": 27,
+    "withoutDeeperNyc": 26,
+    "developmentIds": [
+      "broadcast-8939930022e6925d",
+      "mistake-fall-nyc-norms-2026-42ce9223d0035fef-60:deep"
+    ],
+    "variants": {
+      "1400000": {
+        "n": 27,
+        "threeScores": 2,
+        "threeProof": 2,
+        "twoScores": 2,
+        "twoProof": 2
+      },
+      "2400000": {
+        "n": 27,
+        "threeScores": 3,
+        "threeProof": 2,
+        "twoScores": 3,
+        "twoProof": 2
+      },
+      "6000000": {
+        "n": 4,
+        "threeScores": 3,
+        "threeProof": 2,
+        "twoScores": 3,
+        "twoProof": 2
+      }
+    }
+  },
+  "reserve": {
+    "games": 162,
+    "events": 44,
+    "strata": {
+      "checking-obstruction": 72,
+      "quiet-pressure": 50,
+      "control": 40
+    },
+    "followBetterContinuation": {
+      "n": 7,
+      "threeScores": 0,
+      "threeProof": 0,
+      "twoScores": 0,
+      "twoProof": 0
+    },
+    "deepSameBoardReference": {
+      "n": 7,
+      "threeScores": 0,
+      "threeProof": 0,
+      "twoScores": 0,
+      "twoProof": 0
+    }
+  },
+  "followPlayedContinuation": {
+    "development": {
+      "other-defence": 68,
+      "insufficient-contrast": 6,
+      "supported": 1,
+      "played-checkpoint-conflicts": 1
+    },
+    "reserve": {
+      "other-defence": 46,
+      "insufficient-contrast": 2
+    }
+  },
+  "cost": {
+    "testNodesPerCheckpoint": 1400000,
+    "developmentMedianMeasuredTwoSearchMs": 2538.37,
+    "developmentMedianMeasuredThreeSearchMs": 3971.47,
+    "playedFirstReserveNodesRequested": 67200000,
+    "strongFirstReserveTwoSearchNodesRequested": 33600000,
+    "reserveSecondSearchesInPlayedFirst": 0
+  },
+  "hashes": {
+    "reserve-sample.json": "f2c4f730cc08f1211bb12f69e92a9a016769ef1d19fd2d090418991865120668",
+    "reserve-frames.jsonl": "c023d46b622988d79848cb33a4317f66d3b5fca2a154caa4b7c58a34f0565430",
+    "reserve-checks.jsonl": "77426f17ab73d82990e6d0ca5d911d3b2cbf2a12487822a36301d962ed5e8229",
+    "reserve-reference.jsonl": "ca564da7752759260add879d857260df4566143ae70a6df8428d032b8bcb7630",
+    "played-first-reserve-results.jsonl": "b4840719d6f847bdbc30644874c0ea70f74b0fea60492933818c12c3b97c6ea2",
+    "development-checks.jsonl": "5609ba6e4766ace6670d049e6e325dbe5630b13bdc80f398718fd06dc08b0170",
+    "development-compact-budget.jsonl": "d5d286ced668ede7d341987c6f72849cd6fe34d7f941c49aba521bc86b23658c",
+    "development-adjudication-results.jsonl": "55f6f759e01dcb96f76a2e736c509a3eb045c23ff94853bb99359de62468bad2"
+  }
+}

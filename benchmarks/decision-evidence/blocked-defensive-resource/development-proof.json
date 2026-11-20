@@ -1,0 +1,79 @@
+[
+  {
+    "id": "mistake-fall-nyc-norms-2026-42ce9223d0035fef-60:deep",
+    "verified": {
+      "explanation": "After Qc8 Bd4 Bxd4 Qxd4 Qc1, Qd1 is available after Re1. After Rd1, the rook occupies d1. The opposing pawn from b2 promotes in both lines without this defence, with b1=Q after the played move and bxc1=Q+ with the defence excluded.",
+      "betterLineUci": [
+        "c1e1",
+        "a8c8",
+        "b6d4",
+        "g7d4",
+        "f2d4",
+        "c8c1",
+        "d4d1",
+        "c1c3"
+      ],
+      "playedLineUci": [
+        "c1d1",
+        "a8c8",
+        "b6d4",
+        "g7d4",
+        "f2d4",
+        "c8c1",
+        "d4d6",
+        "b2b1q"
+      ],
+      "confirmedBetterLineUci": [
+        "c1e1",
+        "a8c8",
+        "b6d4",
+        "g7d4",
+        "f2d4",
+        "c8c1",
+        "e1c1",
+        "b2c1q"
+      ],
+      "confirmedPlayedLineUci": []
+    }
+  },
+  {
+    "id": "broadcast-8939930022e6925d",
+    "verified": {
+      "explanation": "After Rbc8, Rdd1 is available after g4. After Rhd1, the rook occupies d1. Both lines without this defence give up the rook from d2 and retain less material after the exchange.",
+      "betterLineUci": [
+        "g2g4",
+        "b8c8",
+        "d2d1",
+        "a4a3",
+        "g4g5",
+        "f6e7",
+        "d5e6",
+        "c8b8",
+        "d1d3"
+      ],
+      "playedLineUci": [
+        "h1d1",
+        "b8c8",
+        "d2b2",
+        "f6b2",
+        "b1b2",
+        "c7c2",
+        "b2a3",
+        "c2f2",
+        "g2g4"
+      ],
+      "confirmedBetterLineUci": [
+        "g2g4",
+        "b8c8",
+        "d2b2",
+        "f6b2",
+        "b1b2",
+        "c7c2",
+        "b2a3",
+        "c2f2",
+        "e3e4"
+      ],
+      "confirmedPlayedLineUci": []
+    }
+  }
+]

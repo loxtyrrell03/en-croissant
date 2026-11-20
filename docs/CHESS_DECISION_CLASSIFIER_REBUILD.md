@@ -3921,3 +3921,15 @@ experimental. Separately rechecking 17 historical mixed mistake
 references supported both axes in eight, of which the incumbent
 recognises one. The original archive result is retained.
 [Scope, engine checkpoints and reproduction](../benchmarks/decision-evidence/promotion-intermezzo/README.md)
+
+## When a mistake blocks its own defence
+
+Two independent reached-board searches establish the same tactical
+consequence as a separate exclusion search in two archived examples.
+The comparison verifies a queen defence against a promotion threat in
+New York and an earlier rook defence against an exchange loss at
+Fagernes. Seven nominations from 162 different classical reserve games
+produce zero supported cases. An exploratory comparison following the
+played continuation also produces zero in the reserve. Keep the
+prototype and its exact replay in the benchmark.
+[Checkpoints and reproduction](../benchmarks/decision-evidence/blocked-defensive-resource/README.md)
