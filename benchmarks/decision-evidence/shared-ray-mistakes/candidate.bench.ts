@@ -2,6 +2,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { expect, test } from "vitest";
 import { compareSharedRay, nominateSharedRay } from "./candidate";
 import type { DecisionAssessmentInput } from "@/utils/tacticalMotifs/decisionAssessment";
+import { nominateSharedReply } from "@/utils/tacticalMotifs/decisionSharedReply";
 
 test("replays the candidate and accounts for cached versus restricted replies", () => {
     const rows = JSON.parse(readFileSync(process.env.RAY_INPUT!, "utf8")) as Array<
@@ -22,6 +23,7 @@ test("replays the candidate and accounts for cached versus restricted replies", 
         return {
             id: row.id,
             nomination: cached ? "cached" : "restricted",
+            alreadyRequested: Boolean(nominateSharedReply(row.fen, best, played, reply)),
             result: compareSharedRay(
                 row.fen, best, played, reply,
                 cached ? { ...nomination, line: cached } : row.sharedReply,

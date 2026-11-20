@@ -1,0 +1,247 @@
+{
+  "review": "One engine-assisted reviewer. Run identities and deeper legal lines were available. Worker verdicts and candidate verdicts were hidden until sealing.",
+  "scope": "Material lost from an original aligned piece as a consequence of the exact opponent reply after the played move, compared with a legal, demonstrably better choice.",
+  "packetSha256": "c6d03f6516e32848459ac5e99df6e1caa2e0e7df68136d035fd34778ce84080c",
+  "labels": [
+    {
+      "id": "6aa6a14914bfa157e071",
+      "cohort": "recordedCapture",
+      "verdict": "negative",
+      "reason": "Both root choices score -462. Rd7 can win the d5 rook after either choice. The compared material loss is not attributable to the alignment."
+    },
+    {
+      "id": "4b547404417e03dcc56d",
+      "cohort": "recordedCapture",
+      "verdict": "negative",
+      "reason": "The leading defence moves the knight to d5. The plausible Rxd8 possibilities allow Qxd8 at equal local material and depend on later king pressure."
+    },
+    {
+      "id": "70ba9b0dbb11da660429",
+      "cohort": "recordedCapture",
+      "verdict": "uncertain",
+      "reason": "The alternate queen line can win the c1 knight, but Qe1 meets the reply and the leading continuation centres on the passed a-pawn and king attack."
+    },
+    {
+      "id": "57ad604db82317716a77",
+      "cohort": "recordedCapture",
+      "verdict": "positive",
+      "reason": "Rd1 permits Bb3 against the queen on c2 and rook on d1. The checked queen retreats let Bxd1 Qxd1 win the exchange. Ne3 keeps the material when met by Bb3."
+    },
+    {
+      "id": "de3644a384e7ce1c6a6f",
+      "cohort": "recordedCapture",
+      "verdict": "negative",
+      "reason": "Rxd2 is recaptured after both main continuations. The contrast with Ra8 mate after Rd8 establishes a much better root choice but no direct ray capture gain."
+    },
+    {
+      "id": "e613856b7d15a8e268e8",
+      "cohort": "recordedCapture",
+      "verdict": "positive",
+      "reason": "Nc2 allows Rb2 to line up the knight and rook. After a1=Q draws the knight to a1, Rxe2 wins the original rook. Be5 meets Rb2 with Bxb2 instead."
+    },
+    {
+      "id": "f704c7a54a8a115ba5b3",
+      "cohort": "recordedCapture",
+      "verdict": "positive",
+      "reason": "Qc2 permits Bb3 to attack the queen and x-ray the rook on d1. The compared retreats concede Bxd1 Qxd1 for the exchange. Qg4 retains that rook after Bb3."
+    },
+    {
+      "id": "037734d0d0c182ac5da6",
+      "cohort": "ray",
+      "verdict": "negative",
+      "reason": "The comparable moves differ by 78 cp. Bxb7 is by the bishop, not the queen that initiated the ray, and the queen recaptures on b7. No direct gain from the tested ray."
+    },
+    {
+      "id": "6cfbda10b23714ba0571",
+      "cohort": "recordedCapture",
+      "verdict": "negative",
+      "reason": "The stronger replies are Nc2 and h6. The recorded ray move gives White Bd2 or a3 without the recorded material loss."
+    },
+    {
+      "id": "4966ea76c425ff4cf9b4",
+      "cohort": "recordedCapture",
+      "verdict": "negative",
+      "reason": "The leading Rh8 branches trade rooks and score close to equal. Rxh4 is directly recaptured."
+    },
+    {
+      "id": "fb5615b479c6af6dc39a",
+      "cohort": "recordedCapture",
+      "verdict": "negative",
+      "reason": "The main reply takes elsewhere with Bxd3. After Bxd7+ and Rxd7 the exchanges continue without a direct material gain from the original alignment."
+    },
+    {
+      "id": "8c5b05ae4788055e56df",
+      "cohort": "recordedCapture",
+      "verdict": "negative",
+      "reason": "Both compared defences keep the evaluation close to equal. Bxe4 can be directly recaptured by the d-pawn."
+    },
+    {
+      "id": "98cf354a13bdcbdb1eba",
+      "cohort": "recordedCapture",
+      "verdict": "uncertain",
+      "reason": "Be8 permits a real Bxd8 exchange, but the competing Bc8 defence trades and the material can swing back later. The direct role is plausible within a more complex tactic."
+    },
+    {
+      "id": "f0901bb1afc43fc430bf",
+      "cohort": "recordedCapture",
+      "verdict": "negative",
+      "reason": "The compared root loss is 59 cp and Bxg6 is directly recaptured. The attacking play centres on the advanced h-pawn."
+    },
+    {
+      "id": "749ad25bf2df4a83acfb",
+      "cohort": "recordedCapture",
+      "verdict": "negative",
+      "reason": "The exact Rf8 reply allows a favourable defence in the deeper analysis. Rxf7 can be recaptured and the direct route concerns a queen check on h6."
+    },
+    {
+      "id": "d13bbf9866c043c8d43a",
+      "cohort": "recordedCapture",
+      "verdict": "negative",
+      "reason": "The root choices are separated by 3 cp. After Bb5 the main continuations retain the aligned pieces and play on another line."
+    },
+    {
+      "id": "b15e3590a7fc131af333",
+      "cohort": "recordedCapture",
+      "verdict": "negative",
+      "reason": "The recorded reply is inferior to Bxe5. Both analysed views trade material via Nxd3 and Nxe1, distinct from a direct gain on the aligned target."
+    },
+    {
+      "id": "e123b07db679b5cdf561",
+      "cohort": "recordedCapture",
+      "verdict": "negative",
+      "reason": "The paired options score within 4 cp. Bxc6 receives an equal recapture and the resulting continuation has no direct loss from the ray."
+    },
+    {
+      "id": "6ceee513337f48bf8485",
+      "cohort": "recordedCapture",
+      "verdict": "uncertain",
+      "reason": "Re4 Bb7 concedes the exchange after Bxe4 and the alternative a3 survives that reply, but the best reply to a3 also keeps the mover losing and the root gap is only 42 cp."
+    },
+    {
+      "id": "cd95e6c7c13fe9e60a52",
+      "cohort": "recordedCapture",
+      "verdict": "negative",
+      "reason": "The root loss is 43 cp. The deeper line after Rd8 keeps White's balance with Qh5, and Rxd1 is recaptured in the alternate line."
+    },
+    {
+      "id": "aa61f0c334e7cebe20a8",
+      "cohort": "recordedCapture",
+      "verdict": "positive",
+      "reason": "Nd8 aligns the knight with the rook and Rd3 forces an exchange-free capture on d8 after rook escapes. The exact Rd3 reply after Kf5 leaves the knight on f7 and allows Rc7. Both roots are losing."
+    },
+    {
+      "id": "aa607b2a0cf05fdf0dee",
+      "cohort": "recordedCapture",
+      "verdict": "uncertain",
+      "reason": "Qxb6 changes multiple exchanges and loses the queen. The comparison used the same root choice so an exact better-move explanation remains unresolved."
+    },
+    {
+      "id": "1bbb4c62e1732e4fe9ee",
+      "cohort": "ray",
+      "verdict": "negative",
+      "reason": "The root moves score 10 and 0 cp. After Re1 the main continuation exchanges on f3 and e8 without a direct material loss."
+    },
+    {
+      "id": "0635c183b09a4451d14c",
+      "cohort": "ray",
+      "verdict": "negative",
+      "reason": "The direct capture on c7 is avoidable with f3 at the same evaluation. There is no demonstrated loss through the ray."
+    },
+    {
+      "id": "1c9c170cf414741d76da",
+      "cohort": "ray",
+      "verdict": "negative",
+      "reason": "The actual replies retain the advantage with ordinary queen moves. The better comparison can exchange queens, with no material loss on the ray."
+    },
+    {
+      "id": "01b0bcfc9cbf25ff0f65",
+      "cohort": "ray",
+      "verdict": "negative",
+      "reason": "The strongest response to Qc7 is a rook move. The tested continuation after the shared reply does not entail a material loss from the alignment."
+    },
+    {
+      "id": "0eee2a6bc72087f825e2",
+      "cohort": "ray",
+      "verdict": "negative",
+      "reason": "The leading reply allows e4 and the comparison remains within 41 cp. No original aligned piece is lost in the leading line."
+    },
+    {
+      "id": "051a114b23381dc8ff23",
+      "cohort": "ray",
+      "verdict": "negative",
+      "reason": "Both root choices remain strongly losing. Qg5+ starts a separate check sequence and the secondary Bxg7+ is directly recaptured."
+    },
+    {
+      "id": "02b7fa7d214352857925",
+      "cohort": "ray",
+      "verdict": "negative",
+      "reason": "Both better continuations preserve the existing advantage. There is no direct capture payoff from the examined ray."
+    },
+    {
+      "id": "010cc8c3fa5557ce93c2",
+      "cohort": "ray",
+      "verdict": "negative",
+      "reason": "Qe7 is answerable by Bxg4 and Black recaptures. No original target is lost in the best tested line."
+    },
+    {
+      "id": "1d9077e8871cb469e704",
+      "cohort": "ray",
+      "verdict": "negative",
+      "reason": "The stronger reply exchanges on e8. The ray has no meaningful material effect in the leading continuation."
+    },
+    {
+      "id": "040a9f0c8becb60e33db",
+      "cohort": "ray",
+      "verdict": "negative",
+      "reason": "The paired continuations use Bxd4 and return material through recaptures. They remain close to equal."
+    },
+    {
+      "id": "00055505e7ab59a6796f",
+      "cohort": "ordinary",
+      "verdict": "negative",
+      "reason": "The inspected first reply does not create a two-target ray."
+    },
+    {
+      "id": "00dc3a7c5a02c02b2bf8",
+      "cohort": "ordinary",
+      "verdict": "negative",
+      "reason": "The inspected first reply does not create a two-target ray."
+    },
+    {
+      "id": "00105494af3ed207acec",
+      "cohort": "ordinary",
+      "verdict": "negative",
+      "reason": "The inspected first reply does not create a two-target ray."
+    },
+    {
+      "id": "0007c5f8d7b6387ff37d",
+      "cohort": "ordinary",
+      "verdict": "negative",
+      "reason": "The inspected first reply does not create a two-target ray."
+    },
+    {
+      "id": "0005280363aeccd3f586",
+      "cohort": "ordinary",
+      "verdict": "negative",
+      "reason": "The inspected first reply does not create a two-target ray."
+    },
+    {
+      "id": "0047ee79198ad5f29e62",
+      "cohort": "ordinary",
+      "verdict": "negative",
+      "reason": "The inspected first reply does not create a two-target ray."
+    },
+    {
+      "id": "0004e984d24067ae8a27",
+      "cohort": "ordinary",
+      "verdict": "negative",
+      "reason": "The inspected first reply does not create a two-target ray."
+    },
+    {
+      "id": "000076bd8867e3fa124c",
+      "cohort": "ordinary",
+      "verdict": "negative",
+      "reason": "The inspected first reply does not create a two-target ray."
+    }
+  ]
+}

@@ -36,6 +36,43 @@ and the number of cached and restricted continuations. Existing
 mistake labels provide the worker baseline. A later line tactic
 cannot count as an explanation of the earlier material loss.
 
+## Transfer results
+
+There are 119 classical decisions from 32 event families, with 39
+recorded-capture challenges, 48 alignment challenges and 32 ordinary
+controls. One engine-assisted reviewer checked 40 questions at higher
+search budgets. Four were positive, 32 negative and four unresolved.
+
+| Method | Correct direct explanations on 4 positives | False calls on 32 negatives | Calls on 4 unresolved |
+| --- | ---: | ---: | ---: |
+| Existing worker | 1 | 0 | 0 |
+| Two local exchanges and same-reply comparison | 3 | 0 | 0 |
+
+- `Rd1` allows `...Bb3` to attack the queen and line up the rook
+  behind it. `...Bxd1` wins the exchange in both played continuations.
+  `Ne3 Bb3 Qd3` preserves the material.
+- `Nc2` allows `...Rb2`. The promotion on a1 diverts the knight and
+  the rook behind it falls to `...Rxe2`. After `Be5`, the same reply
+  can be met by `Bxb2`.
+- `Qc2 Bb3` was already identified as tactical. The comparison adds
+  the exchange outcome against the same `...Bb3` after `Qg4`.
+
+The fourth reviewed positive, `Nd8 Rd3`, remains outside the
+candidate's 100-centipawn root loss requirement. The limited sample
+does not estimate recall across all motifs. The candidate reused one
+cached reply and nominated three restricted searches, representing
+3.0 million nodes in the completed frames. A reply nominated by the
+old shared-reply method is requested only once in the app.
+[Blind reference](transfer-reference.json) · [Scores and proof lines](transfer-results.json)
+
+## Integration
+
+Decision Evidence v62 uses this comparison only for the recorded
+played mistake. It keeps other engine-supported reasons and puts
+the matched comparison first, with the played and better
+continuations in the existing evidence control. A separate
+bounded legal proof retains priority.
+
 ## Reproduce
 
 From the repository root, use the same python-chess environment and

@@ -63,6 +63,7 @@ import {
     compareSharedReply,
     type DecisionSharedReplyProbe,
 } from "./decisionSharedReply";
+import { compareSharedRay } from "./decisionSharedRay";
 import { comparePawnEpisodes } from "./decisionPawnEpisode";
 import { compareLostKingShelter, findKingShelterTradeoff } from "./decisionKingShelter";
 import {
@@ -135,7 +136,7 @@ import { findPassedPawnRoles } from "./decisionPassedPawnRole";
 const QUIET_REPLY_SCOPE = "The resource applies to this reply. Other defences can change the continuation.";
 const CAPTURE_ORDER_SCOPE = "This capture order applies to the reply shown. Other defences can change the continuation.";
 
-export const DECISION_ASSESSMENT_VERSION = 61;
+export const DECISION_ASSESSMENT_VERSION = 62;
 export type DecisionCategory = "tactical" | "positional" | "mixed" | "unclear";
 export type DecisionDimension = {
     support: "unestablished" | "suggestive" | "supported";
@@ -233,6 +234,7 @@ export type ChessDecisionReport = {
               missed: TacticalSequenceWitness[];
               allowed: TacticalSequenceWitness[];
               tacticalEpisode?: TacticalMistakeEpisode;
+              sharedRay?: TacticalMistakeEpisode;
               mateConsequence?: DecisionMateConsequence;
               promotion?: PromotionMistakeEvidence;
               rookPressure?: RookPressureEvidence;
@@ -1324,6 +1326,20 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
                     ],
                 };
             }
+            const sharedRay =
+                playedCorroborated &&
+                (assessment.tactical.support !== "supported" || assessment.tactical.basis === "engine-supported")
+                    ? compareSharedRay(input.fen, comparedBest, playedLine, playedProbe!.lines[0], input.sharedReply)
+                    : null;
+            if (sharedRay)
+                assessment.tactical = {
+                    support: "supported",
+                    basis: "engine-supported",
+                    reasons: [
+                        sharedRay.explanation,
+                        ...(assessment.tactical.support === "supported" ? assessment.tactical.reasons : []),
+                    ],
+                };
             const recoveryReply = corroborateRecoveryReply(comparedBest, betterProbe?.lines ?? []);
             const recovery =
                 assessment.tactical.support !== "supported" && recoveryReply && playedProbe?.lines[0]
@@ -1564,6 +1580,7 @@ export function assessChessDecision(input: DecisionAssessmentInput): ChessDecisi
             mistake = {
                 ...assessment,
                 evaluationLossCp: loss,
+                ...(sharedRay ? { sharedRay } : {}),
                 mechanisms: [...allowed, ...missed],
                 missed,
                 allowed,

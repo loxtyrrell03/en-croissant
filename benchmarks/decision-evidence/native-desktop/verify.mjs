@@ -304,4 +304,23 @@ if (wanted.has("Rear-Piece Trade")) {
   });
 }
 
+for (const [name, played, witness] of [
+  ["Aligned Queen and Rook", "Rd1", /Rd1 lets Bb3.*Bxd1.*After Ne3.*Bb3/s],
+  ["Promotion Diverts the Knight", "Nc2", /Nc2 lets Rb2.*Rxe2.*After Be5.*Bxb2/s],
+]) {
+  if (!wanted.has(name)) continue;
+  await run(name, async page => {
+    await button(page, "End").click();
+    await openTactics(page);
+    await analyse(page, "Analyse last move");
+    const section = page.getByText(`What ${played} missed or allowed`, { exact: true }).locator("../..");
+    await section.getByRole("button", { name: "Show evidence", exact: true }).click({ timeout: 6000 });
+    const mistake = await section.innerText();
+    assert.match(mistake, /Tactical · Engine supported/);
+    assert.match(mistake, witness);
+    assert.match(mistake, /Played line.*Better line/s);
+    return { mistake };
+  });
+}
+
 if (Object.values(results.scenarios).some(result => !result.passed)) process.exitCode = 1;

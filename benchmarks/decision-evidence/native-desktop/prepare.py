@@ -110,4 +110,11 @@ ray_trade = fixtures / "shared-ray-mistakes" / "retained-tactic.json"
 if ray_trade.is_file():
     target = load("shared-ray-mistakes", "retained-tactic.json")
     history_fixture("Rear-Piece Trade", target["history"], [target["playedMoveUci"]])
+aligned = fixtures / "shared-ray-mistakes" / "candidate-regression.json"
+if aligned.is_file():
+    cases = load("shared-ray-mistakes", "candidate-regression.json")
+    for key, label in (("cachedExchange", "Aligned Queen and Rook"), ("promotionExchange", "Promotion Diverts the Knight")):
+        target = cases.get(key)
+        if target:
+            history_fixture(label, target["history"], [target["playedMoveUci"]])
 print("Isolated app settings and legal PGN fixtures prepared.")

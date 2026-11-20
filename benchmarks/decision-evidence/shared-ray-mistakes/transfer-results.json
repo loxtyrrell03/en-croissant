@@ -1,0 +1,763 @@
+{
+  "inputs": {
+    "transfer-frames.json": "428ea4b7145fefd752178974aadbba3cac983d42dcfe7e61418fa5a45973a492",
+    "transfer-reference.json": "bb0641d808e534364098092777d0e04b0cb1da6425628b7e0f1ba5df06522e3b",
+    "candidate.json": "2905ac70222cde86d353c255156d7be2f2d9b375d207ce56f42814a3be46134d",
+    "baseline.json": "6201c61867ff4639a47f5b1703309d371f47199ae0386d7a5dc469028eef68c1"
+  },
+  "rows": 119,
+  "reviewed": {
+    "negative": 32,
+    "uncertain": 4,
+    "positive": 4
+  },
+  "quality": {
+    "trueNegative": 32,
+    "uncertainAbstentions": 4,
+    "truePositive": 3,
+    "falseNegative": 1,
+    "outsideReview": 0
+  },
+  "nominations": {
+    "restricted": 3,
+    "cached": 1
+  },
+  "restrictedNodes": 3000782,
+  "cases": [
+    {
+      "id": "6aa6a14914bfa157e071",
+      "source": "https://lichess.org/broadcast/fide-world-amateur-chess-championships-2026-u2000/yKXS0vjE",
+      "cohort": "recordedCapture",
+      "nomination": "restricted",
+      "reference": {
+        "id": "6aa6a14914bfa157e071",
+        "cohort": "recordedCapture",
+        "verdict": "negative",
+        "reason": "Both root choices score -462. Rd7 can win the d5 rook after either choice. The compared material loss is not attributable to the alignment."
+      },
+      "baselineCategory": "unclear",
+      "baselineStatus": "assessed",
+      "baselineReasons": [
+        "No relevant tactical mechanism has been established."
+      ],
+      "candidate": null
+    },
+    {
+      "id": "6cfbda10b23714ba0571",
+      "source": "https://lichess.org/broadcast/almaty-region-open-qonaev-cup-2025-masters/round-3/zaXQ3SMj/lZKs2845",
+      "cohort": "recordedCapture",
+      "nomination": null,
+      "reference": {
+        "id": "6cfbda10b23714ba0571",
+        "cohort": "recordedCapture",
+        "verdict": "negative",
+        "reason": "The stronger replies are Nc2 and h6. The recorded ray move gives White Bd2 or a3 without the recorded material loss."
+      },
+      "baselineCategory": null,
+      "baselineStatus": "best-supplied-choice",
+      "baselineReasons": [],
+      "candidate": null
+    },
+    {
+      "id": "4b547404417e03dcc56d",
+      "source": "https://lichess.org/broadcast/41st-european-chess-club-cup-2026-open/round-7/6Cdu81NR/z5pX6klN",
+      "cohort": "recordedCapture",
+      "nomination": null,
+      "reference": {
+        "id": "4b547404417e03dcc56d",
+        "cohort": "recordedCapture",
+        "verdict": "negative",
+        "reason": "The leading defence moves the knight to d5. The plausible Rxd8 possibilities allow Qxd8 at equal local material and depend on later king pressure."
+      },
+      "baselineCategory": "tactical",
+      "baselineStatus": "assessed",
+      "baselineReasons": [
+        "Rd1 attacks the queen on d7 after Qd7. Both searches show Qc6 moving it away. After Bh6, the same Rd1 meets Rxd1+ with the queen safe from a profitable capture by that attacker."
+      ],
+      "candidate": null
+    },
+    {
+      "id": "4966ea76c425ff4cf9b4",
+      "source": "https://lichess.org/broadcast/xvii-memorial-pedro-lezcano-montalvo-2025/round-5/VyStcTpE/JwIEbZE5",
+      "cohort": "recordedCapture",
+      "nomination": null,
+      "reference": {
+        "id": "4966ea76c425ff4cf9b4",
+        "cohort": "recordedCapture",
+        "verdict": "negative",
+        "reason": "The leading Rh8 branches trade rooks and score close to equal. Rxh4 is directly recaptured."
+      },
+      "baselineCategory": null,
+      "baselineStatus": "best-supplied-choice",
+      "baselineReasons": [],
+      "candidate": null
+    },
+    {
+      "id": "98cf354a13bdcbdb1eba",
+      "source": "https://lichess.org/broadcast/1st-commonwealth-schools-chess-championship-2026-classical-open/round-8/qnbqT0U6/eb1WdxbO",
+      "cohort": "recordedCapture",
+      "nomination": null,
+      "reference": {
+        "id": "98cf354a13bdcbdb1eba",
+        "cohort": "recordedCapture",
+        "verdict": "uncertain",
+        "reason": "Be8 permits a real Bxd8 exchange, but the competing Bc8 defence trades and the material can swing back later. The direct role is plausible within a more complex tactic."
+      },
+      "baselineCategory": "unclear",
+      "baselineStatus": "assessed",
+      "baselineReasons": [
+        "No relevant tactical mechanism has been established."
+      ],
+      "candidate": null
+    },
+    {
+      "id": "70ba9b0dbb11da660429",
+      "source": "https://lichess.org/broadcast/3rd-maharashtra-international-grandmaster-2025/round-1/CtkJryiQ",
+      "cohort": "recordedCapture",
+      "nomination": null,
+      "reference": {
+        "id": "70ba9b0dbb11da660429",
+        "cohort": "recordedCapture",
+        "verdict": "uncertain",
+        "reason": "The alternate queen line can win the c1 knight, but Qe1 meets the reply and the leading continuation centres on the passed a-pawn and king attack."
+      },
+      "baselineCategory": "unclear",
+      "baselineStatus": "assessed",
+      "baselineReasons": [
+        "No relevant tactical mechanism has been established."
+      ],
+      "candidate": null
+    },
+    {
+      "id": "b15e3590a7fc131af333",
+      "source": "https://lichess.org/broadcast/central-american-and-caribbean-youth-championship-2026-g18/round-7/zp0zWyzv/X0Dm3ZAh",
+      "cohort": "recordedCapture",
+      "nomination": null,
+      "reference": {
+        "id": "b15e3590a7fc131af333",
+        "cohort": "recordedCapture",
+        "verdict": "negative",
+        "reason": "The recorded reply is inferior to Bxe5. Both analysed views trade material via Nxd3 and Nxe1, distinct from a direct gain on the aligned target."
+      },
+      "baselineCategory": null,
+      "baselineStatus": "best-supplied-choice",
+      "baselineReasons": [],
+      "candidate": null
+    },
+    {
+      "id": "57ad604db82317716a77",
+      "source": "https://lichess.org/broadcast/xvii-memorial-pedro-lezcano-montalvo-2025/round-8/NFAAKtBB/WXQd7I88",
+      "cohort": "recordedCapture",
+      "nomination": "cached",
+      "reference": {
+        "id": "57ad604db82317716a77",
+        "cohort": "recordedCapture",
+        "verdict": "positive",
+        "reason": "Rd1 permits Bb3 against the queen on c2 and rook on d1. The checked queen retreats let Bxd1 Qxd1 win the exchange. Ne3 keeps the material when met by Bb3."
+      },
+      "baselineCategory": "unclear",
+      "baselineStatus": "assessed",
+      "baselineReasons": [
+        "No relevant tactical mechanism has been established."
+      ],
+      "candidate": {
+        "kind": "forcing-attack",
+        "throughPly": 5,
+        "playedLineUci": [
+          "e1d1",
+          "d5b3",
+          "c2b1",
+          "b3d1",
+          "b1d1"
+        ],
+        "betterLineUci": [
+          "f1e3",
+          "d5b3",
+          "c2d3",
+          "c6e7",
+          "d3e4"
+        ],
+        "mechanisms": [],
+        "explanation": "Rd1 lets Bb3 line up the queen on c2 and the rook on d1. Both searches show Bxd1 winning material from that alignment. After Ne3, Bb3 Qd3 keeps the material balance in the compared line."
+      }
+    },
+    {
+      "id": "aa607b2a0cf05fdf0dee",
+      "source": "https://lichess.org/broadcast/sardinia-world-chess-festival-2025-open-a/round-4/rT0jLf1D/ryqvH0fE",
+      "cohort": "recordedCapture",
+      "nomination": null,
+      "reference": {
+        "id": "aa607b2a0cf05fdf0dee",
+        "cohort": "recordedCapture",
+        "verdict": "uncertain",
+        "reason": "Qxb6 changes multiple exchanges and loses the queen. The comparison used the same root choice so an exact better-move explanation remains unresolved."
+      },
+      "baselineCategory": null,
+      "baselineStatus": "best-supplied-choice",
+      "baselineReasons": [],
+      "candidate": null
+    },
+    {
+      "id": "de3644a384e7ce1c6a6f",
+      "source": "https://lichess.org/broadcast/1st-commonwealth-schools-chess-championship-2026-classical-open/round-7/z95lP5q6/0uTwqJci",
+      "cohort": "recordedCapture",
+      "nomination": null,
+      "reference": {
+        "id": "de3644a384e7ce1c6a6f",
+        "cohort": "recordedCapture",
+        "verdict": "negative",
+        "reason": "Rxd2 is recaptured after both main continuations. The contrast with Ra8 mate after Rd8 establishes a much better root choice but no direct ray capture gain."
+      },
+      "baselineCategory": "unclear",
+      "baselineStatus": "assessed",
+      "baselineReasons": [
+        "No relevant tactical mechanism has been established."
+      ],
+      "candidate": null
+    },
+    {
+      "id": "749ad25bf2df4a83acfb",
+      "source": "https://lichess.org/broadcast/almaty-region-open-qonaev-cup-2025-masters/round-2/PzFoOHEw/077Vk45W",
+      "cohort": "recordedCapture",
+      "nomination": null,
+      "reference": {
+        "id": "749ad25bf2df4a83acfb",
+        "cohort": "recordedCapture",
+        "verdict": "negative",
+        "reason": "The exact Rf8 reply allows a favourable defence in the deeper analysis. Rxf7 can be recaptured and the direct route concerns a queen check on h6."
+      },
+      "baselineCategory": null,
+      "baselineStatus": "best-supplied-choice",
+      "baselineReasons": [],
+      "candidate": null
+    },
+    {
+      "id": "8c5b05ae4788055e56df",
+      "source": "https://lichess.org/broadcast/menorca-open-2025-open/round-2/BIe4nJHo/vPvAmj4D",
+      "cohort": "recordedCapture",
+      "nomination": null,
+      "reference": {
+        "id": "8c5b05ae4788055e56df",
+        "cohort": "recordedCapture",
+        "verdict": "negative",
+        "reason": "Both compared defences keep the evaluation close to equal. Bxe4 can be directly recaptured by the d-pawn."
+      },
+      "baselineCategory": null,
+      "baselineStatus": "best-supplied-choice",
+      "baselineReasons": [],
+      "candidate": null
+    },
+    {
+      "id": "cd95e6c7c13fe9e60a52",
+      "source": "https://lichess.org/broadcast/41st-european-chess-club-cup-2026-open/round-7/6Cdu81NR/goxKGuFy",
+      "cohort": "recordedCapture",
+      "nomination": null,
+      "reference": {
+        "id": "cd95e6c7c13fe9e60a52",
+        "cohort": "recordedCapture",
+        "verdict": "negative",
+        "reason": "The root loss is 43 cp. The deeper line after Rd8 keeps White's balance with Qh5, and Rxd1 is recaptured in the alternate line."
+      },
+      "baselineCategory": "unclear",
+      "baselineStatus": "assessed",
+      "baselineReasons": [
+        "No relevant tactical mechanism has been established."
+      ],
+      "candidate": null
+    },
+    {
+      "id": "6ceee513337f48bf8485",
+      "source": "https://lichess.org/broadcast/xvii-memorial-pedro-lezcano-montalvo-2025/round-6/NuoKsNmR/QXa4QLvW",
+      "cohort": "recordedCapture",
+      "nomination": null,
+      "reference": {
+        "id": "6ceee513337f48bf8485",
+        "cohort": "recordedCapture",
+        "verdict": "uncertain",
+        "reason": "Re4 Bb7 concedes the exchange after Bxe4 and the alternative a3 survives that reply, but the best reply to a3 also keeps the mover losing and the root gap is only 42 cp."
+      },
+      "baselineCategory": null,
+      "baselineStatus": "no-meaningful-loss-measured",
+      "baselineReasons": [],
+      "candidate": null
+    },
+    {
+      "id": "aa61f0c334e7cebe20a8",
+      "source": "https://lichess.org/broadcast/sardinia-world-chess-festival-2025-open-a/round-4/rT0jLf1D/eNLpPCHQ",
+      "cohort": "recordedCapture",
+      "nomination": null,
+      "reference": {
+        "id": "aa61f0c334e7cebe20a8",
+        "cohort": "recordedCapture",
+        "verdict": "positive",
+        "reason": "Nd8 aligns the knight with the rook and Rd3 forces an exchange-free capture on d8 after rook escapes. The exact Rd3 reply after Kf5 leaves the knight on f7 and allows Rc7. Both roots are losing."
+      },
+      "baselineCategory": "unclear",
+      "baselineStatus": "assessed",
+      "baselineReasons": [
+        "No relevant tactical mechanism has been established."
+      ],
+      "candidate": null
+    },
+    {
+      "id": "e613856b7d15a8e268e8",
+      "source": "https://lichess.org/broadcast/51-open-chess-la-roda/round-8/fP2DvXYO/xftLplOs",
+      "cohort": "recordedCapture",
+      "nomination": "restricted",
+      "reference": {
+        "id": "e613856b7d15a8e268e8",
+        "cohort": "recordedCapture",
+        "verdict": "positive",
+        "reason": "Nc2 allows Rb2 to line up the knight and rook. After a1=Q draws the knight to a1, Rxe2 wins the original rook. Be5 meets Rb2 with Bxb2 instead."
+      },
+      "baselineCategory": "unclear",
+      "baselineStatus": "assessed",
+      "baselineReasons": [
+        "No relevant tactical mechanism has been established."
+      ],
+      "candidate": {
+        "kind": "forcing-attack",
+        "throughPly": 7,
+        "playedLineUci": [
+          "e1c2",
+          "b1b2",
+          "d6d7",
+          "a2a1q",
+          "c2a1",
+          "b2e2",
+          "a1b3"
+        ],
+        "betterLineUci": [
+          "f4e5",
+          "b1b2",
+          "e5b2",
+          "f7f6",
+          "b2a1",
+          "a8d8",
+          "e2a2"
+        ],
+        "mechanisms": [],
+        "explanation": "Nc2 lets Rb2 line up the knight on c2 and the rook on e2. Both searches show Rxe2 winning material from that alignment. After Be5, Rb2 Bxb2 keeps the material balance in the compared line."
+      }
+    },
+    {
+      "id": "e123b07db679b5cdf561",
+      "source": "https://lichess.org/broadcast/41st-european-chess-club-cup-2026-open/round-5/zd7N7QUW/8L5KTqsI",
+      "cohort": "recordedCapture",
+      "nomination": null,
+      "reference": {
+        "id": "e123b07db679b5cdf561",
+        "cohort": "recordedCapture",
+        "verdict": "negative",
+        "reason": "The paired options score within 4 cp. Bxc6 receives an equal recapture and the resulting continuation has no direct loss from the ray."
+      },
+      "baselineCategory": null,
+      "baselineStatus": "comparison-unavailable",
+      "baselineReasons": [],
+      "candidate": null
+    },
+    {
+      "id": "f704c7a54a8a115ba5b3",
+      "source": "https://lichess.org/broadcast/xvii-memorial-pedro-lezcano-montalvo-2025/round-8/NFAAKtBB/9Z6KM0qr",
+      "cohort": "recordedCapture",
+      "nomination": "restricted",
+      "reference": {
+        "id": "f704c7a54a8a115ba5b3",
+        "cohort": "recordedCapture",
+        "verdict": "positive",
+        "reason": "Qc2 permits Bb3 to attack the queen and x-ray the rook on d1. The compared retreats concede Bxd1 Qxd1 for the exchange. Qg4 retains that rook after Bb3."
+      },
+      "baselineCategory": "tactical",
+      "baselineStatus": "assessed",
+      "baselineReasons": [
+        "Bb3 attacks the more valuable piece on c2. After it moves, Bxd1 takes the piece behind it. The played line retains 1.7 fewer material points after 13 plies of both compared lines."
+      ],
+      "candidate": {
+        "kind": "forcing-attack",
+        "throughPly": 7,
+        "playedLineUci": [
+          "c4c2",
+          "d5b3",
+          "c2b1",
+          "b3d1",
+          "b1d1"
+        ],
+        "betterLineUci": [
+          "c4g4",
+          "d5b3",
+          "d1d3",
+          "b7b5",
+          "d3d4",
+          "c8d8",
+          "e2e1"
+        ],
+        "mechanisms": [],
+        "explanation": "Qc2 lets Bb3 line up the queen on c2 and the rook on d1. Both searches show Bxd1 winning material from that alignment. After Qg4, Bb3 Rd3 keeps the material balance in the compared line."
+      }
+    },
+    {
+      "id": "d13bbf9866c043c8d43a",
+      "source": "https://lichess.org/broadcast/sardinia-world-chess-festival-2025-open-a/round-2/3FTNKv1L/IxtdFjsy",
+      "cohort": "recordedCapture",
+      "nomination": null,
+      "reference": {
+        "id": "d13bbf9866c043c8d43a",
+        "cohort": "recordedCapture",
+        "verdict": "negative",
+        "reason": "The root choices are separated by 3 cp. After Bb5 the main continuations retain the aligned pieces and play on another line."
+      },
+      "baselineCategory": null,
+      "baselineStatus": "comparison-unavailable",
+      "baselineReasons": [],
+      "candidate": null
+    },
+    {
+      "id": "fb5615b479c6af6dc39a",
+      "source": "https://lichess.org/broadcast/sardinia-world-chess-festival-2025-open-a/round-5/UeWi4Rmz/zdMaC7Ww",
+      "cohort": "recordedCapture",
+      "nomination": null,
+      "reference": {
+        "id": "fb5615b479c6af6dc39a",
+        "cohort": "recordedCapture",
+        "verdict": "negative",
+        "reason": "The main reply takes elsewhere with Bxd3. After Bxd7+ and Rxd7 the exchanges continue without a direct material gain from the original alignment."
+      },
+      "baselineCategory": null,
+      "baselineStatus": "best-supplied-choice",
+      "baselineReasons": [],
+      "candidate": null
+    },
+    {
+      "id": "f0901bb1afc43fc430bf",
+      "source": "https://lichess.org/broadcast/almaty-region-open-qonaev-cup-2025-masters/round-3/zaXQ3SMj/vKq2IUmH",
+      "cohort": "recordedCapture",
+      "nomination": null,
+      "reference": {
+        "id": "f0901bb1afc43fc430bf",
+        "cohort": "recordedCapture",
+        "verdict": "negative",
+        "reason": "The compared root loss is 59 cp and Bxg6 is directly recaptured. The attacking play centres on the advanced h-pawn."
+      },
+      "baselineCategory": null,
+      "baselineStatus": "no-meaningful-loss-measured",
+      "baselineReasons": [],
+      "candidate": null
+    },
+    {
+      "id": "037734d0d0c182ac5da6",
+      "source": "https://lichess.org/broadcast/south-wales-international-2026/round-9/sXIIwQlY/tX0EizLL",
+      "cohort": "ray",
+      "nomination": null,
+      "reference": {
+        "id": "037734d0d0c182ac5da6",
+        "cohort": "ray",
+        "verdict": "negative",
+        "reason": "The comparable moves differ by 78 cp. Bxb7 is by the bishop, not the queen that initiated the ray, and the queen recaptures on b7. No direct gain from the tested ray."
+      },
+      "baselineCategory": "tactical",
+      "baselineStatus": "assessed",
+      "baselineReasons": [
+        "Against Qa7, Qa6 gives you Qxa7, a profitable capture. Qc7 leaves that capture unavailable."
+      ],
+      "candidate": null
+    },
+    {
+      "id": "010cc8c3fa5557ce93c2",
+      "source": "https://lichess.org/broadcast/22nd-bangkok-chess-club-open-2025/round-1/AJ0oxvZv",
+      "cohort": "ray",
+      "nomination": null,
+      "reference": {
+        "id": "010cc8c3fa5557ce93c2",
+        "cohort": "ray",
+        "verdict": "negative",
+        "reason": "Qe7 is answerable by Bxg4 and Black recaptures. No original target is lost in the best tested line."
+      },
+      "baselineCategory": "unclear",
+      "baselineStatus": "assessed",
+      "baselineReasons": [
+        "No relevant tactical mechanism has been established."
+      ],
+      "candidate": null
+    },
+    {
+      "id": "1d9077e8871cb469e704",
+      "source": "https://lichess.org/broadcast/8th-boyi-cup-youth-chess-international-open-tournament-2026-group-a/z00SjNY3",
+      "cohort": "ray",
+      "nomination": null,
+      "reference": {
+        "id": "1d9077e8871cb469e704",
+        "cohort": "ray",
+        "verdict": "negative",
+        "reason": "The stronger reply exchanges on e8. The ray has no meaningful material effect in the leading continuation."
+      },
+      "baselineCategory": null,
+      "baselineStatus": "no-meaningful-loss-measured",
+      "baselineReasons": [],
+      "candidate": null
+    },
+    {
+      "id": "040a9f0c8becb60e33db",
+      "source": "https://lichess.org/broadcast/41st-european-chess-club-cup-2026-open/round-1/EEnnGszr/QKbv7x8V",
+      "cohort": "ray",
+      "nomination": null,
+      "reference": {
+        "id": "040a9f0c8becb60e33db",
+        "cohort": "ray",
+        "verdict": "negative",
+        "reason": "The paired continuations use Bxd4 and return material through recaptures. They remain close to equal."
+      },
+      "baselineCategory": null,
+      "baselineStatus": "best-supplied-choice",
+      "baselineReasons": [],
+      "candidate": null
+    },
+    {
+      "id": "051a114b23381dc8ff23",
+      "source": "https://lichess.org/broadcast/1st-commonwealth-schools-chess-championship-2026-classical-open/round-3/6fOy4Dci/UhAAiGK4",
+      "cohort": "ray",
+      "nomination": null,
+      "reference": {
+        "id": "051a114b23381dc8ff23",
+        "cohort": "ray",
+        "verdict": "negative",
+        "reason": "Both root choices remain strongly losing. Qg5+ starts a separate check sequence and the secondary Bxg7+ is directly recaptured."
+      },
+      "baselineCategory": "positional",
+      "baselineStatus": "assessed",
+      "baselineReasons": [
+        "No relevant tactical mechanism has been established."
+      ],
+      "candidate": null
+    },
+    {
+      "id": "0635c183b09a4451d14c",
+      "source": "https://lichess.org/broadcast/south-wales-international-2026/round-3/AvsFowvJ/VOhBP1xm",
+      "cohort": "ray",
+      "nomination": null,
+      "reference": {
+        "id": "0635c183b09a4451d14c",
+        "cohort": "ray",
+        "verdict": "negative",
+        "reason": "The direct capture on c7 is avoidable with f3 at the same evaluation. There is no demonstrated loss through the ray."
+      },
+      "baselineCategory": null,
+      "baselineStatus": "best-supplied-choice",
+      "baselineReasons": [],
+      "candidate": null
+    },
+    {
+      "id": "1c9c170cf414741d76da",
+      "source": "https://lichess.org/broadcast/the-dublin-easter-im-norm-2025/round-3/539qTpTF/gAXzYbsK",
+      "cohort": "ray",
+      "nomination": null,
+      "reference": {
+        "id": "1c9c170cf414741d76da",
+        "cohort": "ray",
+        "verdict": "negative",
+        "reason": "The actual replies retain the advantage with ordinary queen moves. The better comparison can exchange queens, with no material loss on the ray."
+      },
+      "baselineCategory": null,
+      "baselineStatus": "comparison-unavailable",
+      "baselineReasons": [],
+      "candidate": null
+    },
+    {
+      "id": "1bbb4c62e1732e4fe9ee",
+      "source": "https://lichess.org/broadcast/54-abierto-internacional-ciudad-de-mar-del-plata/round-9/ZhDe4Py7/TKtJhmL4",
+      "cohort": "ray",
+      "nomination": null,
+      "reference": {
+        "id": "1bbb4c62e1732e4fe9ee",
+        "cohort": "ray",
+        "verdict": "negative",
+        "reason": "The root moves score 10 and 0 cp. After Re1 the main continuation exchanges on f3 and e8 without a direct material loss."
+      },
+      "baselineCategory": null,
+      "baselineStatus": "no-meaningful-loss-measured",
+      "baselineReasons": [],
+      "candidate": null
+    },
+    {
+      "id": "0eee2a6bc72087f825e2",
+      "source": "https://lichess.org/broadcast/fide-world-amateur-chess-championships-2026-u2000/yKXS0vjE",
+      "cohort": "ray",
+      "nomination": null,
+      "reference": {
+        "id": "0eee2a6bc72087f825e2",
+        "cohort": "ray",
+        "verdict": "negative",
+        "reason": "The leading reply allows e4 and the comparison remains within 41 cp. No original aligned piece is lost in the leading line."
+      },
+      "baselineCategory": "unclear",
+      "baselineStatus": "assessed",
+      "baselineReasons": [
+        "No relevant tactical mechanism has been established."
+      ],
+      "candidate": null
+    },
+    {
+      "id": "02b7fa7d214352857925",
+      "source": "https://lichess.org/broadcast/xvii-memorial-pedro-lezcano-montalvo-2025/round-5/VyStcTpE/rLvwbpos",
+      "cohort": "ray",
+      "nomination": null,
+      "reference": {
+        "id": "02b7fa7d214352857925",
+        "cohort": "ray",
+        "verdict": "negative",
+        "reason": "Both better continuations preserve the existing advantage. There is no direct capture payoff from the examined ray."
+      },
+      "baselineCategory": null,
+      "baselineStatus": "best-supplied-choice",
+      "baselineReasons": [],
+      "candidate": null
+    },
+    {
+      "id": "01b0bcfc9cbf25ff0f65",
+      "source": "https://lichess.org/broadcast/sardinia-world-chess-festival-2025-open-a/round-3/WStIWAK7/s2G6aZPO",
+      "cohort": "ray",
+      "nomination": null,
+      "reference": {
+        "id": "01b0bcfc9cbf25ff0f65",
+        "cohort": "ray",
+        "verdict": "negative",
+        "reason": "The strongest response to Qc7 is a rook move. The tested continuation after the shared reply does not entail a material loss from the alignment."
+      },
+      "baselineCategory": "unclear",
+      "baselineStatus": "assessed",
+      "baselineReasons": [
+        "No relevant tactical mechanism has been established."
+      ],
+      "candidate": null
+    },
+    {
+      "id": "0007c5f8d7b6387ff37d",
+      "source": "https://lichess.org/broadcast/lxx-campeonato-abierto-mexicano-queretaro-2025-internacional/ronda-1/L9LdbJLm/05RiaWIg",
+      "cohort": "ordinary",
+      "nomination": null,
+      "reference": {
+        "id": "0007c5f8d7b6387ff37d",
+        "cohort": "ordinary",
+        "verdict": "negative",
+        "reason": "The inspected first reply does not create a two-target ray."
+      },
+      "baselineCategory": null,
+      "baselineStatus": "best-supplied-choice",
+      "baselineReasons": [],
+      "candidate": null
+    },
+    {
+      "id": "0005280363aeccd3f586",
+      "source": "https://lichess.org/broadcast/asian-zone-33-chess-championship-2025-open/round-5/wKkmRpUr/evSN9qn4",
+      "cohort": "ordinary",
+      "nomination": null,
+      "reference": {
+        "id": "0005280363aeccd3f586",
+        "cohort": "ordinary",
+        "verdict": "negative",
+        "reason": "The inspected first reply does not create a two-target ray."
+      },
+      "baselineCategory": null,
+      "baselineStatus": "best-supplied-choice",
+      "baselineReasons": [],
+      "candidate": null
+    },
+    {
+      "id": "0004e984d24067ae8a27",
+      "source": "https://lichess.org/broadcast/fide-world-amateur-chess-championships-2026-u2000/yKXS0vjE",
+      "cohort": "ordinary",
+      "nomination": null,
+      "reference": {
+        "id": "0004e984d24067ae8a27",
+        "cohort": "ordinary",
+        "verdict": "negative",
+        "reason": "The inspected first reply does not create a two-target ray."
+      },
+      "baselineCategory": null,
+      "baselineStatus": "no-meaningful-loss-measured",
+      "baselineReasons": [],
+      "candidate": null
+    },
+    {
+      "id": "00105494af3ed207acec",
+      "source": "https://lichess.org/broadcast/menorca-open-2025-open/round-5/OKXSLHbe/dkc1tp0B",
+      "cohort": "ordinary",
+      "nomination": null,
+      "reference": {
+        "id": "00105494af3ed207acec",
+        "cohort": "ordinary",
+        "verdict": "negative",
+        "reason": "The inspected first reply does not create a two-target ray."
+      },
+      "baselineCategory": "positional",
+      "baselineStatus": "assessed",
+      "baselineReasons": [
+        "No relevant tactical mechanism has been established."
+      ],
+      "candidate": null
+    },
+    {
+      "id": "000076bd8867e3fa124c",
+      "source": "https://lichess.org/broadcast/3rd-maharashtra-international-grandmaster-2025/round-1/CtkJryiQ",
+      "cohort": "ordinary",
+      "nomination": null,
+      "reference": {
+        "id": "000076bd8867e3fa124c",
+        "cohort": "ordinary",
+        "verdict": "negative",
+        "reason": "The inspected first reply does not create a two-target ray."
+      },
+      "baselineCategory": null,
+      "baselineStatus": "best-supplied-choice",
+      "baselineReasons": [],
+      "candidate": null
+    },
+    {
+      "id": "00dc3a7c5a02c02b2bf8",
+      "source": "https://lichess.org/broadcast/eccles-classic-fide-ecf-classical-july-2026/ekUuUtmi",
+      "cohort": "ordinary",
+      "nomination": null,
+      "reference": {
+        "id": "00dc3a7c5a02c02b2bf8",
+        "cohort": "ordinary",
+        "verdict": "negative",
+        "reason": "The inspected first reply does not create a two-target ray."
+      },
+      "baselineCategory": null,
+      "baselineStatus": "comparison-unavailable",
+      "baselineReasons": [],
+      "candidate": null
+    },
+    {
+      "id": "0047ee79198ad5f29e62",
+      "source": "https://lichess.org/broadcast/10th-eastern-asia-youth-chess-championships-2026-classical-g12/round-3/BJA6J5Xu/ls4dHHsg",
+      "cohort": "ordinary",
+      "nomination": null,
+      "reference": {
+        "id": "0047ee79198ad5f29e62",
+        "cohort": "ordinary",
+        "verdict": "negative",
+        "reason": "The inspected first reply does not create a two-target ray."
+      },
+      "baselineCategory": null,
+      "baselineStatus": "comparison-unavailable",
+      "baselineReasons": [],
+      "candidate": null
+    },
+    {
+      "id": "00055505e7ab59a6796f",
+      "source": "https://lichess.org/broadcast/south-wales-international-2026/round-2/xXJCJT52/x37csn08",
+      "cohort": "ordinary",
+      "nomination": null,
+      "reference": {
+        "id": "00055505e7ab59a6796f",
+        "cohort": "ordinary",
+        "verdict": "negative",
+        "reason": "The inspected first reply does not create a two-target ray."
+      },
+      "baselineCategory": null,
+      "baselineStatus": "best-supplied-choice",
+      "baselineReasons": [],
+      "candidate": null
+    }
+  ]
+}

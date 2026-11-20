@@ -12,6 +12,7 @@ import cases from "../../../benchmarks/decision-evidence/defence-after-attack/fi
 import mateThree from "../../../benchmarks/decision-evidence/played-mate-in-three/fixtures.json";
 import mateTwo from "../../../benchmarks/decision-evidence/played-mate-in-two/fixtures.json";
 import drawFrames from "../../../benchmarks/decision-evidence/draw-aware-search/fixtures.json";
+import sharedRay from "../../../benchmarks/decision-evidence/shared-ray-mistakes/candidate-regression.json";
 
 const native = vi.hoisted(() => ({ listen: vi.fn(), getBestMoves: vi.fn(), kill: vi.fn() }));
 vi.mock("@/bindings", () => ({ events: { bestMovesPayload: { listen: native.listen } } }));
@@ -54,6 +55,39 @@ beforeEach(() => {
     native.kill.mockResolvedValue(undefined);
 });
 afterEach(() => vi.useRealTimers());
+
+test("the matched reply for a shared ray is searched once with the better move's history", async () => {
+    const fixture = sharedRay.promotionExchange;
+    const best = fixture.candidates[0].pvUci[0];
+    const opponent = fixture.sharedReply.line.pvUci[0];
+    const nativeFrame = (frames: typeof fixture.candidates | (typeof fixture.replyProbes)[0]["lines"]): BestMoves[] =>
+        frames.map((frame, index) => ({
+            ...lines([frame.pvUci], [(frame.fen.split(" ")[1] === "w" ? 1 : -1) * frame.cp!], frame.depth)[0],
+            multipv: index + 1,
+        }));
+    native.getBestMoves.mockImplementation((_engine, _tab, _mode, options: EngineOptions) => {
+        const root = options.moves.length === fixture.history!.moves.length;
+        if (root)
+            return Promise.resolve([100, nativeFrame(options.searchMoves ? fixture.comparisonCandidates : fixture.candidates)]);
+        const move = options.moves.at(-1);
+        if (move === best && options.searchMoves?.[0] === opponent)
+            return Promise.resolve([100, nativeFrame([fixture.sharedReply.line])]);
+        const replies = fixture.replyProbes.find(probe => probe.moveUci === move)?.lines ?? [];
+        return Promise.resolve([100, nativeFrame(replies.filter(line => !options.searchMoves
+            || options.searchMoves.includes(line.pvUci[0])))]);
+    });
+    const input = await gatherDecisionEvidence(engine, {
+        fen: fixture.fen,
+        history: fixture.history!,
+        playedMoveUci: fixture.playedMoveUci,
+    }, new AbortController().signal, vi.fn());
+    const restricted = native.getBestMoves.mock.calls
+        .map(call => call[3] as EngineOptions)
+        .filter(options => options.searchMoves?.length === 1 && options.searchMoves[0] === opponent);
+    expect(restricted).toHaveLength(1);
+    expect(restricted[0].moves).toEqual([...fixture.history!.moves, best]);
+    expect(assessChessDecision(input)?.mistake?.sharedRay?.explanation).toMatch(/Nc2.*Rb2.*Rxe2/);
+});
 
 test("a drawing alternative with an engine tail does not hide the defensive tactic", async () => {
     const fixture = drawFrames.gatherDefensiveResource;

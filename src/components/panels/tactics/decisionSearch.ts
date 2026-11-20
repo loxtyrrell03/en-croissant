@@ -42,6 +42,7 @@ import {
     nominateSharedReply,
     type DecisionSharedReplyProbe,
 } from "@/utils/tacticalMotifs/decisionSharedReply";
+import { nominateSharedRay } from "@/utils/tacticalMotifs/decisionSharedRay";
 import {
     nominateSiblingRefutation,
     type SiblingRefutationFrames,
@@ -743,7 +744,8 @@ export async function gatherDecisionEvidence(
     const opponent =
         played && replyProbes.find((probe) => probe.moveUci === played.pvUci[0])?.lines[0];
     if (played && opponent && pairedBest?.pvUci[0] === best.pvUci[0]) {
-        const request = nominateSharedReply(fen, pairedBest, played, opponent);
+        const request = nominateSharedReply(fen, pairedBest, played, opponent)
+            ?? nominateSharedRay(fen, pairedBest, played, opponent);
         if (request) {
             const cached = replyProbes
                 .find((probe) => probe.moveUci === request.betterMoveUci)

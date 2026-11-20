@@ -370,7 +370,7 @@ function DecisionReport({
   const episode = report.mistake?.tacticalEpisode;
   const mate = report.mistake?.mateConsequence;
   const recovery = report.mistake?.tacticalRecovery;
-  const mistakeComparison = report.mistake?.promotion ?? episode;
+  const mistakeComparison = report.mistake?.promotion ?? report.mistake?.sharedRay ?? episode;
   const rookPressure = report.mistake?.rookPressure;
   const pawnStructure = report.mistake?.pawnStructure;
   const passedAdvance = report.mistake?.passedAdvance;
