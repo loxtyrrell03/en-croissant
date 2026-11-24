@@ -11,9 +11,13 @@
   also keeps its layout when the player text changes.
 - The rendered spacing regression samples board and Prep positions during a real
   move with delayed engine responses. It also exercises the hosted picker,
-  autocomplete, clearing and reopening. Chromium and WebKit pass 59 checks each
-  across 320px to 760px. The production build, project types, and 25 focused tests
-  pass. Physical iPhone interaction requires separate confirmation.
+  autocomplete, clearing and reopening. A hosted index reports readiness through
+  the selected source and Player field, so its success popup cannot cover the
+  Player suggestion. Opening failures retain their notification.
+- Chromium and WebKit pass 60 checks each across 320px to 760px. The production
+  build, project types and 25 focused tests pass. Live HTTPS and a connected
+  mobile-width browser verified the actual hosted collection on the first
+  release. Physical iPhone interaction requires separate confirmation.
 
 ## 2026-11-01 phone Live engine connection recovery
 

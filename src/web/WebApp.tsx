@@ -386,6 +386,7 @@ type WebHostedFolderImportHandler = (
 ) => Promise<WebImportResult | null>;
 type WebHostedFolderImportOptions = {
   openFirstGame?: boolean;
+  announceReady?: boolean;
   archiveView?: boolean;
   onProgress?: (progress: WebHostedFolderReadProgress | null) => void;
 };
@@ -1088,11 +1089,13 @@ function WebAppContent() {
           files: hostedFiles,
         });
         if (reusableImport) {
-          notifications.show({
-            title: "Hosted database already loaded",
-            message: `${reusableImport.database.name} is ready to use.`,
-            color: "blue",
-          });
+          if (options.announceReady !== false) {
+            notifications.show({
+              title: "Hosted database already loaded",
+              message: `${reusableImport.database.name} is ready to use.`,
+              color: "blue",
+            });
+          }
           return reusableImport;
         }
 
@@ -1125,11 +1128,13 @@ function WebAppContent() {
         };
 
         addImportedDatabases([imported]);
-        notifications.show({
-          title: "Hosted database ready",
-          message: `${formatDatabasePickerLabel(imported.database.name)} will lazy-load one board position at a time.`,
-          color: "green",
-        });
+        if (options.announceReady !== false) {
+          notifications.show({
+            title: "Hosted database ready",
+            message: `${formatDatabasePickerLabel(imported.database.name)} will lazy-load one board position at a time.`,
+            color: "green",
+          });
+        }
         return imported;
       } catch (error) {
         console.error(error);
@@ -6513,6 +6518,7 @@ function PrepUnderBoardPanel({
     try {
       const imported = await importHostedFolder(hostedDatabases.library, folder.path, {
         openFirstGame: false,
+        announceReady: false,
         onProgress: setLoadingPrepProgress,
       });
       if (imported) attachImportedDatabase(imported.database);

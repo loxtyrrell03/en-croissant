@@ -29,14 +29,14 @@ const fx=window.fx={session:webStateSession,calls:[],pgn};
 async function setup(){
  localStorage.setItem(PHONE_ENGINE_SETTINGS_KEY,JSON.stringify({...DEFAULT_PHONE_ENGINE_SETTINGS,enabled:true}));
  const state=createEmptyWebState();
- const hosted={...imported.database,id:'hosted-prep',name:'Alex Example - Online Games [130].pgn',hostedLazy:true,hostedUpdatedAt:1234,hostedPath:'Databases/Desktop/Alex Example - Online Games [130]',gameCount:7771,playerNames:[]};
- state.databases=[imported.database,hosted];state.gamesByDatabase[imported.database.id]=imported.games;
+ const hostedPath='Databases/Desktop/Alex Example - Online Games [130]';
+ state.databases=[imported.database];state.gamesByDatabase[imported.database.id]=imported.games;
  state.sourceArchives={databaseIds:[],hostedPaths:['Archive examples/old.pgn']};
  const build=document.createElement('meta');build.name='en-croissant-build';build.content=sessionStorage.getItem('fixture-latest-build')||'fixture-old';document.head.append(build);
  await new Promise((resolve,reject)=>{const request=indexedDB.open('en-croissant-web-companion',1);request.onupgradeneeded=()=>request.result.createObjectStore('state');request.onsuccess=()=>{const db=request.result,tx=db.transaction('state','readwrite'),store=tx.objectStore('state'),read=store.get('main');read.onsuccess=()=>{if(!read.result)store.put(state,'main')};tx.oncomplete=()=>{db.close();resolve()};tx.onabort=()=>reject(tx.error)}});
  const realFetch=window.fetch;
  const files=[{type:'file',name:'Example study',filename:'Example study.pgn',extension:'pgn',path:'Example study.pgn',url:'/web-library/files/example.pgn',lastModified:1234,sizeBytes:pgn.length},{type:'file',name:'Long example opening repertoire and endgame notes',filename:'Long example opening repertoire and endgame notes.pgn',extension:'pgn',path:'Long example opening repertoire and endgame notes.pgn',url:'/web-library/files/long.pgn',lastModified:1234,sizeBytes:pgn.length}];
- files.push({type:'file',name:'Alex Example - Online Games',filename:'games.pgn',extension:'pgn',path:hosted.hostedPath+'/games.pgn',url:'/web-library/files/hosted/games.pgn',lastModified:1234,sizeBytes:0});
+ files.push({type:'file',name:'Alex Example - Online Games',filename:'games.pgn',extension:'pgn',path:hostedPath+'/games.pgn',url:'/web-library/files/hosted/games.pgn',lastModified:1234,sizeBytes:0});
  for(const name of ['old','current'])files.push({type:'file',name:name==='old'?'Long archived example repertoire and annotated practice games':name,filename:name+'.pgn',extension:'pgn',path:'Archive examples/'+name+'.pgn',url:'/web-library/files/'+name+'.pgn',lastModified:1234,sizeBytes:pgn.length});
  window.fetch=async(url,options={})=>{const u=new URL(typeof url==='string'?url:url.url,location.href),p=u.pathname;fx.calls.push({path:p,method:options.method||'GET'});
   if(p==='/api/pc-services')return Response.json({ok:true,service:'en-croissant-service-controller',enabled:true,busy:false,home:true,engine:true,error:null});
@@ -45,6 +45,7 @@ async function setup(){
   if(p==='/api/tournaments'){const body=JSON.parse(options.body||'{}');return Response.json({result:body.method==='settingsGet'?null:body.method==='discoverTournaments'?{events:[],sourceCount:0,sourceLimitReached:false,fetchedAt:new Date().toISOString()}:[]});}
   if(p==='/api/web-state')return Response.json({state:{}});
   if(p.endsWith('/web-library/manifest.json'))return Response.json({version:1,generatedAt:'2026-10-27T09:00:00Z',sourceName:'Invented QA library',files});
+  if(p.endsWith('/position-index/index.json'))return Response.json({version:1,maxPly:1000,gameCount:7771,positionCount:0,shards:[]});
   if(p.includes('/web-library/files/'))return new Response(pgn);
   if(p.startsWith('/api/')||p.startsWith('/v1/'))return Response.json({error:'Unavailable in isolated UI fixture'},{status:404});
   return realFetch(url,options);
@@ -222,7 +223,12 @@ try {
       const sourceSearch = page.getByRole("textbox", { name: "Search databases" });
       if (await sourceSearch.isVisible()) await sourceSearch.fill("Alex Example");
       await page.getByRole("button", { name: /^Alex Example - Online Games \[130\]/ }).first().click();
+      await page.waitForFunction(() => [...document.querySelectorAll("input")].some(input => input.value === "Alex Example"));
       checks.push({ name: "hosted-online-prep-autofills", pass: (await player.inputValue()) === "Alex Example" });
+      checks.push({
+        name: "hosted-prep-readiness-does-not-cover-the-player-suggestion",
+        pass: !(await page.getByText("Hosted database ready", { exact: true }).isVisible()),
+      });
       await player.click();
       await player.fill("Alex");
       const suggestion = page.getByRole("option", { name: "Alex Example", exact: true });
