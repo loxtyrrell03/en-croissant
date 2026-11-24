@@ -1296,9 +1296,8 @@ function WebAppContent() {
           </Box>
         </Box>
 
-        <PhonePcServices />
+        <PhonePcServices showDetails={view === "files"} />
         <PhoneAppUpdate pasteDraft={pastedPgn} />
-        <PhonePersonalSync />
         <main className={classes.main}>
           {workspace.saveError && (
             <Stack
@@ -1485,6 +1484,7 @@ function WebAppContent() {
               />
             )}
           </PhoneErrorBoundary>
+          <PhonePersonalSync showStatus={view === "files"} />
         </main>
       </Box>
     </MantineProvider>
@@ -5275,6 +5275,41 @@ function EngineLineTable({
   );
 }
 
+const EMPTY_HOSTED_PREP_MOVES: WebHostedPositionMove[] = [];
+
+function useHostedPrepPosition(path: string | null, fen: string | null, retry: number) {
+  const key = path && fen ? JSON.stringify([path, fen, retry]) : null;
+  const [result, setResult] = useState<{
+    key: string;
+    moves: WebHostedPositionMove[];
+    error: string | null;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!key || !path || !fen) return;
+    const controller = new AbortController();
+    void fetchHostedDatabasePositionMoves({ hostedPath: path, fen, signal: controller.signal })
+      .then((moves) => {
+        if (!controller.signal.aborted) setResult({ key, moves, error: null });
+      }, (error: unknown) => {
+        if (controller.signal.aborted) return;
+        setResult({
+          key,
+          moves: EMPTY_HOSTED_PREP_MOVES,
+          error: error instanceof Error ? error.message : "Could not load prep moves.",
+        });
+      });
+    return () => controller.abort();
+  }, [key, path, fen]);
+
+  const current = result?.key === key ? result : null;
+  return {
+    moves: current?.moves ?? EMPTY_HOSTED_PREP_MOVES,
+    loading: Boolean(key && !current),
+    error: current?.error ?? null,
+  };
+}
+
 function PrepUnderBoardPanel({
   state,
   setState,
@@ -5379,15 +5414,11 @@ function PrepUnderBoardPanel({
   const [onlinePrepError, setOnlinePrepError] = useState<string | null>(null);
   const [onlineRootPrepStats, setOnlineRootPrepStats] = useState<WebPrepMoveStat[]>([]);
   const [onlineRootPrepLoading, setOnlineRootPrepLoading] = useState(false);
-  const [lazyPrepMoves, setLazyPrepMoves] = useState<WebHostedPositionMove[]>([]);
-  const [lazyRootPrepMoves, setLazyRootPrepMoves] = useState<WebHostedPositionMove[]>([]);
+  const [lazyPrepRetry, retryLazyPrep] = useState(0);
   const [lazyPrepEngineMoves, setLazyPrepEngineMoves] = useState<PrepBuilderEngineMove[]>([]);
   const [lazyRootPrepEngineMoves, setLazyRootPrepEngineMoves] = useState<PrepBuilderEngineMove[]>(
     [],
   );
-  const [lazyPrepLoading, setLazyPrepLoading] = useState(false);
-  const [lazyRootPrepLoading, setLazyRootPrepLoading] = useState(false);
-  const [lazyPrepError, setLazyPrepError] = useState<string | null>(null);
   const [explorerOptionsOpen, setExplorerOptionsOpen] = useState(false);
   const [builderOpen, setBuilderOpen] = useState(false);
   const [prepSort, setPrepSort] = useState<WebPrepSortState>(
@@ -5632,6 +5663,22 @@ function PrepUnderBoardPanel({
             : (sourceOptions
                 .flatMap((group) => group.items)
                 .find((item) => item.value === selectedPrepSourceValue)?.label ?? null);
+  const setupOpen = !activePrep || (activePrep.panelStage ?? "train") === "setup";
+  const showSetupStage = setupOpen;
+  const showTrainingStage = Boolean(activePrep) && !setupOpen;
+  const hostedPrepPath = showTrainingStage && selectedPrepSourceIsLazy && !dateIssue
+    ? (activePrepSourceDatabase?.hostedPath ?? null)
+    : null;
+  const {
+    moves: lazyPrepMoves,
+    loading: lazyPrepLoading,
+    error: lazyPrepError,
+  } = useHostedPrepPosition(hostedPrepPath, currentFen, lazyPrepRetry);
+  const {
+    moves: lazyRootPrepMoves,
+    loading: lazyRootPrepLoading,
+    error: lazyRootPrepError,
+  } = useHostedPrepPosition(hostedPrepPath, branchFen, lazyPrepRetry);
   const lazyPrepStatsBase = useMemo(
     () =>
       activePrep && selectedPrepSourceIsLazy
@@ -5744,9 +5791,6 @@ function PrepUnderBoardPanel({
   const commonOpenStat = activePrep
     ? getFirstOpenPrepStat(openRootStats, activePrep.preparedMoves)
     : null;
-  const setupOpen = !activePrep || (activePrep.panelStage ?? "train") === "setup";
-  const showSetupStage = setupOpen;
-  const showTrainingStage = Boolean(activePrep) && !setupOpen;
   const opponentToMove = activePrep
     ? getFenColor(currentFen) === oppositeWebColor(activePrep.userColor)
     : false;
@@ -6005,82 +6049,6 @@ function PrepUnderBoardPanel({
     explorerOptions,
     lichessToken,
     selectedPrepSource,
-  ]);
-
-  useEffect(() => {
-    if (
-      dateIssue ||
-      !activePrep ||
-      !selectedPrepSourceIsLazy ||
-      !activePrepSourceDatabase?.hostedPath
-    ) {
-      setLazyPrepMoves([]);
-      setLazyRootPrepMoves([]);
-      setLazyPrepError(null);
-      setLazyPrepLoading(false);
-      setLazyRootPrepLoading(false);
-      return;
-    }
-
-    const controller = new AbortController();
-    let active = true;
-    setLazyPrepLoading(true);
-    setLazyRootPrepLoading(Boolean(branchFen));
-    setLazyPrepError(null);
-
-    const currentRequest = fetchHostedDatabasePositionMoves({
-      hostedPath: activePrepSourceDatabase.hostedPath,
-      fen: currentFen,
-      signal: controller.signal,
-    });
-    const rootRequest =
-      branchFen && normalizeWebFen(branchFen) === normalizeWebFen(currentFen)
-        ? currentRequest
-        : branchFen
-          ? fetchHostedDatabasePositionMoves({
-              hostedPath: activePrepSourceDatabase.hostedPath,
-              fen: branchFen,
-              signal: controller.signal,
-            })
-          : Promise.resolve<WebHostedPositionMove[]>([]);
-
-    void currentRequest
-      .then((moves) => {
-        if (active) setLazyPrepMoves(moves);
-      })
-      .catch((error) => {
-        if (!active) return;
-        setLazyPrepMoves([]);
-        setLazyPrepError(
-          error instanceof Error ? error.message : "Could not load this prep position.",
-        );
-      })
-      .finally(() => {
-        if (active) setLazyPrepLoading(false);
-      });
-
-    void rootRequest
-      .then((moves) => {
-        if (active) setLazyRootPrepMoves(moves);
-      })
-      .catch(() => {
-        if (active) setLazyRootPrepMoves([]);
-      })
-      .finally(() => {
-        if (active) setLazyRootPrepLoading(false);
-      });
-
-    return () => {
-      active = false;
-      controller.abort();
-    };
-  }, [
-    activePrep?.id,
-    activePrepSourceDatabase?.hostedPath,
-    dateIssue,
-    branchFen,
-    currentFen,
-    selectedPrepSourceIsLazy,
   ]);
 
   useEffect(() => {
@@ -7174,18 +7142,23 @@ function PrepUnderBoardPanel({
               {onlinePrepError}
             </Text>
           ) : null}
-          {lazyPrepLoading && selectedPrepSourceIsLazy ? (
-            <Group gap="xs">
+          {lazyPrepLoading ? (
+            <Group gap="xs" role="status">
               <Loader size="xs" />
               <Text size="xs" c="dimmed">
-                Loading one position from {selectedSourceLabel}
+                Loading prep moves from {selectedSourceLabel}
               </Text>
             </Group>
           ) : null}
-          {lazyPrepError && selectedPrepSourceIsLazy ? (
-            <Text size="xs" c="red">
-              {lazyPrepError}
-            </Text>
+          {lazyPrepError || lazyRootPrepError ? (
+            <Group gap="xs">
+              <Text size="xs" c="red" role="alert">
+                {lazyPrepError ?? lazyRootPrepError}
+              </Text>
+              <Button size="xs" variant="default" onClick={() => retryLazyPrep((value) => value + 1)}>
+                Retry prep moves
+              </Button>
+            </Group>
           ) : null}
           <Group gap={6} wrap="nowrap">
             <Button
@@ -7193,6 +7166,7 @@ function PrepUnderBoardPanel({
               variant="light"
               leftSection={<IconPlayerPlay size={14} />}
               onClick={playCommonMove}
+              disabled={selectedPrepSourceIsLazy && (lazyRootPrepLoading || !commonOpenStat)}
               style={{ flex: "1 1 auto" }}
             >
               Common move
@@ -7203,6 +7177,7 @@ function PrepUnderBoardPanel({
               color="teal"
               leftSection={<IconCheck size={14} />}
               onClick={doneAndNext}
+              disabled={selectedPrepSourceIsLazy && (lazyRootPrepLoading || Boolean(lazyRootPrepError))}
               style={{ flex: "1 1 auto" }}
             >
               Done + next
@@ -7233,31 +7208,33 @@ function PrepUnderBoardPanel({
                 </ActionIcon>
               </Tooltip>
             </Group>
-            <CompactMoveTable
-              stats={displayedStats}
-              preparedMoves={activePrep.preparedMoves}
-              skippedMoves={activePrep.skippedMoves ?? {}}
-              startedMoveKeys={startedMoveKeys}
-              branchStatsByKey={branchStatsByKey}
-              showState={opponentToMove}
-              emptyLabel="No prep moves"
-              onPlayMove={onPlayMove}
-              onOpenSourceGame={
-                isOnlinePrepSource(selectedPrepSource) || selectedPrepSourceIsLazy
-                  ? undefined
-                  : onOpenSourceGame
-              }
-              onMarkDone={markMoveDone}
-              onSkipMove={skipMove}
-              sort={opponentToMove ? prepSort : prepCandidateSort}
-              onSort={(column) => {
-                if (opponentToMove) {
-                  setPrepSort((current) => getNextWebPrepSort(current, column));
-                } else if (column !== "prep" && column !== "state") {
-                  setPrepCandidateSort((current) => getNextWebPrepSort(current, column));
+            {!lazyPrepLoading && !lazyPrepError ? (
+              <CompactMoveTable
+                stats={displayedStats}
+                preparedMoves={activePrep.preparedMoves}
+                skippedMoves={activePrep.skippedMoves ?? {}}
+                startedMoveKeys={startedMoveKeys}
+                branchStatsByKey={branchStatsByKey}
+                showState={opponentToMove}
+                emptyLabel="No prep moves match this position"
+                onPlayMove={onPlayMove}
+                onOpenSourceGame={
+                  isOnlinePrepSource(selectedPrepSource) || selectedPrepSourceIsLazy
+                    ? undefined
+                    : onOpenSourceGame
                 }
-              }}
-            />
+                onMarkDone={markMoveDone}
+                onSkipMove={skipMove}
+                sort={opponentToMove ? prepSort : prepCandidateSort}
+                onSort={(column) => {
+                  if (opponentToMove) {
+                    setPrepSort((current) => getNextWebPrepSort(current, column));
+                  } else if (column !== "prep" && column !== "state") {
+                    setPrepCandidateSort((current) => getNextWebPrepSort(current, column));
+                  }
+                }}
+              />
+            ) : null}
           </Box>
         </Stack>
       ) : null}

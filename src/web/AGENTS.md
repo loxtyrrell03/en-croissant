@@ -1,3 +1,20 @@
+## 2026-11-24 hosted Prep positions and board status notices
+
+- Shared hosted indexes can advertise no static shards. The live position
+  response is authoritative there. Allow up to 15 seconds for its response and
+  use a static fallback only when its manifest declares shards. A failed query
+  remains retryable and cannot poison the position cache with an empty result.
+- Started Prep owns current and branch-root position requests. Pending and failed
+  lookups withhold the empty state and stale rows, and failures show Retry prep
+  moves. The real Tim Kett online collection returned 17 opening moves in a
+  lookup that exceeded the old 2.5-second deadline.
+- Sync still runs across views. Files displays the library status, details and
+  Retry sync. The board keeps one stable PC control row and omits orange detail
+  banners. PC status details and Retry remain available from Files.
+- The production build, project types and 39 focused tests passed, including
+  slow live results, recovery without a static shard, verified static fallback,
+  and a genuine empty response.
+
 ## 2026-11-24 phone Prep player and vertical stability
 
 - Phone Player Prep fills the most common player from loaded games or the named

@@ -29,7 +29,8 @@ const configuredPrivateServerUrl = resolvePrivateServiceUrl(
   import.meta.env.VITE_EN_CROISSANT_SERVER_URL ?? "https://lox-pc.tail89d19b.ts.net",
 ).trim();
 const PRIVATE_SERVER_URL = configuredPrivateServerUrl.replace(/\/+$/, "");
-const PRIVATE_POSITION_TIMEOUT_MS = 2_500;
+const PRIVATE_POSITION_TIMEOUT_MS = 15_000;
+const STATIC_POSITION_TIMEOUT_MS = 5_000;
 const MAX_POSITION_CACHE_ENTRIES = 500;
 const positionCache = new Map<string, WebHostedPositionMove[]>();
 const positionRequests = new Map<string, Promise<WebHostedPositionMove[]>>();
@@ -68,7 +69,7 @@ export async function fetchHostedDatabasePositionMoves({
   let request = positionRequests.get(cacheKey);
   if (!request) {
     request = fetchPrivateDatabasePosition(hostedPath, key)
-      .catch(() => fetchStaticDatabasePosition(hostedPath, key))
+      .catch((error: unknown) => fetchStaticDatabasePosition(hostedPath, key, error))
       .then((moves) => {
         touchPositionCache(cacheKey, moves);
         while (positionCache.size > MAX_POSITION_CACHE_ENTRIES) {
@@ -101,26 +102,46 @@ async function fetchPrivateDatabasePosition(hostedPath: string, fen: string) {
     if (!response.ok) {
       throw new Error(`Gaming PC database query returned HTTP ${response.status}.`);
     }
-    return normalizeHostedPositionRows(await response.json().catch(() => null));
+    return normalizeHostedPositionRows(await response.json());
+  } catch (error) {
+    if (controller.signal.aborted) {
+      throw new Error("The PC took too long to load this position.");
+    }
+    throw error;
   } finally {
     window.clearTimeout(timeoutId);
   }
 }
 
-async function fetchStaticDatabasePosition(hostedPath: string, fen: string) {
-  const response = await fetch(getHostedPositionIndexShardUrl(hostedPath, fen));
-  if (response.status === 404) return [];
-  if (!response.ok) {
-    throw new Error(`Hosted database position request failed: ${response.status}`);
-  }
+async function fetchStaticDatabasePosition(hostedPath: string, fen: string, liveError: unknown) {
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), STATIC_POSITION_TIMEOUT_MS);
+  try {
+    const manifest = await getHostedDatabasePositionIndexManifest(hostedPath, controller.signal);
+    // The shared-library stub advertises no static shards. A failed live lookup
+    // cannot establish that a position is empty.
+    if (!manifest?.shards.length) throw liveError;
+    const shard = `${getHostedPositionShardForFen(fen)}.json`;
+    if (!manifest.shards.includes(shard)) return [];
 
-  const shard = normalizeHostedPositionIndexShard(await response.json().catch(() => null));
-  const moves = shard.positions[fen] ?? {};
-  return Object.values(moves).sort(
-    (a, b) =>
-      getHostedMoveTotal(b) - getHostedMoveTotal(a) ||
-      a.move.localeCompare(b.move, undefined, { sensitivity: "base" }),
-  );
+    const response = await fetch(
+      getHostedLibraryFileUrl(`${hostedPath}/position-index/shards/${shard}`),
+      { signal: controller.signal },
+    );
+    if (!response.ok) {
+      throw new Error(`The saved position index could not be read (HTTP ${response.status}).`);
+    }
+
+    const index = normalizeHostedPositionIndexShard(await response.json());
+    const moves = index.positions[fen] ?? {};
+    return Object.values(moves).sort(
+      (a, b) =>
+        getHostedMoveTotal(b) - getHostedMoveTotal(a) ||
+        a.move.localeCompare(b.move, undefined, { sensitivity: "base" }),
+    );
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
 }
 
 function normalizeHostedPositionRows(data: unknown) {
@@ -159,12 +180,6 @@ function getHostedPositionIndexManifestUrl(hostedPath: string) {
   return getHostedLibraryFileUrl(`${hostedPath}/position-index/index.json`);
 }
 
-function getHostedPositionIndexShardUrl(hostedPath: string, fen: string) {
-  return getHostedLibraryFileUrl(
-    `${hostedPath}/position-index/shards/${getHostedPositionShardForFen(fen)}.json`,
-  );
-}
-
 export function getHostedPositionShardForFen(fen: string) {
   let hash = 0x811c9dc5;
   for (let index = 0; index < fen.length; index += 1) {
@@ -201,8 +216,13 @@ function normalizeHostedPositionIndexManifest(
 function normalizeHostedPositionIndexShard(data: unknown): WebHostedPositionIndexShard {
   const shard = data as Partial<WebHostedPositionIndexShard> | null;
   const positions: WebHostedPositionIndexShard["positions"] = {};
-  if (shard?.version !== 1 || typeof shard.positions !== "object" || !shard.positions) {
-    return { version: 1, positions };
+  if (
+    shard?.version !== 1 ||
+    typeof shard.positions !== "object" ||
+    !shard.positions ||
+    Array.isArray(shard.positions)
+  ) {
+    throw new Error("The saved position index is unreadable.");
   }
 
   for (const [fen, moves] of Object.entries(shard.positions)) {

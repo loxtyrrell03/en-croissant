@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildWebExplorerProxyUrl, fetchWebExplorerMoveStats } from "../explorer";
-import { fetchHostedDatabasePositionMoves } from "../hostedDatabaseIndex";
+import {
+    fetchHostedDatabasePositionMoves,
+    getHostedPositionShardForFen,
+} from "../hostedDatabaseIndex";
 import {
     cancelWebOtbImport,
     getWebOtbProgressValue,
@@ -13,6 +16,7 @@ import {
 const INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 afterEach(() => {
+    vi.useRealTimers();
     vi.unstubAllGlobals();
 });
 
@@ -181,6 +185,79 @@ describe("phone data work offload", () => {
         expect(first[0]).toMatchObject({ move: "e4", white: 12, draw: 3, black: 5 });
         expect(fetchMock).toHaveBeenCalledTimes(1);
         expect(String(fetchMock.mock.calls[0]?.[0])).toContain("/api/database-position?");
+    });
+
+    it("keeps a slow live position lookup open long enough to receive its moves", async () => {
+        vi.useFakeTimers();
+        const fetchMock = vi.fn((_: URL, options: RequestInit) => new Promise<Response>((resolve, reject) => {
+            const timeout = setTimeout(() => resolve(Response.json([
+                { move: "e4", white: 12, draw: 3, black: 5 },
+            ])), 4_500);
+            options.signal?.addEventListener("abort", () => {
+                clearTimeout(timeout);
+                reject(options.signal?.reason);
+            }, { once: true });
+        }));
+        vi.stubGlobal("fetch", fetchMock);
+        const result = fetchHostedDatabasePositionMoves({
+            hostedPath: "Databases/Desktop/Test/slow-live",
+            fen: INITIAL_FEN,
+        });
+        const received = expect(result).resolves.toEqual([
+            expect.objectContaining({ move: "e4", white: 12 }),
+        ]);
+        await vi.advanceTimersByTimeAsync(4_500);
+        await received;
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it("reports a failed live-only lookup and retries instead of caching an empty result", async () => {
+        const fetchMock = vi.fn()
+            .mockResolvedValueOnce(new Response(null, { status: 503 }))
+            .mockResolvedValueOnce(Response.json({
+                version: 1, maxPly: 1000, gameCount: 20, positionCount: 0, shards: [],
+            }))
+            .mockResolvedValueOnce(Response.json([{ move: "e4", white: 12, draw: 3, black: 5 }]));
+        vi.stubGlobal("fetch", fetchMock);
+        const request = { hostedPath: "Databases/Desktop/Test/live-retry", fen: INITIAL_FEN };
+
+        await expect(fetchHostedDatabasePositionMoves(request)).rejects.toThrow("503");
+        await expect(fetchHostedDatabasePositionMoves(request)).resolves.toEqual([
+            expect.objectContaining({ move: "e4" }),
+        ]);
+        expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual([
+            expect.stringContaining("/api/database-position?"),
+            expect.stringContaining("/position-index/index.json"),
+            expect.stringContaining("/api/database-position?"),
+        ]);
+    });
+
+    it("uses a declared static shard while the PC is offline", async () => {
+        const fen = INITIAL_FEN.split(" ").slice(0, 4).join(" ");
+        const shard = `${getHostedPositionShardForFen(fen)}.json`;
+        const fetchMock = vi.fn()
+            .mockRejectedValueOnce(new Error("PC offline"))
+            .mockResolvedValueOnce(Response.json({
+                version: 1, maxPly: 60, gameCount: 3, positionCount: 1, shards: [shard],
+            }))
+            .mockResolvedValueOnce(Response.json({
+                version: 1, positions: { [fen]: { e4: { white: 2, draw: 0, black: 1 } } },
+            }));
+        vi.stubGlobal("fetch", fetchMock);
+        await expect(fetchHostedDatabasePositionMoves({
+            hostedPath: "Databases/Desktop/Test/real-static", fen: INITIAL_FEN,
+        })).resolves.toEqual([expect.objectContaining({ move: "e4", white: 2 })]);
+        expect(String(fetchMock.mock.calls[2][0])).toContain(`/shards/${shard}`);
+    });
+
+    it("accepts an authoritative empty PC result", async () => {
+        const fetchMock = vi.fn().mockResolvedValue(Response.json([]));
+        vi.stubGlobal("fetch", fetchMock);
+        const request = { hostedPath: "Databases/Desktop/Test/true-empty", fen: INITIAL_FEN };
+
+        await expect(fetchHostedDatabasePositionMoves(request)).resolves.toEqual([]);
+        await expect(fetchHostedDatabasePositionMoves(request)).resolves.toEqual([]);
+        expect(fetchMock).toHaveBeenCalledTimes(1);
     });
 
     it("starts and polls OTB imports only through the private PC service", async () => {

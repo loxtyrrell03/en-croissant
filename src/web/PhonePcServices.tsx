@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { type PcServicesStatus, requestPcServices } from "./pcServices";
 import classes from "./PhonePcServices.module.css";
 
-export default function PhonePcServices() {
+export default function PhonePcServices({ showDetails = true }: { showDetails?: boolean }) {
   const [status, setStatus] = useState<PcServicesStatus | null>(null);
   const [pending, setPending] = useState(false);
   const [requested, setRequested] = useState<boolean | undefined>();
@@ -82,7 +82,7 @@ export default function PhonePcServices() {
         <Group gap="sm" wrap="nowrap">
           <Text
             size="xs"
-            c={error || status?.error ? "orange" : ready ? "green" : "dimmed"}
+            c={showDetails && (error || status?.error) ? "orange" : ready ? "green" : "dimmed"}
             role="status"
           >
             {label}
@@ -100,7 +100,7 @@ export default function PhonePcServices() {
           />
         </Group>
       </Group>
-      {error || status?.error ? (
+      {showDetails && (error || status?.error ? (
         <Stack gap={4}>
           <Text size="xs" c="orange" role="alert">
             {error || status?.error}
@@ -123,7 +123,7 @@ export default function PhonePcServices() {
             : status.busy ? "Stopping PC analysis and reviews…" : "PC analysis and reviews are stopped."}
           </Text>
         )
-      )}
+      ))}
     </section>
   );
 }

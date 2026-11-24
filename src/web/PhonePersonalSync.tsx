@@ -4,7 +4,7 @@ import { PerformanceHelp } from "@/shared/PerformanceHelp";
 import { createPersonalSync, type PersonalSyncStatus } from "./personalSync";
 import { webStateSession } from "./webStateSession";
 
-export default function PhonePersonalSync() {
+export default function PhonePersonalSync({ showStatus }: { showStatus: boolean }) {
   const [status, setStatus] = useState<PersonalSyncStatus>({ enabled: false });
   const sync = useRef<ReturnType<typeof createPersonalSync> | null>(null);
   useEffect(() => {
@@ -32,7 +32,7 @@ export default function PhonePersonalSync() {
       document.removeEventListener("visibilitychange", tick);
     };
   }, []);
-  if (!status.enabled) return null;
+  if (!showStatus || !status.enabled) return null;
   const failure = status.message ?? status.errors?.[0]?.error ?? status.conflicts?.[0]?.reason;
   return (
     <Stack gap={3} px="sm" py={6} aria-label="Personal library sync">

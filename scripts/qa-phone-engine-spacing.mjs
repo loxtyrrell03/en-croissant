@@ -30,6 +30,7 @@ async function setup(){
  localStorage.setItem(PHONE_ENGINE_SETTINGS_KEY,JSON.stringify({...DEFAULT_PHONE_ENGINE_SETTINGS,enabled:true}));
  const state=createEmptyWebState();
  const hostedPath='Databases/Desktop/Alex Example - Online Games [130]';
+ state.personalSyncId='qa-sync';
  state.databases=[imported.database];state.gamesByDatabase[imported.database.id]=imported.games;
  state.sourceArchives={databaseIds:[],hostedPaths:['Archive examples/old.pgn']};
  const build=document.createElement('meta');build.name='en-croissant-build';build.content=sessionStorage.getItem('fixture-latest-build')||'fixture-old';document.head.append(build);
@@ -39,11 +40,20 @@ async function setup(){
  files.push({type:'file',name:'Alex Example - Online Games',filename:'games.pgn',extension:'pgn',path:hostedPath+'/games.pgn',url:'/web-library/files/hosted/games.pgn',lastModified:1234,sizeBytes:0});
  for(const name of ['old','current'])files.push({type:'file',name:name==='old'?'Long archived example repertoire and annotated practice games':name,filename:name+'.pgn',extension:'pgn',path:'Archive examples/'+name+'.pgn',url:'/web-library/files/'+name+'.pgn',lastModified:1234,sizeBytes:pgn.length});
  window.fetch=async(url,options={})=>{const u=new URL(typeof url==='string'?url:url.url,location.href),p=u.pathname;fx.calls.push({path:p,method:options.method||'GET'});
-  if(p==='/api/pc-services')return Response.json({ok:true,service:'en-croissant-service-controller',enabled:true,busy:false,home:true,engine:true,error:null});
-  if(p==='/api/personal-sync/status')return Response.json({enabled:false});
+  if(p==='/api/pc-services')return Response.json({ok:true,service:'en-croissant-service-controller',enabled:true,busy:false,home:true,engine:true,error:fx.serviceError||null});
+  if(p==='/api/personal-sync/status')return Response.json(fx.syncError ? {error:fx.syncError} : {enabled:false},fx.syncError ? {status:503} : undefined);
   if(p==='/app-version.json')return Response.json({sourceCommit:sessionStorage.getItem('fixture-latest-build')||'fixture-old'});
   if(p==='/api/tournaments'){const body=JSON.parse(options.body||'{}');return Response.json({result:body.method==='settingsGet'?null:body.method==='discoverTournaments'?{events:[],sourceCount:0,sourceLimitReached:false,fetchedAt:new Date().toISOString()}:[]});}
   if(p==='/api/web-state')return Response.json({state:{}});
+  if(p==='/api/database-position'){
+   if(fx.lookup==='error')return new Response(null,{status:503});
+   const position=u.searchParams.get('fen');
+   if(fx.lookup==='slow')await new Promise((resolve,reject)=>{
+    const timer=setTimeout(resolve,3400);
+    options.signal?.addEventListener('abort',()=>{clearTimeout(timer);reject(options.signal.reason)},{once:true});
+   });
+   return Response.json(position?.includes(' w KQkq -') ? [{move:'e4',white:12,draw:3,black:5}] : []);
+  }
   if(p.endsWith('/web-library/manifest.json'))return Response.json({version:1,generatedAt:'2026-10-27T09:00:00Z',sourceName:'Invented QA library',files});
   if(p.endsWith('/position-index/index.json'))return Response.json({version:1,maxPly:1000,gameCount:7771,positionCount:0,shards:[]});
   if(p.includes('/web-library/files/'))return new Response(pgn);
@@ -394,6 +404,72 @@ try {
     }
     await context.close();
   }
+  const repairContext = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true });
+  await repairContext.route("**/*", (route) =>
+    new URL(route.request().url()).origin === origin ? route.continue() : route.abort()
+  );
+  const page = await repairContext.newPage();
+  page.setDefaultTimeout(10000);
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.goto(`${origin}/${relative}/index.html`);
+  const board = page.locator("cg-board");
+  await board.waitFor();
+  const boardBeforeStatus = await board.boundingBox();
+  await page.evaluate(() => {
+    window.fx.syncError = "Example sync failure";
+    window.fx.serviceError = "Example PC service failure";
+    window.dispatchEvent(new Event("online"));
+    document.dispatchEvent(new Event("visibilitychange"));
+  });
+  await page.getByRole("status").filter({ hasText: "Unavailable" }).waitFor();
+  await page.waitForFunction(() => window.fx.calls.some(({ path }) => path === "/api/personal-sync/status"));
+  const boardAfterStatus = await board.boundingBox();
+  checks.push({
+    name: "top-status-errors-do-not-move-the-board",
+    pass: JSON.stringify(boardAfterStatus) === JSON.stringify(boardBeforeStatus) &&
+      !(await page.getByText("Example sync failure", { exact: true }).isVisible()) &&
+      !(await page.getByText("Example PC service failure", { exact: true }).isVisible()),
+  });
+  await page.getByRole("button", { name: "Files", exact: true }).click();
+  await page.getByText("Example sync failure", { exact: true }).waitFor();
+  await page.getByText("Example PC service failure", { exact: true }).waitFor();
+  checks.push({
+    name: "status-details-and-sync-retry-are-available-in-files",
+    pass: await page.getByRole("button", { name: "Retry sync", exact: true }).isVisible(),
+  });
+  await page.getByRole("button", { name: "Board", exact: true }).click();
+  await page.getByRole("tab", { name: "Prep", exact: true }).click();
+  await page.locator('[class*="prepSetupGrid"] .mantine-InputWrapper-root button').click();
+  await page.getByRole("textbox", { name: "Search databases" }).fill("Alex Example");
+  await page.getByRole("button", { name: /^Alex Example - Online Games \[130\]/ }).first().click();
+  const player = page.getByRole("textbox", { name: "Player", exact: true });
+  await page.waitForFunction(() => [...document.querySelectorAll("input")].some(input => input.value === "Alex Example"));
+  assert.equal(await player.inputValue(), "Alex Example");
+  await page.getByText("I'm Black", { exact: true }).last().click();
+  await page.evaluate(() => { window.fx.lookup = "error"; });
+  await page.getByRole("button", { name: "Start prep", exact: true }).click();
+  const retry = page.getByRole("button", { name: "Retry prep moves", exact: true });
+  await retry.waitFor();
+  checks.push({
+    name: "failed-live-only-position-has-retry-instead-of-a-false-empty",
+    pass: !(await page.getByText(/^No prep moves/).isVisible()) &&
+      !(await page.getByRole("button", { name: "Common move", exact: true }).isEnabled()),
+  });
+  await page.evaluate(() => { window.fx.lookup = "slow"; });
+  await retry.click();
+  await page.getByText(/^Loading prep moves from/).waitFor();
+  checks.push({
+    name: "prep-waits-for-moves-without-showing-an-empty-table",
+    pass: !(await page.getByText(/^No prep moves/).isVisible()),
+  });
+  await page.getByRole("button", { name: /^e4 WDL/ }).waitFor();
+  const commonMove = page.getByRole("button", { name: "Common move", exact: true });
+  await commonMove.click();
+  checks.push({
+    name: "slow-retried-prep-returns-a-playable-opening-move",
+    pass: await page.evaluate(() => window.fx.session.getSnapshot().state.board.line.at(-1)?.uci === "e2e4"),
+  });
+  await repairContext.close();
 } finally {
   await fs.writeFile(
     path.join(output, "receipt.json"),
