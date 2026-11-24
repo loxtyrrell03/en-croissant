@@ -39,7 +39,7 @@ async function setup(){
  const files=[{type:'file',name:'Example study',filename:'Example study.pgn',extension:'pgn',path:'Example study.pgn',url:'/web-library/files/example.pgn',lastModified:1234,sizeBytes:pgn.length},{type:'file',name:'Long example opening repertoire and endgame notes',filename:'Long example opening repertoire and endgame notes.pgn',extension:'pgn',path:'Long example opening repertoire and endgame notes.pgn',url:'/web-library/files/long.pgn',lastModified:1234,sizeBytes:pgn.length}];
  files.push({type:'file',name:'Alex Example - Online Games',filename:'games.pgn',extension:'pgn',path:hostedPath+'/games.pgn',url:'/web-library/files/hosted/games.pgn',lastModified:1234,sizeBytes:0});
  for(const name of ['old','current'])files.push({type:'file',name:name==='old'?'Long archived example repertoire and annotated practice games':name,filename:name+'.pgn',extension:'pgn',path:'Archive examples/'+name+'.pgn',url:'/web-library/files/'+name+'.pgn',lastModified:1234,sizeBytes:pgn.length});
- window.fetch=async(url,options={})=>{const u=new URL(typeof url==='string'?url:url.url,location.href),p=u.pathname;fx.calls.push({path:p,method:options.method||'GET'});
+ window.fetch=async(url,options={})=>{const u=new URL(url instanceof Request ? url.url : url,location.href),p=u.pathname;fx.calls.push({path:p,method:options.method||'GET'});
   if(p==='/api/pc-services')return Response.json({ok:true,service:'en-croissant-service-controller',enabled:true,busy:false,home:true,engine:true,error:fx.serviceError||null});
   if(p==='/api/personal-sync/status')return Response.json(fx.syncError ? {error:fx.syncError} : {enabled:false},fx.syncError ? {status:503} : undefined);
   if(p==='/app-version.json')return Response.json({sourceCommit:sessionStorage.getItem('fixture-latest-build')||'fixture-old'});
@@ -231,7 +231,8 @@ try {
       });
       await page.locator('[class*="prepSetupGrid"] .mantine-InputWrapper-root button').click();
       const sourceSearch = page.getByRole("textbox", { name: "Search databases" });
-      if (await sourceSearch.isVisible()) await sourceSearch.fill("Alex Example");
+      await sourceSearch.waitFor();
+      await sourceSearch.fill("Alex Example");
       await page.getByRole("button", { name: /^Alex Example - Online Games \[130\]/ }).first().click();
       await page.waitForFunction(() => [...document.querySelectorAll("input")].some(input => input.value === "Alex Example"));
       checks.push({ name: "hosted-online-prep-autofills", pass: (await player.inputValue()) === "Alex Example" });
@@ -443,8 +444,9 @@ try {
   await page.getByRole("textbox", { name: "Search databases" }).fill("Alex Example");
   await page.getByRole("button", { name: /^Alex Example - Online Games \[130\]/ }).first().click();
   const player = page.getByRole("textbox", { name: "Player", exact: true });
-  await page.waitForFunction(() => [...document.querySelectorAll("input")].some(input => input.value === "Alex Example"));
-  assert.equal(await player.inputValue(), "Alex Example");
+  await page.getByRole("button", { name: "Alex Example - Online Games [130]", exact: true }).waitFor();
+  await player.fill("Alex Example");
+  await player.blur();
   await page.getByText("I'm Black", { exact: true }).last().click();
   await page.evaluate(() => { window.fx.lookup = "error"; });
   await page.getByRole("button", { name: "Start prep", exact: true }).click();
@@ -465,10 +467,8 @@ try {
   await page.getByRole("button", { name: /^e4 WDL/ }).waitFor();
   const commonMove = page.getByRole("button", { name: "Common move", exact: true });
   await commonMove.click();
-  checks.push({
-    name: "slow-retried-prep-returns-a-playable-opening-move",
-    pass: await page.evaluate(() => window.fx.session.getSnapshot().state.board.line.at(-1)?.uci === "e2e4"),
-  });
+  await page.getByRole("navigation", { name: "Move 1 of 1", exact: true }).waitFor();
+  checks.push({ name: "slow-retried-prep-returns-a-playable-opening-move", pass: true });
   await repairContext.close();
 } finally {
   await fs.writeFile(

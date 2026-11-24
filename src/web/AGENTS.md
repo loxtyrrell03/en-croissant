@@ -13,7 +13,11 @@
   banners. PC status details and Retry remain available from Files.
 - The production build, project types and 39 focused tests passed, including
   slow live results, recovery without a static shard, verified static fallback,
-  and a genuine empty response.
+  and a genuine empty response. Product 6d8504ce is live. A connected narrow
+  browser opened the actual Tim Kett source, started Prep, received 17 opening
+  moves and played Common move. The board had no sync warning, the source and
+  browser services were connected, and the publication kept the server
+  processes running. Physical iPhone interaction remains unverified.
 
 ## 2026-11-24 phone Prep player and vertical stability
 
