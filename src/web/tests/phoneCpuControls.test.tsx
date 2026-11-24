@@ -61,7 +61,6 @@ const render = () =>
       <MantineProvider env="test">
         <EngineUnderBoardPanel
           currentFen={fen}
-          upcomingFens={empty}
           onAnalysisLinesChange={noLines}
           onPlayMove={noMove}
         />

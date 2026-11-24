@@ -21,7 +21,11 @@ export function phoneSearchProgress(
     if (status === "reconnecting") return { value: null, label: "Waiting to reconnect" };
     if (status === "error") return { value: 0, label: "Analysis unavailable" };
     const summary = phoneSearchSummary(go);
-    if (status === "complete") return { value: 100, label: `Search complete · ${summary}` };
+    if (status === "complete") {
+        return lines[0]?.source === "lichess-cloud"
+            ? { value: null, label: "Saved Lichess evaluation" }
+            : { value: 100, label: `Search complete · ${summary}` };
+    }
     if (go.t === "Infinite" || go.t === "PlayersTime")
         return { value: null, label: `Analysing · ${summary}` };
     const live = lines.filter((line) => line.source !== "lichess-cloud");

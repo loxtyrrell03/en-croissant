@@ -88,6 +88,9 @@ export type WebStockfishAnalyzeRequest = {
      */
     preferStoredEvaluation?: boolean;
     minimumStoredDepth?: number;
+    /** Live analysis uses a saved score instead of launching the selected engine. */
+    cloudFirst?: boolean;
+    onCloudFallback?: () => void;
     /** Interactive opt-out also excludes cached hits, prefetch and failure fallback. */
     useStoredEvaluations?: boolean;
     /** Live panels may show stored lines while waiting, but must still recover
@@ -113,6 +116,8 @@ export async function analyzeWithWebStockfish18({
     prefetchFens = [],
     preferStoredEvaluation = false,
     minimumStoredDepth = 0,
+    cloudFirst = false,
+    onCloudFallback,
     useStoredEvaluations = true,
     requireLiveResult = false,
     engineKind = "stockfish",
@@ -231,69 +236,45 @@ export async function analyzeWithWebStockfish18({
             searchLimit,
         });
 
-    if (engineKind === "lc0") {
-        return await analyzeWithRemoteStockfish18WithRetry({
-            fen,
-            multipv,
-            depth,
-            infinite,
-            signal,
-            engineKind,
-            performancePreset,
-            cpuResources,
-            searchLimit,
-            lc0AutoNetwork,
-            lc0Network,
-            onUpdate,
-        });
-    }
+    const remoteRequest = {
+        fen,
+        multipv,
+        depth,
+        infinite,
+        signal,
+        engineKind,
+        performancePreset,
+        cpuResources,
+        searchLimit,
+        lc0AutoNetwork,
+        lc0Network,
+        onUpdate,
+    };
 
-    if (!useStoredEvaluations) {
-        return await analyzeWithRemoteStockfish18WithRetry({
-            fen,
-            multipv,
-            depth,
-            infinite,
-            signal,
-            engineKind,
-            performancePreset,
-            cpuResources,
-            searchLimit,
-            onUpdate,
-        });
-    }
-
-    if (preferStoredEvaluation) {
+    const checkCloudFirst =
+        useStoredEvaluations && (cloudFirst || (preferStoredEvaluation && engineKind === "stockfish"));
+    if (checkCloudFirst) {
         try {
             const storedLines = await queryRemoteStoredCloudLines({ fen, multipv, signal });
             throwIfAborted(signal);
             if (
-                !cpuResources &&
-                !searchLimit &&
                 storedLines.length > 0 &&
-                storedLines[0].depth >= minimumStoredDepth
+                (cloudFirst || (!cpuResources && !searchLimit && storedLines[0].depth >= minimumStoredDepth))
             ) {
                 onUpdate?.(storedLines);
-                void prefetchRemoteStoredCloudLines(prefetchFens, multipv);
+                if (!cloudFirst) void prefetchRemoteStoredCloudLines(prefetchFens, multipv);
                 return storedLines;
             }
         } catch (error) {
             if (isAbortError(error)) throw error;
-            console.warn("Stored cloud eval lookup failed; using Gaming PC Stockfish.", error);
+            if (!cloudFirst) console.warn("Stored cloud eval lookup failed; using Gaming PC Stockfish.", error);
         }
+        throwIfAborted(signal);
+        if (cloudFirst) onCloudFallback?.();
+    }
 
-        return await analyzeWithRemoteStockfish18WithRetry({
-            fen,
-            multipv,
-            depth,
-            infinite,
-            signal,
-            engineKind,
-            performancePreset,
-            cpuResources,
-            searchLimit,
-            onUpdate,
-        });
+    if (checkCloudFirst || !useStoredEvaluations || engineKind === "lc0") {
+        return await analyzeWithRemoteStockfish18WithRetry(remoteRequest);
     }
 
     // Interactive analysis shows the saved evaluation the moment it lands, then lets
@@ -323,15 +304,7 @@ export async function analyzeWithWebStockfish18({
 
     try {
         return await analyzeWithRemoteStockfish18WithRetry({
-            fen,
-            multipv,
-            depth,
-            infinite,
-            signal,
-            engineKind,
-            performancePreset,
-            cpuResources,
-            searchLimit,
+            ...remoteRequest,
             onUpdate: (lines) => {
                 publishedLines = true;
                 deepestLiveDepth = Math.max(deepestLiveDepth, maxLineDepth(lines));

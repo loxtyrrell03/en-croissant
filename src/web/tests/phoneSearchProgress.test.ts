@@ -17,6 +17,9 @@ it("does not turn a stored evaluation or missing engine time into search progres
             c: 14,
         }).value,
     ).toBeNull();
+    expect(phoneSearchProgress(true, "complete", [{ ...line, source: "lichess-cloud" }], { t: "Depth", c: 14 })).toEqual({
+        value: null, label: "Saved Lichess evaluation",
+    });
     expect(phoneSearchProgress(true, "running", [line], { t: "Time", c: 1000 }).value).toBeNull();
     expect(phoneSearchProgress(true, "running", [line], { t: "Nodes", c: 1000 }).value).toBeNull();
 });

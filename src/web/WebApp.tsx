@@ -1571,10 +1571,6 @@ function BoardWorkspace({
     },
     [annotationSeat, setState],
   );
-  const upcomingEngineFens = useMemo(
-    () => activeLine.slice(cursor, cursor + 3).map((move) => move.fenAfter),
-    [activeLine, cursor],
-  );
   const sourceGame = useMemo(() => {
     if (activePrep || !board.sourceDatabaseId || !board.sourceGameId) return null;
     return (
@@ -2097,7 +2093,6 @@ function BoardWorkspace({
               analysisRequestId={onlineAnalysisRequestId}
               compact={panelMode !== "engine" && panelMode !== "moves"}
               currentFen={currentFen}
-              upcomingFens={upcomingEngineFens}
               onAnalysisLinesChange={handleEngineAnalysisLinesChange}
               onPlayMove={playEngineMove}
               suspended={coachReviewRunning || gameReportRunning || planAnalysisRunning}
@@ -4563,11 +4558,12 @@ function DatabaseUnderBoardPanel({
 
 type WebEnginePanelStatus = "idle" | "loading" | PhoneLiveAnalysisStatus;
 
+const EMPTY_ENGINE_LINES: WebEngineLine[] = [];
+
 export function EngineUnderBoardPanel({
   analysisRequestId,
   compact = false,
   currentFen,
-  upcomingFens,
   onAnalysisLinesChange,
   onPlayMove,
   suspended = false,
@@ -4576,7 +4572,6 @@ export function EngineUnderBoardPanel({
   analysisRequestId?: number;
   compact?: boolean;
   currentFen: string;
-  upcomingFens: string[];
   onAnalysisLinesChange: (fen: string, lines: WebEngineLine[], policy?: LiveEnginePolicy) => void;
   onPlayMove: (uci: string) => void;
   suspended?: boolean;
@@ -4584,8 +4579,6 @@ export function EngineUnderBoardPanel({
 }) {
   // Future positions are prefetch hints, not the identity of the running search.
   // Library refreshes and annotations may rebuild that list without moving the board.
-  const upcomingFensRef = useRef(upcomingFens);
-  upcomingFensRef.current = upcomingFens;
   const [settings, setSettings, preferenceError, retrySaving, firstUsePreferences] =
     usePersistentJson(
       WEB_ENGINE_PANEL_SETTINGS_STORAGE_KEY,
@@ -4632,8 +4625,13 @@ export function EngineUnderBoardPanel({
     }),
     [firstUsePreferences, searchPreferenceStore],
   );
-  const [stockfishLines, setStockfishLines] = useState<WebEngineLine[]>([]);
+  const [result, setResult] = useState<{
+    fen: string;
+    policy: LiveEnginePolicy;
+    lines: WebEngineLine[];
+  } | null>(null);
   const [status, setStatus] = useState<WebEnginePanelStatus>("idle");
+  const [checkingCloud, setCheckingCloud] = useState(false);
   const [retryRequest, setRetryRequest] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -4686,6 +4684,7 @@ export function EngineUnderBoardPanel({
     ) {
       if (!suspended) void releaseWebPcEngine(settings.engineKind);
       setStatus("idle");
+      setCheckingCloud(false);
       setError(
         searchSnapshot.phase === "unreadable"
           ? "Could not read search settings. Retry the settings check."
@@ -4693,14 +4692,15 @@ export function EngineUnderBoardPanel({
             ? "Could not read saved PC resources. Retry the settings check."
             : null,
       );
-      setStockfishLines([]);
+      setResult(null);
       return;
     }
 
-    setStockfishLines([]);
+    setResult(null);
     return startPhoneLiveAnalysis<WebEngineLine[]>({
-      analyze: (signal, onUpdate) =>
-        analyzeWithWebStockfish18({
+      analyze: (signal, onUpdate) => {
+        setCheckingCloud(settings.useCloud);
+        return analyzeWithWebStockfish18({
           fen: currentFen,
           multipv: selectedLines,
           depth: settings.depth,
@@ -4712,13 +4712,20 @@ export function EngineUnderBoardPanel({
           lc0AutoNetwork: settings.lc0AutoNetwork,
           lc0Network: settings.lc0Network,
           useStoredEvaluations: settings.useCloud,
-          requireLiveResult: true,
-          prefetchFens: upcomingFensRef.current,
+          cloudFirst: true,
+          onCloudFallback: () => {
+            if (!signal.aborted) setCheckingCloud(false);
+          },
           signal,
           onUpdate,
-        }),
-      onUpdate: setStockfishLines,
+        });
+      },
+      onUpdate: (lines) => {
+        setCheckingCloud(false);
+        setResult({ fen: currentFen, policy: sourcePolicy, lines });
+      },
       onStatus: (nextStatus, message) => {
+        if (nextStatus !== "running") setCheckingCloud(false);
         setStatus(nextStatus);
         setError(message);
       },
@@ -4739,6 +4746,7 @@ export function EngineUnderBoardPanel({
     selectedSearchLimit,
     searchSnapshot.phase,
     settings.useCloud,
+    sourcePolicy,
     performancePreset,
     selectedCpuResources,
     cpuSnapshot.phase,
@@ -4747,8 +4755,10 @@ export function EngineUnderBoardPanel({
   ]);
 
   const displayLines = useMemo(
-    () => visibleWebEngineLines(stockfishLines, sourcePolicy),
-    [stockfishLines, sourcePolicy],
+    () => result?.fen === currentFen && result.policy === sourcePolicy
+      ? visibleWebEngineLines(result.lines, sourcePolicy)
+      : EMPTY_ENGINE_LINES,
+    [currentFen, result, sourcePolicy],
   );
   useEffect(() => {
     onAnalysisLinesChange(
@@ -4764,12 +4774,10 @@ export function EngineUnderBoardPanel({
 
   const topLine = displayLines[0] ?? null;
   const analysisEnabled = settings.enabled && !suspended;
-  const progress = phoneSearchProgress(
-    analysisEnabled && !pcUnavailable,
-    status,
-    displayLines,
-    searchGo,
-  );
+  const cloudPending = analysisEnabled && settings.useCloud && checkingCloud;
+  const progress = cloudPending
+    ? { value: null, label: "Checking cloud evals…" }
+    : phoneSearchProgress(analysisEnabled && !pcUnavailable, status, displayLines, searchGo);
   const headerStatus = getWebEngineHeaderStatus({
     enabled: analysisEnabled,
     status,
@@ -4850,6 +4858,17 @@ export function EngineUnderBoardPanel({
     </Group>
   ) : null;
 
+  const cloudToggle = (
+    <Switch
+      size="xs"
+      label="Cloud evals"
+      aria-label="Cloud evals"
+      className={classes.cloudEvalSwitch}
+      checked={settings.useCloud}
+      onChange={(event) => updateSettings({ useCloud: event.currentTarget.checked })}
+    />
+  );
+
   if (compact) {
     const compactLineCount = Math.min(selectedLines, 3);
     return (
@@ -4878,6 +4897,7 @@ export function EngineUnderBoardPanel({
                 {compactEngineMeta.label}
               </Text>
             ) : null}
+            {cloudToggle}
             <Switch
               aria-label={`Toggle ${engineLabel} analysis`}
               checked={settings.enabled}
@@ -4931,7 +4951,7 @@ export function EngineUnderBoardPanel({
               <Group className={classes.compactEngineMessage} gap={6} wrap="nowrap">
                 <Loader size={11} />
                 <Text size="xs" c="dimmed" truncate>
-                  Waiting for the first PC line
+                  {cloudPending ? "Checking cloud evals…" : "Waiting for the first PC line"}
                 </Text>
               </Group>
             )}
@@ -4967,7 +4987,7 @@ export function EngineUnderBoardPanel({
         <Box className={classes.enginePanelTitleArea}>
           <Group gap={6} wrap="nowrap" miw={0}>
             <Text fw={700} size="sm" truncate>
-              {topLine?.source === "lichess-cloud" ? "Stored evaluation" : engineLabel}
+              {topLine?.source === "lichess-cloud" ? "Lichess Cloud" : engineLabel}
             </Text>
             <Code className={classes.enginePanelCode} title="PC engine performance level">
               {settings.engineKind === "stockfish" && cpuSnapshot.phase === "unreadable"
@@ -4995,6 +5015,13 @@ export function EngineUnderBoardPanel({
           <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
             Depth {topLine?.depth || "—"}
           </Text>
+          <Group gap={4} wrap="nowrap">
+            {cloudToggle}
+            <TournamentHelp label="About cloud evals">
+              Use a saved Lichess evaluation when available. Otherwise the selected PC engine
+              analyses the position.
+            </TournamentHelp>
+          </Group>
           <ActionIcon.Group>
             <Tooltip label="Engine settings">
               <ActionIcon
@@ -5097,20 +5124,6 @@ export function EngineUnderBoardPanel({
                 starting={pcServices === "starting"}
                 requestError={error}
               />
-            )}
-            {settings.engineKind === "stockfish" && (
-              <Group gap={5}>
-                <Switch
-                  label="Stored evals"
-                  aria-label="Use stored evaluations"
-                  checked={settings.useCloud}
-                  onChange={(event) => updateSettings({ useCloud: event.currentTarget.checked })}
-                />
-                <TournamentHelp label="About stored evaluations">
-                  Downloaded evaluations can appear while the PC engine starts. Turn off to use only
-                  the PC engine.
-                </TournamentHelp>
-              </Group>
             )}
             {settings.engineKind === "lc0" ? (
               <>
@@ -8358,12 +8371,12 @@ function getWebEngineHeaderStatus({
   if (!enabled) return "Off";
   if (status === "error") return "Error";
   if (status === "reconnecting") return "Reconnecting";
-  if (topLine) return getWebEngineSourceLabel(topLine);
+  if (topLine) return topLine.source === "lichess-cloud" ? null : getWebEngineSourceLabel(topLine);
   return "PC engine";
 }
 
 function getWebEngineSourceLabel(line: WebEngineLine) {
-  if (line.source === "lichess-cloud") return "PC cloud evals";
+  if (line.source === "lichess-cloud") return "Lichess Cloud";
   if (line.source === "lc0") return line.networkName ? `PC LC0 · ${line.networkName}` : "PC LC0";
   if (line.executionLocation === "gaming-pc") return "PC";
   if (line.executionLocation === "phone") return "Local phone";
@@ -8387,7 +8400,7 @@ function getWebCompactEngineMeta({
   const depth = topLine.depth > 0 ? topLine.depth : null;
   if (topLine.source === "lichess-cloud") {
     const depthLabel = depth ? `Depth ${depth}` : "Depth unavailable";
-    return { label: depthLabel, accessibleLabel: `PC cloud evals, ${depthLabel.toLowerCase()}` };
+    return { label: depthLabel, accessibleLabel: `Lichess Cloud, ${depthLabel.toLowerCase()}` };
   }
 
   const parts = [

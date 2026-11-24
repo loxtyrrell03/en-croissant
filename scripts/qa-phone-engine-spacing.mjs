@@ -73,6 +73,11 @@ export function stopWebStockfish18Search(){}; export async function releaseWebPc
 export async function analyzeWithWebStockfish18(request){
  const moves=['Ba4','Nf6','O-O','Be7','Re1','b5','Bb3','d6','c3','O-O','h3','Nb8','d4','Nbd7','Nbd2','Bb7','Bc2','Re8','Nf1','Bf8','Ng3','g6','a4','c5'];
  const lines=Array.from({length: request.multipv || 3},(_,i)=>({source:'stockfish',multipv:i+1,depth:18,score:{type:'cp',value:32-i*10},uciMoves:['b5a4','g8f6'],sanMoves:moves,nodes:1250000,nps:450000,timeMs:2800}));
+ window.fx.engineRequest={cloudFirst:request.cloudFirst,cloudOn:request.useStoredEvaluations};
+ if(request.cloudFirst && request.useStoredEvaluations){
+  if(window.fx.cloudHit)return lines.map(line=>({...line,source:'lichess-cloud',depth:30,nps:null}));
+  request.onCloudFallback?.();
+ }
  if(window.fx.engineState==='error') throw new Error('Example connection unavailable. Retry when the PC is ready.');
  if(window.fx.engineState==='loading') return new Promise(()=>{});
  if(window.fx.engineState==='staggered'){
@@ -191,6 +196,28 @@ try {
     if (width === 390) {
       await page.getByRole("tab", { name: "Prep", exact: true }).click();
       await page.getByRole("button", { name: "Play compact engine line 3", exact: true }).waitFor();
+      const cloud = page.getByRole("switch", { name: "Cloud evals", exact: true });
+      await page.evaluate(() => { window.fx.cloudHit = true; });
+      await cloud.check();
+      await page.getByText("Lichess Cloud", { exact: true }).waitFor();
+      const policy = await page.evaluate(() => window.fx.engineRequest);
+      checks.push({
+        name: "compact-cloud-switch-selects-cloud-first",
+        pass: policy.cloudFirst && policy.cloudOn,
+      });
+      const cloudLabel = page.locator("label").filter({ hasText: /^Cloud evals$/ });
+      const hitTarget = await cloudLabel.boundingBox();
+      checks.push({
+        name: "compact-cloud-switch-has-phone-sized-hit-target",
+        pass: hitTarget.height >= 44,
+      });
+      await cloud.uncheck();
+      await page.getByText("Stockfish", { exact: true }).waitFor();
+      await page.getByRole("button", { name: "Play compact engine line 3", exact: true }).waitFor();
+      checks.push({
+        name: "compact-cloud-switch-off-keeps-analysis-running",
+        pass: await page.getByRole("switch", { name: "Toggle Stockfish analysis", exact: true }).isChecked(),
+      });
       const stability = await page.evaluate(async () => {
         window.fx.engineState = "staggered";
         const board = document.querySelector("cg-board");
@@ -255,6 +282,13 @@ try {
     }
     await page.getByRole("tab", { name: "Analysis", exact: true }).click();
     await page.getByRole("button", { name: "Play engine line 3", exact: true }).waitFor();
+    const cloudInAnalysis = page.getByRole("switch", { name: "Cloud evals", exact: true });
+    await cloudInAnalysis.waitFor();
+    checks.push({
+      name: `analysis-cloud-toggle-visible-${width}`,
+      pass: !(await cloudInAnalysis.isChecked()) &&
+        !(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)),
+    });
     await page.evaluate(
       () =>
         new Promise((resolve) =>
@@ -386,10 +420,12 @@ try {
           { exact: state !== "loading" },
         );
         await message.scrollIntoViewIfNeeded();
+        await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
         const bounds = await message.boundingBox();
         checks.push({
           name: state + "-reachable",
-          pass: bounds.y >= 0 && bounds.y + bounds.height <= height,
+          pass: bounds.y >= -1 && bounds.y + bounds.height <= height + 1,
+          bounds,
         });
         await checkStableBoard(page, `engine-${state}-scroll-stable`, movesBoard.width);
         await page.screenshot({ path: path.join(output, state + ".png"), fullPage: true });

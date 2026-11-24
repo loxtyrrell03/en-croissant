@@ -53,6 +53,7 @@ it("local-only bypasses cached hits, prefetch and batch preference", async () =>
         multipv: 1,
         depth: 8,
         preferStoredEvaluation: true,
+        cloudFirst: true,
         useStoredEvaluations: false,
         prefetchFens: [fen.replace(" w ", " b ")],
     });
@@ -77,7 +78,7 @@ it("local-only does not borrow a stored score when the PC engine fails", async (
     fail = true;
     await expect(
         analyzeWithWebStockfish18({ fen, multipv: 1, depth: 8, useStoredEvaluations: false }),
-    ).rejects.toThrow("unavailable");
+    ).rejects.toThrow("HTTP 503");
     expect(
         calls.mock.calls.filter(([input]) => String(input).includes("/v1/cloud-eval")),
     ).toHaveLength(1);
@@ -120,4 +121,50 @@ it("retained scores and arrows reject stored data immediately while real prior s
     expect(
         retainWebEngineAnalysis(actual, fen, [], { engineKind: "lc0", useStoredEvaluations: true }),
     ).toBeNull();
+});
+
+
+it.each(["stockfish", "lc0"] as const)("a Cloud evals hit skips the selected %s engine", async (engineKind) => {
+    const calls = vi.fn(async (_input: RequestInfo | URL) => stored());
+    vi.stubGlobal("fetch", calls);
+    const { analyzeWithWebStockfish18 } = await import("../stockfishEngine");
+    const onCloudFallback = vi.fn();
+    const result = await analyzeWithWebStockfish18({
+        fen,
+        multipv: 1,
+        depth: 40,
+        infinite: true,
+        engineKind,
+        cloudFirst: true,
+        onCloudFallback,
+    });
+    expect(result[0]).toMatchObject({ source: "lichess-cloud", depth: 30 });
+    expect(calls.mock.calls).toHaveLength(1);
+    expect(String(calls.mock.calls[0][0])).toContain("/v1/cloud-eval?");
+    expect(onCloudFallback).not.toHaveBeenCalled();
+});
+
+it("starts the PC engine only after a completed cloud miss", async () => {
+    let finishLookup!: (value: Response) => void;
+    const calls = vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/v1/cloud-eval")) return new Promise<Response>(resolve => { finishLookup = resolve; });
+        if (url.includes("/api/engine/start")) return new Response("{}", { status: 200 });
+        if (url.includes("/v1/analyze")) return stream();
+        throw new Error(`Unexpected fixture endpoint: ${url}`);
+    });
+    vi.stubGlobal("fetch", calls);
+    const { analyzeWithWebStockfish18 } = await import("../stockfishEngine");
+    const onCloudFallback = vi.fn();
+    const result = analyzeWithWebStockfish18({ fen, multipv: 1, depth: 8, cloudFirst: true, onCloudFallback });
+    await vi.waitFor(() => expect(finishLookup).toBeDefined());
+    expect(calls).toHaveBeenCalledTimes(1);
+    expect(onCloudFallback).not.toHaveBeenCalled();
+
+    finishLookup(Response.json({}, { status: 404 }));
+    await expect(result).resolves.toEqual([expect.objectContaining({ source: "stockfish" })]);
+    expect(onCloudFallback).toHaveBeenCalledTimes(1);
+    expect(calls.mock.calls.map(([url]) => new URL(String(url)).pathname)).toEqual([
+        "/v1/cloud-eval", "/api/engine/start", "/v1/analyze",
+    ]);
 });

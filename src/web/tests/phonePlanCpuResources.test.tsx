@@ -40,7 +40,6 @@ const lines: WebEngineLine[] = [
     sanMoves: ["e4", "e5", "Nf3"],
   },
 ];
-const empty: string[] = [];
 const noLines = () => {},
   noPlay = () => {};
 let host: HTMLDivElement, root: ReturnType<typeof createRoot>, fetchMock: ReturnType<typeof vi.fn>;
@@ -56,7 +55,6 @@ function SharedPanels() {
       <div data-live>
         <EngineUnderBoardPanel
           currentFen={fen}
-          upcomingFens={empty}
           onAnalysisLinesChange={noLines}
           onPlayMove={noPlay}
           suspended={busy}

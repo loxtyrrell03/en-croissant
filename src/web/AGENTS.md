@@ -1,3 +1,20 @@
+## 2026-11-24 phone Cloud evals engine control
+
+- Cloud evals is visible on Analysis and its compact panel. Both placements
+  share the saved useCloud preference and the analysis On/Off state.
+- Live analysis checks the existing PC-hosted Lichess evaluation store first
+  while Cloud evals is enabled. A valid exact-position hit completes with
+  saved lines and avoids starting Stockfish or LCZero. A miss or lookup failure
+  falls back to the selected engine with its configured limits. Turning
+  Cloud evals off routes Live directly to that engine and clears cloud lines
+  and arrows. Results belong to their captured position and source policy.
+- A saved hit displays its source and depth without a live progress bar.
+  Independent game sweeps, reports, Plans and Prep strength retain their
+  existing evaluation contracts. The phone reuses the PC's downloaded store.
+- Chromium and WebKit pass 74 rendered checks each, including visible
+  controls at 320px to 760px, the compact touch target, and the earlier board
+  and Prep regressions. Types and the phone production build pass.
+
 ## 2026-11-24 hosted Prep positions and board status notices
 
 - Shared hosted indexes can advertise no static shards. The live position

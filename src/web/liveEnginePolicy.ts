@@ -5,10 +5,9 @@ export type LiveEnginePolicy = { engineKind: PcEngineKind; useStoredEvaluations:
 export type LiveEngineSnapshot = { fen: string; lines: WebEngineLine[] };
 export function visibleWebEngineLines(lines: WebEngineLine[], policy: LiveEnginePolicy) {
     const selected = lines.filter((line) =>
-        policy.engineKind === "lc0"
-            ? line.source === "lc0"
-            : line.source === "stockfish" ||
-              (policy.useStoredEvaluations && line.source === "lichess-cloud"),
+        line.source === "lichess-cloud"
+            ? policy.useStoredEvaluations
+            : line.source === policy.engineKind,
     );
     return selected.length === lines.length ? lines : selected;
 }

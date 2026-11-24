@@ -1066,7 +1066,23 @@
 }
 
 .compactEngineHeaderRight {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.cloudEvalSwitch {
   flex: 0 0 auto;
+}
+
+.cloudEvalSwitch :global(.mantine-Switch-body) {
+  align-items: center;
+}
+
+.cloudEvalSwitch :global(.mantine-Switch-label) {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  white-space: nowrap;
 }
 
 .compactEngineIcon {
@@ -1080,7 +1096,7 @@
 }
 
 .compactEngineMeta {
-  min-width: 3.55rem;
+  min-width: 0;
   max-width: min(13rem, 48vw);
   overflow: hidden;
   white-space: nowrap;

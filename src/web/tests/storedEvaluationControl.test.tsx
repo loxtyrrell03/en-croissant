@@ -71,7 +71,6 @@ it("honors an existing saved phone useCloud false before starting analysis", asy
       <MantineProvider>
         <EngineUnderBoardPanel
           currentFen={fen}
-          upcomingFens={[]}
           onAnalysisLinesChange={() => {}}
           onPlayMove={() => {}}
         />
@@ -79,10 +78,12 @@ it("honors an existing saved phone useCloud false before starting analysis", asy
     ),
   );
   await vi.waitFor(() => expect(fixture.analyze).toHaveBeenCalled());
-  expect(fixture.analyze.mock.calls[0][0].useStoredEvaluations).toBe(false);
+  expect(fixture.analyze.mock.calls[0][0]).toMatchObject({
+    cloudFirst: true,
+    useStoredEvaluations: false,
+  });
 });
 
-const empty: string[] = [];
 const nativeLine: WebEngineLine = {
   source: "stockfish",
   depth: 14,
@@ -107,7 +108,6 @@ function Harness() {
     <>
       <EngineUnderBoardPanel
         currentFen={fen}
-        upcomingFens={empty}
         onAnalysisLinesChange={update}
         onPlayMove={() => {}}
       />
@@ -119,12 +119,7 @@ async function render(visible = true) {
   await act(async () => root.render(<MantineProvider>{visible && <Harness />}</MantineProvider>));
 }
 const storedSwitch = () =>
-  host.querySelector<HTMLInputElement>('input[aria-label="Use stored evaluations"]')!;
-async function settings() {
-  await act(async () =>
-    host.querySelector<HTMLButtonElement>('button[aria-label="Engine settings"]')!.click(),
-  );
-}
+  host.querySelector<HTMLInputElement>('input[aria-label="Cloud evals"]')!;
 
 it("switches off cached scores/arrows and ignores both late updates and completion", async () => {
   localStorage.setItem(
@@ -140,7 +135,6 @@ it("switches off cached scores/arrows and ignores both late updates and completi
   });
   await render();
   expect(host.querySelector('[data-testid="last-source"]')?.textContent).toBe("lichess-cloud");
-  await settings();
   await act(async () => storedSwitch().click());
   expect(fixture.analyze.mock.calls[0][0].signal.aborted).toBe(true);
   expect(fixture.analyze.mock.calls[1][0].useStoredEvaluations).toBe(false);
@@ -162,7 +156,6 @@ it("retains a failed preference through remount and retries saving without enabl
     JSON.stringify({ enabled: false, useCloud: true }),
   );
   await render();
-  await settings();
   const write = Storage.prototype.setItem;
   const failure = vi.spyOn(Storage.prototype, "setItem").mockImplementation(function (
     this: Storage,
@@ -177,7 +170,6 @@ it("retains a failed preference through remount and retries saving without enabl
   expect(host.querySelector('[role="alert"]')).not.toBeNull();
   await render(false);
   await render();
-  await settings();
   expect(storedSwitch().checked).toBe(false);
   expect(host.querySelector('[role="alert"]')).not.toBeNull();
   expect(fixture.analyze).not.toHaveBeenCalled();

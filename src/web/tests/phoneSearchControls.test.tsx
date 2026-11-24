@@ -61,9 +61,7 @@ const click = (name: string) =>
     expect(b.disabled).toBe(false);
     b.click();
   });
-const render = (
-  options: { fen?: string; compact?: boolean; upcomingFens?: string[]; suspended?: boolean } = {},
-) =>
+const render = (options: { fen?: string; compact?: boolean; suspended?: boolean } = {}) =>
   act(async () =>
     root.render(
       <MantineProvider env="test">
@@ -71,7 +69,6 @@ const render = (
           currentFen={options.fen ?? fen}
           compact={options.compact}
           suspended={options.suspended}
-          upcomingFens={options.upcomingFens ?? empty}
           onAnalysisLinesChange={noLines}
           onPlayMove={noPlay}
         />
@@ -154,21 +151,21 @@ afterEach(async () => {
   localStorage.clear();
   vi.unstubAllGlobals();
 });
-it("keeps the active search and its result when only future prefetch positions or panel layout change", async () => {
+it("keeps the active search and its result when only the panel layout changes", async () => {
   fixture.analyze.mockImplementation(() => new Promise(() => {}));
-  await render({ upcomingFens: [fen] });
+  await render();
   const request = latest();
   await act(async () => request.onUpdate([line]));
-  await render({ upcomingFens: [fen], compact: true });
+  await render({ compact: true });
   expect(fixture.analyze).toHaveBeenCalledTimes(1);
   expect(request.signal.aborted).toBe(false);
-  await render({ upcomingFens: [], compact: false });
+  await render({ compact: false });
   expect(fixture.analyze).toHaveBeenCalledTimes(1);
   expect(request.signal.aborted).toBe(false);
-  await render({ fen: "7k/8/8/8/8/8/8/K7 w - - 0 1", upcomingFens: [fen] });
+  await render({ fen: "7k/8/8/8/8/8/8/K7 w - - 0 1" });
   expect(fixture.analyze).toHaveBeenCalledTimes(2);
   expect(request.signal.aborted).toBe(true);
-  expect(latest().prefetchFens).toEqual([fen]);
+  expect(latest()).toMatchObject({ fen: "7k/8/8/8/8/8/8/K7 w - - 0 1", cloudFirst: true });
 });
 it("keeps exact inherited depth70 and performs no default write or closed-settings check", async () => {
   const before = localStorage.getItem(PHONE_ENGINE_SETTINGS_KEY);

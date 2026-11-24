@@ -32,7 +32,7 @@ window.fx={calls:[],released:0,played:[],lines,fail:(kind='connection')=>fx.call
 const realFetch=window.fetch;window.fetch=(url,options)=>new URL(String(url),location.href).origin===location.origin&&!new URL(String(url),location.href).pathname.startsWith('/api/')?realFetch(url,options):Promise.reject(new Error('Unexpected external fixture fetch'));
 document.body.style.cssText='margin:0;background:#141416';
 const compact=new URL(location.href).searchParams.get('compact')==='1';
-createRoot(document.getElementById('root')).render(<MantineProvider forceColorScheme='dark'><main style={{padding:8,maxWidth:760,boxSizing:'border-box',margin:'auto'}}><p style={{fontSize:12,color:'#bbb'}}>Invented engine connection test</p><EngineUnderBoardPanel compact={compact} currentFen='rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1' upcomingFens={[]} onAnalysisLinesChange={()=>{}} onPlayMove={move=>fx.played.push(move)}/></main></MantineProvider>);
+createRoot(document.getElementById('root')).render(<MantineProvider forceColorScheme='dark'><main style={{padding:8,maxWidth:760,boxSizing:'border-box',margin:'auto'}}><p style={{fontSize:12,color:'#bbb'}}>Invented engine connection test</p><EngineUnderBoardPanel compact={compact} currentFen='rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1' onAnalysisLinesChange={()=>{}} onPlayMove={move=>fx.played.push(move)}/></main></MantineProvider>);
 `,
 );
 await fs.writeFile(
