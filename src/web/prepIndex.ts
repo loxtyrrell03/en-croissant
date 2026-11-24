@@ -825,18 +825,16 @@ export function getWebPrepDatabaseOpponent(
     if (database.playerNames?.length === 1 && database.playerNames[0].trim()) {
         return database.playerNames[0].trim();
     }
-    const onlineLabel = database.name.replace(/\.(?:db3|pgn)$/i, "").trim();
-    if (/(?:_| )(?:lichess|chesscom|chess\.com)(?: recent| games)*$/i.test(onlineLabel)) {
-        return getWebDatabaseLabelPlayerCandidate(onlineLabel);
+    const label = database.name.replace(/\.(?:db3|pgn)$/i, "").trim();
+    const namedCollection = label.match(
+        /^(.*?)\s+[-\u2013\u2014]\s+(?:online\s+games|OTB\s+prep|OTB\s+games(?:\s+since\s+\d{4})?|as\s+(?:White|Black)|opponent\s+prep)(?:\s*(?:\([\d,]+\s+games?\)|\[\d+\]))?$/i,
+    );
+    if (namedCollection?.[1].trim()) return namedCollection[1].trim();
+
+    if (/(?:_| )(?:lichess|chesscom|chess\.com)(?: recent| games)*$/i.test(label)) {
+        return getWebDatabaseLabelPlayerCandidate(label);
     }
-    const match = database.name
-        .replace(/\.(?:db3|pgn)$/i, "")
-        .trim()
-        .match(
-            /^(.*?)\s+[-–—]\s+(?:OTB\s+prep|OTB\s+games(?:\s+since\s+\d{4})?|as\s+(?:White|Black)|opponent\s+prep)(?:\s*\([\d,]+\s+games?\))?$/i,
-        );
-    const candidate = match?.[1].trim();
-    return candidate || null;
+    return null;
 }
 
 type MoveBucket = {

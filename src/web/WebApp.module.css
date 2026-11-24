@@ -1090,6 +1090,11 @@
   font-variant-numeric: tabular-nums;
 }
 
+.compactEngineBody {
+  --compact-engine-row-height: 1.75rem;
+  min-block-size: calc(1px + var(--compact-engine-row-height));
+}
+
 .compactEngineLines {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1753,12 +1758,17 @@
     padding: 0.55rem;
   }
 
+  .compactEngineBody {
+    --compact-engine-row-height: 2.3rem;
+    min-block-size: calc(1px + var(--compact-engine-rows) * var(--compact-engine-row-height));
+  }
+
   .compactEngineLines {
     grid-template-columns: minmax(0, 1fr);
   }
 
   .compactEngineLine {
-    min-height: 2.3rem;
+    min-height: var(--compact-engine-row-height);
     padding-inline: 0.58rem;
     border-top: 1px solid rgba(255, 255, 255, 0.055);
     border-left: 0;

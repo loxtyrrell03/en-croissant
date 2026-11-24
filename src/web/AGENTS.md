@@ -1,3 +1,20 @@
+## 2026-11-24 phone Prep player and vertical stability
+
+- Phone Player Prep fills the most common player from loaded games or the named
+  opponent of a hosted collection, including Online Games titles with a bracketed
+  count. Hosted identities are offered in the Player suggestions without a PGN
+  download. Switching local sources resolves that source's default. Saved and
+  manually edited player values take precedence.
+- Compact PC analysis reserves the height of its configured visible rows while
+  waiting for results or updating them. A move previously collapsed three lines
+  to a waiting message and moved the page and board by 83px. Prep's side control
+  also keeps its layout when the player text changes.
+- The rendered spacing regression samples board and Prep positions during a real
+  move with delayed engine responses. It also exercises the hosted picker,
+  autocomplete, clearing and reopening. Chromium and WebKit pass 59 checks each
+  across 320px to 760px. The production build, project types, and 25 focused tests
+  pass. Physical iPhone interaction requires separate confirmation.
+
 ## 2026-11-01 phone Live engine connection recovery
 
 - Live owns a position/settings snapshot, aborts and parks work while hidden or

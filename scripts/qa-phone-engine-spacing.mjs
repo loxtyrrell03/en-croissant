@@ -8,7 +8,10 @@ import react from "@vitejs/plugin-react";
 // Built application, invented tiny game/library, fresh browser context only.
 // All API requests are fixtures; no owner service, browser profile or data access.
 const dependencyRoot = process.env.PHONE_QA_DEPENDENCIES || process.env.FIDE_QA_DEPENDENCIES;
-const { chromium } = createRequire(dependencyRoot || import.meta.url)("playwright");
+const playwright = createRequire(dependencyRoot || import.meta.url)(
+  process.env.PHONE_QA_PLAYWRIGHT || "playwright",
+);
+const browserName = process.env.PHONE_QA_BROWSER || "chromium";
 const root = process.cwd();
 const output = path.resolve(process.env.PHONE_QA_OUTPUT || "tmp/phone-engine-spacing/renderer");
 await fs.mkdir(output, { recursive: true });
@@ -25,12 +28,15 @@ const imported=parsePgnDatabase('Example study.pgn',pgn,1234);
 const fx=window.fx={session:webStateSession,calls:[],pgn};
 async function setup(){
  localStorage.setItem(PHONE_ENGINE_SETTINGS_KEY,JSON.stringify({...DEFAULT_PHONE_ENGINE_SETTINGS,enabled:true}));
- const state=createEmptyWebState();state.databases=[imported.database];state.gamesByDatabase[imported.database.id]=imported.games;
+ const state=createEmptyWebState();
+ const hosted={...imported.database,id:'hosted-prep',name:'Alex Example - Online Games [130].pgn',hostedLazy:true,hostedUpdatedAt:1234,hostedPath:'Databases/Desktop/Alex Example - Online Games [130]',gameCount:7771,playerNames:[]};
+ state.databases=[imported.database,hosted];state.gamesByDatabase[imported.database.id]=imported.games;
  state.sourceArchives={databaseIds:[],hostedPaths:['Archive examples/old.pgn']};
  const build=document.createElement('meta');build.name='en-croissant-build';build.content=sessionStorage.getItem('fixture-latest-build')||'fixture-old';document.head.append(build);
  await new Promise((resolve,reject)=>{const request=indexedDB.open('en-croissant-web-companion',1);request.onupgradeneeded=()=>request.result.createObjectStore('state');request.onsuccess=()=>{const db=request.result,tx=db.transaction('state','readwrite'),store=tx.objectStore('state'),read=store.get('main');read.onsuccess=()=>{if(!read.result)store.put(state,'main')};tx.oncomplete=()=>{db.close();resolve()};tx.onabort=()=>reject(tx.error)}});
  const realFetch=window.fetch;
  const files=[{type:'file',name:'Example study',filename:'Example study.pgn',extension:'pgn',path:'Example study.pgn',url:'/web-library/files/example.pgn',lastModified:1234,sizeBytes:pgn.length},{type:'file',name:'Long example opening repertoire and endgame notes',filename:'Long example opening repertoire and endgame notes.pgn',extension:'pgn',path:'Long example opening repertoire and endgame notes.pgn',url:'/web-library/files/long.pgn',lastModified:1234,sizeBytes:pgn.length}];
+ files.push({type:'file',name:'Alex Example - Online Games',filename:'games.pgn',extension:'pgn',path:hosted.hostedPath+'/games.pgn',url:'/web-library/files/hosted/games.pgn',lastModified:1234,sizeBytes:0});
  for(const name of ['old','current'])files.push({type:'file',name:name==='old'?'Long archived example repertoire and annotated practice games':name,filename:name+'.pgn',extension:'pgn',path:'Archive examples/'+name+'.pgn',url:'/web-library/files/'+name+'.pgn',lastModified:1234,sizeBytes:pgn.length});
  window.fetch=async(url,options={})=>{const u=new URL(typeof url==='string'?url:url.url,location.href),p=u.pathname;fx.calls.push({path:p,method:options.method||'GET'});
   if(p==='/api/pc-services')return Response.json({ok:true,service:'en-croissant-service-controller',enabled:true,busy:false,home:true,engine:true,error:null});
@@ -58,6 +64,12 @@ export async function analyzeWithWebStockfish18(request){
  const lines=Array.from({length: request.multipv || 3},(_,i)=>({source:'stockfish',multipv:i+1,depth:18,score:{type:'cp',value:32-i*10},uciMoves:['b5a4','g8f6'],sanMoves:moves,nodes:1250000,nps:450000,timeMs:2800}));
  if(window.fx.engineState==='error') throw new Error('Example connection unavailable. Retry when the PC is ready.');
  if(window.fx.engineState==='loading') return new Promise(()=>{});
+ if(window.fx.engineState==='staggered'){
+  await new Promise(resolve=>setTimeout(resolve,120));
+  if(!request.signal?.aborted)request.onProgress?.(lines.slice(0,1));
+  await new Promise(resolve=>setTimeout(resolve,160));
+  if(request.signal?.aborted)return [];
+ }
  request.onProgress?.(lines);return lines;
 }`,
 );
@@ -96,7 +108,7 @@ const server = await preview({
   preview: { host: "127.0.0.1", port: 0 },
 });
 const origin = server.resolvedUrls.local[0].replace(/\/$/, "");
-const browser = await chromium.launch({
+const browser = await playwright[browserName].launch({
   headless: true,
   channel: process.env.PHONE_QA_BROWSER_CHANNEL || undefined,
 });
@@ -165,6 +177,65 @@ try {
     );
     const movesBoard = await page.locator("cg-board").boundingBox();
     await checkStableBoard(page, `moves-stable-${width}-${height}`, movesBoard.width);
+    if (width === 390) {
+      await page.getByRole("tab", { name: "Prep", exact: true }).click();
+      await page.getByRole("button", { name: "Play compact engine line 3", exact: true }).waitFor();
+      const stability = await page.evaluate(async () => {
+        window.fx.engineState = "staggered";
+        const board = document.querySelector("cg-board");
+        const preview = document.querySelector('[class*="compactEnginePanel"]');
+        const player = document.querySelector('[aria-label="Your prep side"]');
+        scrollTo(0, Math.max(0, player.getBoundingClientRect().top + scrollY - 130));
+        await new Promise(requestAnimationFrame);
+        const read = () => [scrollY, board.getBoundingClientRect().top,
+          preview.getBoundingClientRect().height, player.getBoundingClientRect().top,
+          preview.querySelectorAll('button[aria-label^="Play compact engine line"]').length];
+        const initial = read();
+        document.querySelector('button[aria-label="First move"]').click();
+        const frames = [];
+        for (let frame = 0; frame < 42; frame += 1) {
+          await new Promise(requestAnimationFrame);
+          frames.push(read());
+        }
+        window.fx.engineState = undefined;
+        document.querySelector('button[aria-label="Last move"]').click();
+        return { initial, observed: [...new Set(frames.map(frame => JSON.stringify(frame)))].map(JSON.parse) };
+      });
+      checks.push({
+        name: "compact-engine-progress-keeps-board-and-prep-in-place",
+        pass: [0, 3].every((count) => stability.observed.some((frame) => frame[4] === count)) &&
+          stability.observed.every((frame) =>
+            frame.slice(0, 4).every((value, i) => Math.abs(value - stability.initial[i]) < 1)
+          ),
+        ...stability,
+      });
+      await page.getByRole("button", { name: "Play compact engine line 3", exact: true }).waitFor();
+      const player = page.getByRole("textbox", { name: "Player", exact: true });
+      await player.fill("Manual Example");
+      await page.getByRole("tab", { name: "Moves", exact: true }).click();
+      await page.getByRole("tab", { name: "Prep", exact: true }).click();
+      checks.push({
+        name: "saved-prep-player-survives-reopening",
+        pass: (await player.inputValue()) === "Manual Example",
+      });
+      await page.locator('[class*="prepSetupGrid"] .mantine-InputWrapper-root button').click();
+      const sourceSearch = page.getByRole("textbox", { name: "Search databases" });
+      if (await sourceSearch.isVisible()) await sourceSearch.fill("Alex Example");
+      await page.getByRole("button", { name: /^Alex Example - Online Games \[130\]/ }).first().click();
+      checks.push({ name: "hosted-online-prep-autofills", pass: (await player.inputValue()) === "Alex Example" });
+      await player.click();
+      await player.fill("Alex");
+      const suggestion = page.getByRole("option", { name: "Alex Example", exact: true });
+      const suggests = await suggestion.waitFor({ state: "visible", timeout: 3000 }).then(
+        () => true,
+        () => false,
+      );
+      if (suggests) await suggestion.click();
+      checks.push({ name: "hosted-online-prep-suggests-the-player", pass: suggests && (await player.inputValue()) === "Alex Example" });
+      await player.fill("");
+      await player.blur();
+      checks.push({ name: "cleared-prep-player-stays-clear", pass: (await player.inputValue()) === "" });
+    }
     await page.getByRole("tab", { name: "Analysis", exact: true }).click();
     await page.getByRole("button", { name: "Play engine line 3", exact: true }).waitFor();
     await page.evaluate(
@@ -273,7 +344,7 @@ try {
               ? "Inactive engine"
               : state === "loading"
                 ? /Waiting for Stockfish lines/
-                : "Engine unavailable",
+                : "Example connection unavailable. Retry when the PC is ready.",
             { exact: state !== "loading" },
           )
           .waitFor();
@@ -294,7 +365,7 @@ try {
             ? "Inactive engine"
             : state === "loading"
               ? /Waiting for Stockfish lines/
-              : "Engine unavailable",
+              : "Example connection unavailable. Retry when the PC is ready.",
           { exact: state !== "loading" },
         );
         await message.scrollIntoViewIfNeeded();

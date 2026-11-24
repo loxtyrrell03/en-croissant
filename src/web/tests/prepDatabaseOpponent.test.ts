@@ -9,6 +9,9 @@ describe("opponent selection before hosted games download", () => {
         ["Alex Example - OTB games since 2021", "Alex Example"],
         ["Alex Example - opponent prep", "Alex Example"],
         ["alexexample - OTB prep", "alexexample"],
+        ["Alex Example - Online Games [130].pgn", "Alex Example"],
+        ["Example, Alex \u2013 Online Games", "Example, Alex"],
+        ["Alex Example - Online Games (7,771 games).db3", "Alex Example"],
         ["alexexample_lichess.pgn", "alexexample"],
         ["alexexample chess.com recent games.db3", "alexexample"],
     ])(
@@ -18,7 +21,7 @@ describe("opponent selection before hosted games download", () => {
         },
     );
 
-    test.each(["Mega Database", "World Championships", "Study games", ""])(
+    test.each(["Mega Database", "World Championships", "Study games", "Online Games", ""])(
         "does not invent a player from an ordinary collection: %s",
         (name) => {
             expect(getWebPrepDatabaseOpponent({ name, playerNames: [] }, [])).toBeNull();

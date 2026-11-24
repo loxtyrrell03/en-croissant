@@ -424,6 +424,7 @@ const WEB_DATABASE_PANEL_STRENGTH_STORAGE_KEY = "en-croissant-web-database-panel
 const WEB_DATABASE_PANEL_STAGE_STORAGE_KEY = "en-croissant-web-database-panel-stage";
 const WEB_LICHESS_EXPLORER_OPTIONS_STORAGE_KEY = "en-croissant-web-lichess-explorer-options";
 const WEB_MASTERS_EXPLORER_OPTIONS_STORAGE_KEY = "en-croissant-web-masters-explorer-options";
+const EMPTY_PREP_GAMES: WebGame[] = [];
 const WEB_PREP_SETUP_STORAGE_KEY = "en-croissant-web-prep-setup";
 const WEB_ENGINE_PANEL_SETTINGS_STORAGE_KEY = PHONE_ENGINE_SETTINGS_KEY;
 const WEB_DATABASE_STATS_SORT_OPTIONS: { label: string; value: WebDatabaseStatsSort }[] = [
@@ -4845,6 +4846,7 @@ export function EngineUnderBoardPanel({
   ) : null;
 
   if (compact) {
+    const compactLineCount = Math.min(selectedLines, 3);
     return (
       <Box className={classes.compactEnginePanel} data-enabled={analysisEnabled}>
         <Group
@@ -4883,47 +4885,52 @@ export function EngineUnderBoardPanel({
         {enginePreferenceNotice}
         {cpuPreferenceNotice}
         {searchPreferenceNotice}
-        {connectionNotice}
         {settings.enabled ? (
-          suspended ? (
-            <Text className={classes.compactEngineMessage} size="xs" c="dimmed" lineClamp={1}>
-              Paused while the game is reviewed
-            </Text>
-          ) : displayLines.length > 0 ? (
-            <Box className={classes.compactEngineLines}>
-              {displayLines.slice(0, 3).map((line) => {
-                const firstMove = line.uciMoves[0] ?? null;
-                const pv =
-                  line.sanMoves.length > 0
-                    ? line.sanMoves.slice(0, 5).join(" ")
-                    : line.uciMoves.slice(0, 5).join(" ");
-                return (
-                  <button
-                    key={`${line.source}-${line.multipv}`}
-                    type="button"
-                    className={classes.compactEngineLine}
-                    disabled={!firstMove}
-                    onClick={() => firstMove && onPlayMove(firstMove)}
-                    aria-label={`Play compact engine line ${line.multipv}`}
-                  >
-                    <span className={classes.compactEngineLineEval}>
-                      {formatWebEngineScore(line.score)}
-                    </span>
-                    <span className={classes.compactEngineLineMoves} title={pv || undefined}>
-                      {pv || "-"}
-                    </span>
-                  </button>
-                );
-              })}
-            </Box>
-          ) : error ? null : (
-            <Group className={classes.compactEngineMessage} gap={6} wrap="nowrap">
-              <Loader size={11} />
-              <Text size="xs" c="dimmed" truncate>
-                Waiting for the first PC line
+          <Box
+            className={classes.compactEngineBody}
+            style={{ "--compact-engine-rows": compactLineCount }}
+          >
+            {connectionNotice}
+            {suspended ? (
+              <Text className={classes.compactEngineMessage} size="xs" c="dimmed" lineClamp={1}>
+                Paused while the game is reviewed
               </Text>
-            </Group>
-          )
+            ) : displayLines.length > 0 ? (
+              <Box className={classes.compactEngineLines}>
+                {displayLines.slice(0, compactLineCount).map((line) => {
+                  const firstMove = line.uciMoves[0] ?? null;
+                  const pv =
+                    line.sanMoves.length > 0
+                      ? line.sanMoves.slice(0, 5).join(" ")
+                      : line.uciMoves.slice(0, 5).join(" ");
+                  return (
+                    <button
+                      key={`${line.source}-${line.multipv}`}
+                      type="button"
+                      className={classes.compactEngineLine}
+                      disabled={!firstMove}
+                      onClick={() => firstMove && onPlayMove(firstMove)}
+                      aria-label={`Play compact engine line ${line.multipv}`}
+                    >
+                      <span className={classes.compactEngineLineEval}>
+                        {formatWebEngineScore(line.score)}
+                      </span>
+                      <span className={classes.compactEngineLineMoves} title={pv || undefined}>
+                        {pv || "-"}
+                      </span>
+                    </button>
+                  );
+                })}
+              </Box>
+            ) : error ? null : (
+              <Group className={classes.compactEngineMessage} gap={6} wrap="nowrap">
+                <Loader size={11} />
+                <Text size="xs" c="dimmed" truncate>
+                  Waiting for the first PC line
+                </Text>
+              </Group>
+            )}
+          </Box>
         ) : null}
       </Box>
     );
@@ -5529,11 +5536,11 @@ function PrepUnderBoardPanel({
               : selectedPrepSourceId;
   const activePrepSourceGames =
     activePrepSourceDatabase && !selectedPrepSourceIsLazy
-      ? (state.gamesByDatabase[activePrepSourceDatabase.id] ?? [])
-      : [];
+      ? (state.gamesByDatabase[activePrepSourceDatabase.id] ?? EMPTY_PREP_GAMES)
+      : EMPTY_PREP_GAMES;
   const selectedPrepSourceGames =
     selectedPrepSource === "temporary"
-      ? (selectedTemporarySource?.games ?? [])
+      ? (selectedTemporarySource?.games ?? EMPTY_PREP_GAMES)
       : activePrepSourceGames;
   const activePrepHostedFolder = selectedPrepHostedFolder;
   const selectedMinGames = activePrep?.minGames ?? minGames;
@@ -5560,6 +5567,21 @@ function PrepUnderBoardPanel({
     () => getDatabasePlayerCounts(selectedPrepFilteredSourceGames),
     [selectedPrepFilteredSourceGames],
   );
+  const defaultLocalPrepOpponent = useMemo(
+    () => getWebPrepDatabaseOpponent(
+      activePrepSourceDatabase,
+      getDatabasePlayerCounts(activePrepSourceGames),
+    ),
+    [activePrepSourceDatabase, activePrepSourceGames],
+  );
+  const prepPlayerOptions = useMemo(() => {
+    const options = selectedPrepDatabasePlayers.length
+      ? selectedPrepDatabasePlayers.map((player) => player.name)
+      : (activePrepSourceDatabase?.playerNames ?? []);
+    return defaultLocalPrepOpponent && !options.includes(defaultLocalPrepOpponent)
+      ? [defaultLocalPrepOpponent, ...options]
+      : options;
+  }, [activePrepSourceDatabase, defaultLocalPrepOpponent, selectedPrepDatabasePlayers]);
   const selectedBuilderSettings = useMemo(
     () => normalizeWebPrepStrengthSettings(activePrep?.builder ?? draftBuilderSettings),
     [activePrep?.builder, draftBuilderSettings],
@@ -6421,6 +6443,7 @@ function PrepUnderBoardPanel({
   };
 
   const updatePrepOpponent = (value: string) => {
+    if (!ownsPreferences()) return;
     setStoredPrepSetup((current) => normalizeWebPrepStoredSetup({ ...current, opponent: value }));
     if (activePrep) updateActivePrepSettings({ opponent: value });
     else setOpponent(value);
@@ -6432,32 +6455,31 @@ function PrepUnderBoardPanel({
     else setUserColor(value);
   };
 
-  // Autofill the opponent only once per selected source; refilling whenever
-  // the field becomes empty made it impossible to clear and retype a name.
+  // A saved player or an edit owns the field. A newly selected database
+  // gets one default, even if its hosted index becomes available later.
   const autofilledOpponentSourceRef = useRef({ sourceId: null as string | null, handled: false });
+  const choosePrepOpponent = (value: string) => {
+    autofilledOpponentSourceRef.current = { sourceId: activePrepSourceId, handled: true };
+    updatePrepOpponent(value);
+  };
+
   useEffect(() => {
     if (selectedPrepMode !== "player" || selectedPrepSource !== "local") return;
     if (autofilledOpponentSourceRef.current.sourceId !== activePrepSourceId) {
       autofilledOpponentSourceRef.current = { sourceId: activePrepSourceId, handled: false };
     }
-    if (!activePrepSourceId) return;
-    if (autofilledOpponentSourceRef.current.handled) return;
+    if (!activePrepSourceId || autofilledOpponentSourceRef.current.handled) return;
     if (trimmedSelectedOpponentName) {
       autofilledOpponentSourceRef.current.handled = true;
       return;
     }
-    const labelPlayer = getWebPrepDatabaseOpponent(
-      activePrepSourceDatabase,
-      selectedPrepDatabasePlayers,
-    );
-    if (!labelPlayer) return;
+    if (!defaultLocalPrepOpponent) return;
 
     autofilledOpponentSourceRef.current.handled = true;
-    updatePrepOpponent(labelPlayer);
+    updatePrepOpponent(defaultLocalPrepOpponent);
   }, [
-    activePrepSourceDatabase,
     activePrepSourceId,
-    selectedPrepDatabasePlayers,
+    defaultLocalPrepOpponent,
     selectedPrepMode,
     selectedPrepSource,
     trimmedSelectedOpponentName,
@@ -6694,15 +6716,9 @@ function PrepUnderBoardPanel({
                 {selectedSourceLabel}
               </Badge>
             ) : null}
-            {selectedPrepMode === "general" ? (
-              <Badge color="teal" variant="light" size="sm">
-                I'm {(activePrep?.userColor ?? userColor) === "white" ? "White" : "Black"}
-              </Badge>
-            ) : (activePrep?.opponent ?? opponent).trim() ? (
-              <Badge color="teal" variant="light" size="sm">
-                I'm {selectedUserColor === "white" ? "White" : "Black"}
-              </Badge>
-            ) : null}
+            <Badge color="teal" variant="light" size="sm">
+              I'm {selectedUserColor === "white" ? "White" : "Black"}
+            </Badge>
           </Group>
           <Group gap={4} wrap="wrap" justify="flex-end">
             {activePrep ? (
@@ -6891,14 +6907,14 @@ function PrepUnderBoardPanel({
                 {selectedPrepMode === "player" ? (
                   <WebDatabasePerspectiveControls
                     playerName={selectedOpponentName}
-                    playerOptions={selectedPrepDatabasePlayers}
+                    playerOptions={prepPlayerOptions}
                     color={selectedUserColor}
-                    onPlayerNameChange={updatePrepOpponent}
+                    onPlayerNameChange={choosePrepOpponent}
                     onColorChange={updatePrepUserColor}
                     colorPerspective="user"
                     disabled={!sourceReady}
                     playerFlex="1 1 10rem"
-                    colorWidth={trimmedSelectedOpponentName ? 236 : 132}
+                    colorWidth={236}
                   />
                 ) : (
                   <SegmentedControl
@@ -7566,7 +7582,7 @@ function WebDatabasePerspectiveControls({
   colorPerspective = "player",
 }: {
   playerName: string;
-  playerOptions: ReturnType<typeof getDatabasePlayerCounts>;
+  playerOptions: readonly (string | { name: string })[];
   color: WebColor;
   onPlayerNameChange: (playerName: string) => void;
   onColorChange: (color: WebColor) => void;
@@ -7578,7 +7594,7 @@ function WebDatabasePerspectiveControls({
 }) {
   const trimmedPlayerName = playerName.trim();
   const playerData = useMemo(
-    () => playerOptions.slice(0, 80).map((player) => player.name),
+    () => playerOptions.slice(0, 80).map((player) => typeof player === "string" ? player : player.name),
     [playerOptions],
   );
   const colorOptions =
