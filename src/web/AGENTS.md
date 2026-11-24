@@ -14,6 +14,11 @@
 - Chromium and WebKit pass 74 rendered checks each, including visible
   controls at 320px to 760px, the compact touch target, and the earlier board
   and Prep regressions. Types and the phone production build pass.
+- Product e7857b59 is live. A connected 390px browser received three depth-65
+  lines from the actual downloaded store without waking the PC engine. The
+  same build sent an isolated direct engine request with Cloud evals off, and
+  sent one only after an injected cloud miss with Cloud evals on. The actual
+  engine and physical iPhone were outside those fallback checks.
 
 ## 2026-11-24 hosted Prep positions and board status notices
 
